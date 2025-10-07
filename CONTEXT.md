@@ -1,0 +1,236 @@
+# CONTEXT.md
+
+## Project Overview
+
+**e-Disaster Mobile (Android)** is an Android application built with **Kotlin** and **Jetpack Compose**.
+The app is part of a larger disaster management system that helps **officers** and **volunteers** manage and report real-time disaster situations.
+It connects to a **Laravel REST API backend** and uses **Firebase Cloud Messaging (FCM)** for push notifications.
+
+---
+
+## System Architecture Summary
+
+**Frontend (Mobile):**
+
+* Platform: Android (Kotlin + Jetpack Compose)
+* Architecture: MVVM (Model - ViewModel - View)
+* Networking: Retrofit
+* State management: ViewModel + StateFlow
+* Navigation: Jetpack Navigation Compose
+* Notifications: Firebase Cloud Messaging (FCM)
+
+**Backend (Web):**
+
+* Laravel + Livewire
+* Provides REST API endpoints
+* Scheduled job to fetch real-time disaster data from [BMKG API](https://data.bmkg.go.id/gempabumi/) or inputted manually.
+* Sends push notifications via FCM when:
+
+  * New disaster is detected (from BMKG)
+  * Disaster status is updated
+  * New report is created
+  * Volunteer is accepted or rejected by admin
+
+---
+
+## Key Entities and Relationships
+
+**User roles:**
+
+* `admin` (web only)
+* `officer`
+* `volunteer`
+
+**Main database tables:**
+
+* `users`
+* `disasters`
+* `disaster_reports`
+* `disaster_victims`
+* `disaster_aids`
+* `disaster_volunteers`
+* `pictures`
+* `notifications`
+
+**Important relationship:**
+`disaster_volunteers` is a pivot table between `users` and `disasters`,
+representing which volunteers/officers are assigned to handle a specific disaster.
+
+---
+
+## Simplified Database Structure (ERD Overview)
+
+**Enums**
+
+```
+users_type_enum: [admin, officer, volunteer]
+users_status_enum: [registered, active, inactive]
+picture_type_enum: [profile, disaster, report, victim, aid]
+disaster_type_enum: [gempa bumi, tsunami, gunung meletus, banjir, kekeringan, angin topan, tanah longsor, bencana non alam, bencana sosial]
+disaster_status_enum: [ongoing, completed]
+disaster_source_enum: [BMKG, manual]
+disaster_victim_status_enum: [luka ringan, luka berat, meninggal, hilang]
+```
+
+**Tables**
+
+```
+users
+ ├─ id (UUID)
+ ├─ type (users_type_enum)
+ ├─ name, email, password
+ ├─ location, lat, long
+ ├─ status (users_status_enum)
+ ├─ timestamps
+
+disasters
+ ├─ id (UUID)
+ ├─ reported_by (users.id)
+ ├─ title, description, types, status, source
+ ├─ date, time, location, lat, long
+ ├─ magnitude, depth
+ ├─ timestamps
+
+disaster_volunteers
+ ├─ id (UUID)
+ ├─ disaster_id (disasters.id)
+ ├─ user_id (users.id)
+ ├─ timestamps
+
+disaster_reports
+ ├─ id (UUID)
+ ├─ disaster_id (disasters.id)
+ ├─ reported_by (disaster_volunteers.id)
+ ├─ title, description, lat, long
+ ├─ is_final_stage (bool)
+ ├─ timestamps
+
+disaster_victims
+ ├─ id (UUID)
+ ├─ disaster_id (disasters.id)
+ ├─ reported_by (disaster_volunteers.id)
+ ├─ nik, name, date_of_birth, description
+ ├─ status (disaster_victim_status_enum)
+ ├─ timestamps
+
+disaster_aids
+ ├─ id (UUID)
+ ├─ disaster_id (disasters.id)
+ ├─ reported_by (disaster_volunteers.id)
+ ├─ title, description, quantity, unit
+ ├─ timestamps
+
+pictures
+ ├─ id (UUID)
+ ├─ foreign_id (disaster / report / victim / aid)
+ ├─ type (picture_type_enum)
+ ├─ caption, file_path, mime_type, alt_text
+ ├─ timestamps
+
+notifications
+ ├─ id (UUID)
+ ├─ user_id (users.id)
+ ├─ title, message
+ ├─ timestamps
+```
+
+**Relationships**
+
+```
+notifications.user_id → users.id
+disasters.reported_by → users.id
+disaster_volunteers.user_id → users.id
+disaster_volunteers.disaster_id → disasters.id
+disaster_reports.reported_by → disaster_volunteers.id
+disaster_victims.reported_by → disaster_volunteers.id
+disaster_aids.reported_by → disaster_volunteers.id
+pictures.foreign_id → related entity (disasters, reports, victims, aids)
+```
+
+---
+
+## Project Folder Structure (Mobile)
+
+```
+app/
+ └── src/main/java/com/example/edisaster/
+      ├── data/
+      │   ├── model/         # Data classes for API models & responses
+      │   ├── remote/        # Retrofit API service definitions
+      │   └── repository/    # Repository for data fetching and mapping
+      │
+      ├── ui/
+      │   ├── screen/        # Compose screens (Login, Dashboard, etc.)
+      │   ├── viewmodel/     # ViewModels for each screen
+      │   ├── components/    # Reusable UI components
+      │   ├── navigation/    # Navigation graph
+      │   └── theme/         # Color, typography, shapes
+      │
+      ├── notification/      # FCM service and local notification handler
+      ├── utils/             # Constants, helper functions
+      └── MainActivity.kt    # App entry point
+```
+
+---
+
+## API Integration
+
+* All network requests use **Retrofit**.
+* `BASE_URL` points to Laravel backend API:
+  `https://edisaster.siunand.my.id/api/`
+* All API responses are **JSON-based**.
+* FCM tokens are stored on the Laravel backend for targeted push notifications.
+
+---
+
+## Notification Behavior
+
+| Type               | Triggered From       | Description                 |
+| ------------------ | -------------------- | --------------------------- |
+| `new_disaster`     | BMKG auto-fetch job  | New disaster detected       |
+| `disaster_update`  | Admin/officer action | Status or details updated   |
+| `new_report`       | Volunteer submission | New field report            |
+| `volunteer_status` | Admin approval       | Volunteer accepted/rejected |
+
+Notifications are received via **FCM** and displayed using a local notification channel.
+When opened, the app navigates to the related screen (e.g., Disaster Detail).
+
+---
+
+## Data Access Flow Example (MVVM + Retrofit)
+
+```
+1. User opens "Disaster List" screen
+2. UI triggers → ViewModel.loadDisasters()
+3. ViewModel calls → repository.getDisasters()
+4. Repository sends → Retrofit API request to /api/disasters
+5. Laravel backend returns → JSON list of disasters
+6. Repository parses response → returns List<Disaster> to ViewModel
+7. ViewModel updates StateFlow → UI recomposes automatically
+```
+
+**Example ViewModel flow:**
+
+```kotlin
+class DisasterViewModel(
+    private val repository: DisasterRepository
+) : ViewModel() {
+    private val _disasters = MutableStateFlow<List<Disaster>>(emptyList())
+    val disasters: StateFlow<List<Disaster>> = _disasters
+
+    fun loadDisasters() {
+        viewModelScope.launch {
+            _disasters.value = repository.getDisasters()
+        }
+    }
+}
+```
+
+---
+
+## Development Notes
+
+* Follow **MVVM separation**: `UI` ↔ `ViewModel` ↔ `Repository`.
+* Always update this file (`CONTEXT.md`) when architecture or API flow changes.
+* This file serves as a reference for **AI coding assistants** (Copilot, Cursor, etc.) to understand context, design patterns, and data flow.
+* Keep it **short, factual, and current**.
