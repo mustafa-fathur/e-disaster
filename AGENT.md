@@ -193,6 +193,81 @@ This color symbolizes alertness and energy, aligning with the disaster managemen
 The theme supports both **light and dark modes** using `isSystemInDarkTheme()`.  
 Only the **primary color** is manually defined, while Material 3 automatically generates cohesive secondary and surface tones for consistent appearance across themes.
 
+--- 
+
+## Screen Flow Overview
+
+The mobile app follows a **bottom navigation-based structure** inspired by the provided Figma wireframes.  
+All text in the app is in **Bahasa Indonesia**, with the primary color `#EA5921` (BPBD orange) used for key UI actions.
+
+**Bottom Navigation Tabs (persistent across most screens):**
+1. Beranda — Dashboard view showing ongoing and completed disasters.
+2. Daftar Bencana — Full list of disasters with filters and search.
+3. Tambah (+) — Floating central button for adding new disasters.
+4. Riwayat — History of past handled disasters.
+5. Notifikasi — Push notifications and system updates.
+
+**Top Bar:**  
+Used in most screens (except auth).  
+Includes logo (will be added later), title, and user avatar that links to the Profile screen.
+
+---
+
+### Core Screen Groups
+
+**0. Auth Screens**
+- **Login** → Email/password authentication.
+- **Register** → Volunteer registration (awaiting admin approval).
+- **Profile** → User details, update options, logout.
+
+**1. Dashboard (Beranda)**
+- Shows summary cards for active and completed disasters.
+- Displays latest disasters (scrollable cards).
+
+**2. Disaster Management**
+- **Daftar Bencana:** searchable and filterable list of all disasters.
+- **Detail Bencana:** main view showing description, location map, and related data:
+  - Perkembangan (Reports)
+  - Korban (Victims)
+  - Bantuan (Aid)
+- **Tambah / Edit Bencana:** form views for CRUD operations.
+- **Peta Bencana:** interactive or simulated map view.
+- **Tambah / Update Perkembangan:** add or edit disaster updates.
+
+**3. Victim Management**
+- **Daftar Korban:** searchable list of victim records.
+- **Tambah / Update Laporan Korban:** form for adding or editing victims.
+- **Detail Laporan Korban:** shows victim info and edit/delete actions.
+
+**4. Aid Management**
+- **Daftar Bantuan:** list of provided or needed aids.
+- **Tambah / Update Bantuan:** form for managing aid reports.
+
+**5. Notifications & History**
+- **Daftar Notifikasi:** list of push notifications from backend (FCM).
+- **Riwayat:** past disaster cases handled by the user.
+
+---
+
+### Navigation Behavior
+
+- Bottom navigation is hidden on auth screens.
+- Clicking a disaster card opens its **Detail Bencana** page.
+- Most forms return to their respective list or detail pages after submission.
+- The **Tambah (+)** FAB in the center of the bottom nav always leads to **Tambah Bencana**.
+- All screens use Material 3 components and follow a clean, card-based layout with rounded corners (8–16dp).
+
+---
+
+### UI Style Summary
+
+- Primary color: `#EA5921` (orange)
+- Accent color: `#ef4444` (red, used for warning/status)
+- Backgrounds: white/gray (light), near-black (`#121212`) for dark mode
+- Font: modern sans-serif (Roboto / Inter / Poppins)
+- Icons: simple outline style (Lucide/Material Icons)
+- Layout: card-based, scrollable lists, and orange FAB for main actions.
+
 ---
 
 ## API Integration
@@ -208,7 +283,7 @@ Only the **primary color** is manually defined, while Material 3 automatically g
 ## Notification Behavior
 
 | Type               | Triggered From       | Description                 |
-| ------------------ | -------------------- | --------------------------- |
+|--------------------|----------------------|-----------------------------|
 | `new_disaster`     | BMKG auto-fetch job  | New disaster detected       |
 | `disaster_update`  | Admin/officer action | Status or details updated   |
 | `new_report`       | Volunteer submission | New field report            |
