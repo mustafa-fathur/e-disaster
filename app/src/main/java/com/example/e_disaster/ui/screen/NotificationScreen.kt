@@ -15,12 +15,13 @@ import androidx.navigation.NavHostController
 import com.example.e_disaster.ui.components.AppBottomNavBar
 import com.example.e_disaster.ui.components.AppTopAppBar
 
+
 @Composable
-fun HomeScreen(navController: NavController) {
+fun NotificationScreen(navController: NavController) {
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Beranda",
+                title = "Notifikasi",
                 onProfileClick = { navController.navigate("profile") }
             )
         },
@@ -35,9 +36,8 @@ fun HomeScreen(navController: NavController) {
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Ini halaman beranda")
+                Text("Ini halaman daftar riwayat notifikasi yang pernah masuk.")
             }
         }
     )
 }
-

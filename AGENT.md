@@ -187,7 +187,7 @@ This color symbolizes alertness and energy, aligning with the disaster managemen
   - Red → danger / error
 - **Font:** clean and modern (Roboto / Inter / Poppins)
 - **Corner radius:** 12–16dp for friendly rounded UI
-- **Icons:** Material Icons Extended
+- **Icons:** Material 3 Icons Extended
 - **Spacing system:** standard paddings (8dp, 16dp, 24dp)
 
 The theme supports both **light and dark modes** using `isSystemInDarkTheme()`.  
@@ -265,7 +265,7 @@ Includes logo (will be added later), title, and user avatar that links to the Pr
 - Accent color: `#ef4444` (red, used for warning/status)
 - Backgrounds: white/gray (light), near-black (`#121212`) for dark mode
 - Font: modern sans-serif (Roboto / Inter / Poppins)
-- Icons: simple outline style (Lucide/Material Icons)
+- Icons: simple outline style (Lucide/Material 3 Icons)
 - Layout: card-based, scrollable lists, and orange FAB for main actions.
 
 ---

@@ -1,5 +1,6 @@
 package com.example.e_disaster.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +21,7 @@ fun AppTopAppBar(
         title = { Text(text = title) },
         navigationIcon = {
             IconButton(onClick = { /* Handle back button click */ }) {
-                Icon(
+                Image(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = "App Logo"
                 )

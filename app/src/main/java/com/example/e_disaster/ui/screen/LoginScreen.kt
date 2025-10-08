@@ -76,7 +76,7 @@ fun LoginScreen(navController: NavController) {
         // Login Button
         Button(
             onClick = {
-            /* TODO: Login logic */
+            /* TODO: Login logic, sekarang direct ke home screen aja langsung... */
                 navController.navigate("home") {
                     popUpTo(0)
                 }

@@ -4,14 +4,17 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.e_disaster.ui.screen.AddDisasterScreen
+import com.example.e_disaster.ui.screen.DisasterListScreen
+import com.example.e_disaster.ui.screen.HistoryScreen
 import com.example.e_disaster.ui.screen.HomeScreen
 import com.example.e_disaster.ui.screen.LoginScreen
+import com.example.e_disaster.ui.screen.NotificationScreen
 import com.example.e_disaster.ui.screen.ProfileScreen
 import com.example.e_disaster.ui.screen.RegisterScreen
 
 @Composable
 fun NavGraph() {
-    // This is the core of the change: Setting up the navigation graph
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -33,11 +36,23 @@ fun NavGraph() {
             ProfileScreen(navController = navController)
         }
 
+        composable("disaster-list") {
+            DisasterListScreen(navController = navController)
+        }
+
+        composable("add-disaster") {
+            AddDisasterScreen(navController = navController)
+        }
+
+        composable("history") {
+            HistoryScreen(navController = navController)
+        }
+
+        composable("notification") {
+            NotificationScreen(navController = navController)
+        }
+
         /* screen yg bakal ditambahin:
-            Disaster List
-            Add Disaster
-            History
-            Notification
             Disaster Detail
             Update Disaster
             Add Disaster Report
