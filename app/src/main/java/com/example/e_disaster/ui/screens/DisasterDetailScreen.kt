@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screen
+package com.example.e_disaster.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,10 +42,8 @@ import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.AppTopAppBar
 
 @Composable
-fun DisasterDetailScreen(
-    navController: NavController,
-    disasterId: String?
-) {
+fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
+    val reportId = "coba-coba-le-2026"
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -54,8 +53,7 @@ fun DisasterDetailScreen(
                 actions = {
                     TextButton(
                         onClick = {
-                            // TODO: Navigate to the EditDisasterScreen
-                            // ex: navController.navigate("update-disaster/$disasterId")
+                            navController.navigate("update-disaster/$disasterId")
                         }, colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.tertiary
                         )
@@ -74,20 +72,36 @@ fun DisasterDetailScreen(
         },
         bottomBar = {
             DisasterDetailBottomBar(
-                onVictimClick = { /* TODO: Navigate to victim list */ },
+                onVictimClick = {
+                    navController.navigate("disaster-victim-list/$disasterId")
+                },
                 onMapClick = { /* TODO: Navigate to map view */ },
-                onAidClick = { /* TODO: Navigate to aid list */ }
+                onAidClick = {
+                    navController.navigate("disaster-aid-list/$disasterId")
+                }
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center
-
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Ini halaman detail bencana dengan ID: $disasterId.")
+            Text("Ini halaman detail bencana dengan ID bencana: $disasterId.")
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                navController.navigate("add-disaster-report/$disasterId")
+            }) {
+                Text("Tambah Laporan Perkembangan Bencana")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                navController.navigate("update-disaster-report/$reportId")
+            }) {
+                Text("Ubah Laporan Perkembangan Bencana")
+            }
         }
     }
 }

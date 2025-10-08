@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screen
+package com.example.e_disaster.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,25 +11,24 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.AppTopAppBar
 
-
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun UpdateDisasterReportScreen(navController: NavController, reportId: String?) {
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Profil",
-                canNavigateBack = true, // This is a detail screen
+                title = "Ubah Perkembangan Bencana",
+                canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
         }
     ) { innerPadding ->
         Box(
             modifier = Modifier
-                .padding(innerPadding) // Apply padding from Scaffold
+                .padding(innerPadding)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Ini halaman profil.")
+            Text("Ini halaman ubah data perkembangan bencana dengan ID laporan perkembangan: $reportId.")
         }
     }
 }

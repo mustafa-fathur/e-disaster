@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.e_disaster.ui.screen
+package com.example.e_disaster.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

@@ -1,15 +1,10 @@
-package com.example.e_disaster.ui.screen
+package com.example.e_disaster.ui.screens
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -25,12 +20,11 @@ import com.example.e_disaster.ui.components.AppTopAppBar
 
 
 @Composable
-fun DisasterListScreen(navController: NavController) {
-    val disasterId = "coba-coba-saja-le-2025"
+fun HistoryScreen(navController: NavController) {
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Beranda",
+                title = "Riwayat",
                 canNavigateBack = false,
                 actions = {
                     IconButton(onClick = { navController.navigate("profile") }) {
@@ -46,27 +40,14 @@ fun DisasterListScreen(navController: NavController) {
             AppBottomNavBar(navController = navController as NavHostController)
         },
         content = { innerPadding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .padding(innerPadding)
                     .padding(16.dp)
                     .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Ini halaman daftar bencana")
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        navController.navigate("disaster-detail/$disasterId") {
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text("Disaster Detail")
-                }
+                Text("Ini halaman riwayat bencana yang pernah anda tangani.")
             }
         }
     )

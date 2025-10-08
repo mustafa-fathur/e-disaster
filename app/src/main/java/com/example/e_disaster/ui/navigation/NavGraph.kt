@@ -6,15 +6,25 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.e_disaster.ui.screen.AddDisasterScreen
-import com.example.e_disaster.ui.screen.DisasterDetailScreen
-import com.example.e_disaster.ui.screen.DisasterListScreen
-import com.example.e_disaster.ui.screen.HistoryScreen
-import com.example.e_disaster.ui.screen.HomeScreen
-import com.example.e_disaster.ui.screen.LoginScreen
-import com.example.e_disaster.ui.screen.NotificationScreen
-import com.example.e_disaster.ui.screen.ProfileScreen
-import com.example.e_disaster.ui.screen.RegisterScreen
+import com.example.e_disaster.ui.screens.AddDisasterAidScreen
+import com.example.e_disaster.ui.screens.AddDisasterReportScreen
+import com.example.e_disaster.ui.screens.AddDisasterScreen
+import com.example.e_disaster.ui.screens.AddDisasterVictimScreen
+import com.example.e_disaster.ui.screens.DisasterAidListScreen
+import com.example.e_disaster.ui.screens.DisasterDetailScreen
+import com.example.e_disaster.ui.screens.DisasterListScreen
+import com.example.e_disaster.ui.screens.DisasterVictimDetailScreen
+import com.example.e_disaster.ui.screens.DisasterVictimListScreen
+import com.example.e_disaster.ui.screens.HistoryScreen
+import com.example.e_disaster.ui.screens.HomeScreen
+import com.example.e_disaster.ui.screens.LoginScreen
+import com.example.e_disaster.ui.screens.NotificationScreen
+import com.example.e_disaster.ui.screens.ProfileScreen
+import com.example.e_disaster.ui.screens.RegisterScreen
+import com.example.e_disaster.ui.screens.UpdateDisasterAidScreen
+import com.example.e_disaster.ui.screens.UpdateDisasterReportScreen
+import com.example.e_disaster.ui.screens.UpdateDisasterScreen
+import com.example.e_disaster.ui.screens.UpdateDisasterVictimScreen
 
 @Composable
 fun NavGraph() {
@@ -55,6 +65,8 @@ fun NavGraph() {
             NotificationScreen(navController = navController)
         }
 
+        // Semua route di bawah ini harusnya cuman bisa diakses oleh volunteer nanti.
+
         composable(
             "disaster-detail/{disasterId}",
             arguments = listOf(navArgument("disasterId") {type = NavType.StringType })
@@ -68,7 +80,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call UpdateDisasterScreen(navController, disasterId)
+            UpdateDisasterScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -76,7 +88,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call AddDisasterReportScreen(navController, disasterId)
+            AddDisasterReportScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -84,7 +96,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("reportId") { type = NavType.StringType })
         ) { backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId")
-            // TODO: Create and call UpdateDisasterReportScreen(navController, reportId)
+            UpdateDisasterReportScreen(navController = navController, reportId = reportId)
         }
 
         composable(
@@ -92,7 +104,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call DisasterVictimListScreen(navController, disasterId)
+            DisasterVictimListScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -100,7 +112,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call AddDisasterVictimScreen(navController, disasterId)
+            AddDisasterVictimScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -108,7 +120,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("victimId") { type = NavType.StringType })
         ) { backStackEntry ->
             val victimId = backStackEntry.arguments?.getString("victimId")
-            // TODO: Create and call DisasterVictimDetailScreen(navController, victimId)
+            DisasterVictimDetailScreen(navController = navController, victimId = victimId)
         }
 
         composable(
@@ -116,7 +128,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("victimId") { type = NavType.StringType })
         ) { backStackEntry ->
             val victimId = backStackEntry.arguments?.getString("victimId")
-            // TODO: Create and call UpdateDisasterVictimScreen(navController, victimId)
+            UpdateDisasterVictimScreen(navController = navController, victimId = victimId)
         }
 
         composable(
@@ -124,7 +136,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call DisasterAidListScreen(navController, disasterId)
+            DisasterAidListScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -132,7 +144,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            // TODO: Create and call AddDisasterAidScreen(navController, disasterId)
+            AddDisasterAidScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(
@@ -140,7 +152,7 @@ fun NavGraph() {
             arguments = listOf(navArgument("aidId") { type = NavType.StringType })
         ) { backStackEntry ->
             val aidId = backStackEntry.arguments?.getString("aidId")
-            // TODO: Create and call UpdateDisasterAidScreen(navController, aidId)
+            UpdateDisasterAidScreen(navController = navController, aidId = aidId)
         }
 
     }
