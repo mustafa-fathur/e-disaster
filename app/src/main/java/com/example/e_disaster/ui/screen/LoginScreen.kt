@@ -1,7 +1,10 @@
 package com.example.e_disaster.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -9,9 +12,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.e_disaster.R
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -22,22 +27,31 @@ fun LoginScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp), // Add some horizontal padding
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .size(128.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = "Welcome to e-Disaster",
+            text = "Selamat datang di e-Disaster",
             style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(32.dp)) // Adds space between elements
+        Spacer(modifier = Modifier.height(24.dp)) // Adds space between elements
 
         // Email Text Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text("Email atau Username") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -49,7 +63,6 @@ fun LoginScreen(navController: NavController) {
             onValueChange = { password = it },
             label = { Text("Password") },
             modifier = Modifier.fillMaxWidth(),
-            // This hides the password characters
             visualTransformation = PasswordVisualTransformation()
         )
 
@@ -57,8 +70,10 @@ fun LoginScreen(navController: NavController) {
 
         // Login Button
         Button(
-            onClick = { /* TODO: Handle login logic using the 'email' and 'password' states */ },
-            modifier = Modifier.fillMaxWidth()
+            onClick = { /* TODO: Login logic */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
         ) {
             Text("Log In")
         }
