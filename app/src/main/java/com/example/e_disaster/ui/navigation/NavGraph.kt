@@ -1,10 +1,13 @@
 package com.example.e_disaster.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.e_disaster.ui.screen.AddDisasterScreen
+import com.example.e_disaster.ui.screen.DisasterDetailScreen
 import com.example.e_disaster.ui.screen.DisasterListScreen
 import com.example.e_disaster.ui.screen.HistoryScreen
 import com.example.e_disaster.ui.screen.HomeScreen
@@ -52,9 +55,24 @@ fun NavGraph() {
             NotificationScreen(navController = navController)
         }
 
+        composable(
+            "disaster-detail/{disasterId}",
+            arguments = listOf(navArgument("disasterId") {type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            DisasterDetailScreen(navController = navController, disasterId = disasterId)
+        }
+
+        composable(
+            route = "update-disaster/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call UpdateDisasterScreen(navController, disasterId)
+        }
+
+
         /* screen yg bakal ditambahin:
-            Disaster Detail
-            Update Disaster
             Add Disaster Report
             Update Disaster Report
 

@@ -1,9 +1,12 @@
 package com.example.e_disaster.ui.screen
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +24,15 @@ fun HomeScreen(navController: NavController) {
         topBar = {
             AppTopAppBar(
                 title = "Beranda",
-                onProfileClick = { navController.navigate("profile") }
+                canNavigateBack = false,
+                actions = {
+                    IconButton(onClick = { navController.navigate("profile") }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile"
+                        )
+                    }
+                }
             )
         },
         bottomBar = {
