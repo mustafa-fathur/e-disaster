@@ -71,21 +71,77 @@ fun NavGraph() {
             // TODO: Create and call UpdateDisasterScreen(navController, disasterId)
         }
 
+        composable(
+            route = "add-disaster-report/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call AddDisasterReportScreen(navController, disasterId)
+        }
 
-        /* screen yg bakal ditambahin:
-            Add Disaster Report
-            Update Disaster Report
+        composable(
+            route = "update-disaster-report/{reportId}",
+            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reportId = backStackEntry.arguments?.getString("reportId")
+            // TODO: Create and call UpdateDisasterReportScreen(navController, reportId)
+        }
 
-            Disaster Report map?
+        composable(
+            route = "disaster-victim-list/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call DisasterVictimListScreen(navController, disasterId)
+        }
 
-            Disaster Victim List
-            Disaster Victim Detail
-            Add Disaster Victim
-            Update Disaster Victim
+        composable(
+            route = "add-disaster-victim/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call AddDisasterVictimScreen(navController, disasterId)
+        }
 
-            Disaster Aid List
-            Add Disaster Aid
-            Update Disaster Aid
-        * */
+        composable(
+            route = "disaster-victim-detail/{victimId}",
+            arguments = listOf(navArgument("victimId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val victimId = backStackEntry.arguments?.getString("victimId")
+            // TODO: Create and call DisasterVictimDetailScreen(navController, victimId)
+        }
+
+        composable(
+            route = "update-disaster-victim/{victimId}",
+            arguments = listOf(navArgument("victimId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val victimId = backStackEntry.arguments?.getString("victimId")
+            // TODO: Create and call UpdateDisasterVictimScreen(navController, victimId)
+        }
+
+        composable(
+            route = "disaster-aid-list/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call DisasterAidListScreen(navController, disasterId)
+        }
+
+        composable(
+            route = "add-disaster-aid/{disasterId}",
+            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
+            // TODO: Create and call AddDisasterAidScreen(navController, disasterId)
+        }
+
+        composable(
+            route = "update-disaster-aid/{aidId}",
+            arguments = listOf(navArgument("aidId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val aidId = backStackEntry.arguments?.getString("aidId")
+            // TODO: Create and call UpdateDisasterAidScreen(navController, aidId)
+        }
+
     }
 }
