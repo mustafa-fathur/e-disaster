@@ -1,9 +1,9 @@
-# CONTEXT.md
+# AGENT.md
 
 ## Project Overview
 
-**e-Disaster Mobile (Android)** is an Android application built with **Kotlin** and **Jetpack Compose**.
-The app is part of a larger disaster management system that helps **officers** and **volunteers** manage and report real-time disaster situations.
+**e-Disaster Mobile (Android)** is an Android application built with **Kotlin** and **Jetpack Compose**.  
+The app is part of a larger disaster management system that helps **officers** and **volunteers** manage and report real-time disaster situations.  
 It connects to a **Laravel REST API backend** and uses **Firebase Cloud Messaging (FCM)** for push notifications.
 
 ---
@@ -12,49 +12,52 @@ It connects to a **Laravel REST API backend** and uses **Firebase Cloud Messagin
 
 **Frontend (Mobile):**
 
-* Platform: Android (Kotlin + Jetpack Compose)
-* Architecture: MVVM (Model - ViewModel - View)
-* Networking: Retrofit
-* State management: ViewModel + StateFlow
-* Navigation: Jetpack Navigation Compose
-* Notifications: Firebase Cloud Messaging (FCM)
+- Platform: Android (Kotlin + Jetpack Compose)
+- Architecture: MVVM (Model - ViewModel - View)
+- Networking: Retrofit
+- State management: ViewModel + StateFlow
+- Navigation: Jetpack Navigation Compose
+- Notifications: Firebase Cloud Messaging (FCM)
 
 **Backend (Web):**
 
-* Laravel + Livewire
-* Provides REST API endpoints
-* Scheduled job to fetch real-time disaster data from [BMKG API](https://data.bmkg.go.id/gempabumi/) or inputted manually.
-* Sends push notifications via FCM when:
-
-  * New disaster is detected (from BMKG)
-  * Disaster status is updated
-  * New report is created
-  * Volunteer is accepted or rejected by admin
+- Laravel 12 with **Livewire + Volt** (for admin web panel)
+- Built-in Laravel Authentication
+- Pest for unit testing
+- MySQL as the main database
+- Provides REST API via `routes/api.php`
+- Scheduled job to fetch real-time disaster data from [BMKG API](https://data.bmkg.go.id/gempabumi/) or manually input
+- Sends push notifications via FCM when:
+  - New disaster is detected (from BMKG or Manually)
+  - New report is created
+  - New disaster victim report is created
+  - New disaster aid is received
+  - Disaster status is updated
+  - Volunteer is accepted or rejected by admin
 
 ---
 
 ## Key Entities and Relationships
 
-**User roles:**
+**User Roles:**
 
-* `admin` (web only)
-* `officer`
-* `volunteer`
+- `admin` (web only)
+- `officer`
+- `volunteer`
 
 **Main database tables:**
 
-* `users`
-* `disasters`
-* `disaster_reports`
-* `disaster_victims`
-* `disaster_aids`
-* `disaster_volunteers`
-* `pictures`
-* `notifications`
+- `users`
+- `disasters`
+- `disaster_reports`
+- `disaster_victims`
+- `disaster_aids`
+- `disaster_volunteers`
+- `pictures`
+- `notifications`
 
-**Important relationship:**
-`disaster_volunteers` is a pivot table between `users` and `disasters`,
-representing which volunteers/officers are assigned to handle a specific disaster.
+**Important relationship:**  
+`disaster_volunteers` is a pivot table between `users` and `disasters`, representing which volunteers/officers are assigned to handle a specific disaster.
 
 ---
 
@@ -63,80 +66,23 @@ representing which volunteers/officers are assigned to handle a specific disaste
 **Enums**
 
 ```
+
 users_type_enum: [admin, officer, volunteer]
 users_status_enum: [registered, active, inactive]
 picture_type_enum: [profile, disaster, report, victim, aid]
 disaster_type_enum: [gempa bumi, tsunami, gunung meletus, banjir, kekeringan, angin topan, tanah longsor, bencana non alam, bencana sosial]
-disaster_status_enum: [ongoing, completed]
+disaster_status_enum: [cancelled, ongoing, completed]
 disaster_source_enum: [BMKG, manual]
 disaster_victim_status_enum: [luka ringan, luka berat, meninggal, hilang]
-```
+disaster_aid_category_enum: [food, clothing, housing]
+notification_type_enum: [verifikasi relawan, bencana baru, laporan bencana baru, laporan korban bencana baru, laporan bantuan bencana baru, status bencana berubah]
 
-**Tables**
-
-```
-users
- ├─ id (UUID)
- ├─ type (users_type_enum)
- ├─ name, email, password
- ├─ location, lat, long
- ├─ status (users_status_enum)
- ├─ timestamps
-
-disasters
- ├─ id (UUID)
- ├─ reported_by (users.id)
- ├─ title, description, types, status, source
- ├─ date, time, location, lat, long
- ├─ magnitude, depth
- ├─ timestamps
-
-disaster_volunteers
- ├─ id (UUID)
- ├─ disaster_id (disasters.id)
- ├─ user_id (users.id)
- ├─ timestamps
-
-disaster_reports
- ├─ id (UUID)
- ├─ disaster_id (disasters.id)
- ├─ reported_by (disaster_volunteers.id)
- ├─ title, description, lat, long
- ├─ is_final_stage (bool)
- ├─ timestamps
-
-disaster_victims
- ├─ id (UUID)
- ├─ disaster_id (disasters.id)
- ├─ reported_by (disaster_volunteers.id)
- ├─ nik, name, date_of_birth, description
- ├─ status (disaster_victim_status_enum)
- ├─ timestamps
-
-disaster_aids
- ├─ id (UUID)
- ├─ disaster_id (disasters.id)
- ├─ reported_by (disaster_volunteers.id)
- ├─ title, description, quantity, unit
- ├─ timestamps
-
-pictures
- ├─ id (UUID)
- ├─ foreign_id (disaster / report / victim / aid)
- ├─ type (picture_type_enum)
- ├─ caption, file_path, mime_type, alt_text
- ├─ timestamps
-
-notifications
- ├─ id (UUID)
- ├─ user_id (users.id)
- ├─ title, message
- ├─ timestamps
 ```
 
 **Relationships**
 
 ```
+
 notifications.user_id → users.id
 disasters.reported_by → users.id
 disaster_volunteers.user_id → users.id
@@ -144,7 +90,8 @@ disaster_volunteers.disaster_id → disasters.id
 disaster_reports.reported_by → disaster_volunteers.id
 disaster_victims.reported_by → disaster_volunteers.id
 disaster_aids.reported_by → disaster_volunteers.id
-pictures.foreign_id → related entity (disasters, reports, victims, aids)
+pictures.foreign_id → related entity (users, disasters, reports, victims, aids)
+
 ```
 
 ---
@@ -152,24 +99,27 @@ pictures.foreign_id → related entity (disasters, reports, victims, aids)
 ## Project Folder Structure (Mobile)
 
 ```
+
 app/
- └── src/main/java/com/example/edisaster/
-      ├── data/
-      │   ├── model/         # Data classes for API models & responses
-      │   ├── remote/        # Retrofit API service definitions
-      │   └── repository/    # Repository for data fetching and mapping
-      │
-      ├── ui/
-      │   ├── screen/        # Compose screens (Login, Dashboard, etc.)
-      │   ├── viewmodel/     # ViewModels for each screen
-      │   ├── components/    # Reusable UI components
-      │   ├── navigation/    # Navigation graph
-      │   └── theme/         # Color, typography, shapes
-      │
-      ├── notification/      # FCM service and local notification handler
-      ├── utils/             # Constants, helper functions
-      └── MainActivity.kt    # App entry point
-```
+└── src/main/java/com/example/edisaster/
+├── data/
+│   ├── model/         # Data classes for API models & responses
+│   ├── remote/        # Retrofit API service definitions
+│   └── repository/    # Repository for data fetching and mapping
+│
+├── ui/
+│   ├── screen/        # Compose screens (Login, Home, etc.)
+│   ├── viewmodel/     # ViewModels for each screen
+│   ├── components/    # Reusable UI components
+│   ├── navigation/    # Navigation graph
+│   └── theme/         # Color, typography, shapes
+│
+├── notification/      # FCM service and local notification handler
+├── utils/             # Constants, helper functions
+└── MainActivity.kt    # App entry point
+
+````
+
 ---
 
 ## Theme Configuration
@@ -178,135 +128,215 @@ The app uses **Material 3 (M3)** design system with a custom color scheme based 
 This color symbolizes alertness and energy, aligning with the disaster management theme.
 
 **Theme rules:**
+
 - **Primary color:** `#EA5921` (BPBD orange)
-- **Secondary color:** automatically generated by Material 3 based on the primary seed
+- **Secondary color:** auto-generated by Material 3 based on the primary seed
 - **Background / Surface:** light (`#FFFFFF`) and dark (`#121212`)
 - **Status colors:**
   - Green → success / completed
   - Yellow → warning / ongoing
   - Red → danger / error
-- **Font:** clean and modern (Roboto / Inter / Poppins)
-- **Corner radius:** 12–16dp for friendly rounded UI
+- **Font:** Roboto / Inter / Poppins
+- **Corner radius:** 12–16dp
 - **Icons:** Material 3 Icons Extended
-- **Spacing system:** standard paddings (8dp, 16dp, 24dp)
+- **Spacing:** standard paddings (8dp, 16dp, 24dp)
+- Supports both **light** and **dark** modes using `isSystemInDarkTheme()`
 
-The theme supports both **light and dark modes** using `isSystemInDarkTheme()`.  
-Only the **primary color** is manually defined, while Material 3 automatically generates cohesive secondary and surface tones for consistent appearance across themes.
-
---- 
+---
 
 ## Screen Flow Overview
 
-The mobile app follows a **bottom navigation-based structure** inspired by the provided Figma wireframes.  
-All text in the app is in **Bahasa Indonesia**, with the primary color `#EA5921` (BPBD orange) used for key UI actions.
+The mobile app follows a **bottom navigation-based structure**, inspired by the Figma wireframes.  
+All text in the app is in **Bahasa Indonesia**, with the primary color `#EA5921` (BPBD orange) used for actions.
 
-**Bottom Navigation Tabs (persistent across most screens):**
-1. Beranda — Dashboard view showing ongoing and completed disasters.
-2. Daftar Bencana — Full list of disasters with filters and search.
-3. Tambah (+) — Floating central button for adding new disasters.
-4. Riwayat — History of past handled disasters.
-5. Notifikasi — Push notifications and system updates.
+**Bottom Navigation Tabs:**
+
+1. **Beranda** — Dashboard showing ongoing and completed disasters.
+2. **Daftar Bencana** — Full list of disasters with filters and search.
+3. **Tambah (+)** — Floating button for adding new disasters.
+4. **Riwayat** — Past handled disasters.
+5. **Notifikasi** — Push notifications and system updates.
 
 **Top Bar:**  
-Used in most screens (except auth).  
-Includes logo (will be added later), title, and user avatar that links to the Profile screen.
+Displays logo (optional), title, and user avatar linking to Profile.
 
 ---
 
 ### Core Screen Groups
 
 **0. Auth Screens**
-- **Login** → Email/password authentication.
-- **Register** → Volunteer registration (awaiting admin approval).
-- **Profile** → User details, update options, logout.
+- Login (email/password)
+- Register (volunteer registration with pending approval)
+- Profile (view/update details)
 
-**1. Dashboard (Beranda)**
+**1. Home (Dashboard)**
 - Shows summary cards for active and completed disasters.
-- Displays latest disasters (scrollable cards).
 
 **2. Disaster Management**
-- **Daftar Bencana:** searchable and filterable list of all disasters.
-- **Detail Bencana:** main view showing description, location map, and related data:
+- Daftar Bencana → searchable list
+- Detail Bencana → shows description, location, and related tabs:
   - Perkembangan (Reports)
   - Korban (Victims)
   - Bantuan (Aid)
-- **Tambah / Edit Bencana:** form views for CRUD operations.
-- **Peta Bencana:** interactive or simulated map view.
-- **Tambah / Update Perkembangan:** add or edit disaster updates.
+- Tambah / Edit Bencana → form for disaster CRUD
+- Peta Bencana → map-based view (optional)
+- Tambah / Update Perkembangan → disaster update forms
 
 **3. Victim Management**
-- **Daftar Korban:** searchable list of victim records.
-- **Tambah / Update Laporan Korban:** form for adding or editing victims.
-- **Detail Laporan Korban:** shows victim info and edit/delete actions.
+- Daftar Korban → searchable list
+- Tambah / Update Laporan Korban → form for adding victims
+- Detail Laporan Korban → info & edit/delete options
 
 **4. Aid Management**
-- **Daftar Bantuan:** list of provided or needed aids.
-- **Tambah / Update Bantuan:** form for managing aid reports.
+- Daftar Bantuan → list of provided/needed aids
+- Tambah / Update Bantuan → form for aid management
 
 **5. Notifications & History**
-- **Daftar Notifikasi:** list of push notifications from backend (FCM).
-- **Riwayat:** past disaster cases handled by the user.
+- Daftar Notifikasi → FCM notifications
+- Riwayat → past handled disasters
 
 ---
 
-### Navigation Behavior
+## Data Access & Assignment Flow
 
-- Bottom navigation is hidden on auth screens.
-- Clicking a disaster card opens its **Detail Bencana** page.
-- Most forms return to their respective list or detail pages after submission.
-- The **Tambah (+)** FAB in the center of the bottom nav always leads to **Tambah Bencana**.
-- All screens use Material 3 components and follow a clean, card-based layout with rounded corners (8–16dp).
+### Volunteer & Officer Assignment Flow
+
+#### Overview
+
+Before a **volunteer** or **officer** can submit any disaster-related data (reports, victims, or aids),  
+they must first be **assigned** to that disaster.  
+This assignment is recorded in the **`disaster_volunteers`** table linking a `user` to a `disaster`.
+
+There is **no separate "assigned" status column** —  
+the existence of a record in `disaster_volunteers` means the user is assigned.
+
+#### Database Reference
+
+```sql
+Table "disaster_volunteers" {
+  "id" varchar(45) [pk, not null]
+  "disaster_id" varchar(45)
+  "user_id" varchar(45)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+````
+
+Logic:
+
+* ✅ Assigned → record exists for `(user_id, disaster_id)`
+* ❌ Not assigned → no record found
 
 ---
 
-### UI Style Summary
+#### Assignment Flow
 
-- Primary color: `#EA5921` (orange)
-- Accent color: `#ef4444` (red, used for warning/status)
-- Backgrounds: white/gray (light), near-black (`#121212`) for dark mode
-- Font: modern sans-serif (Roboto / Inter / Poppins)
-- Icons: simple outline style (Lucide/Material 3 Icons)
-- Layout: card-based, scrollable lists, and orange FAB for main actions.
+1. **User opens Disaster Detail**
+
+  * App checks via:
+
+    ```
+    GET /api/disaster-volunteers/check?disaster_id={id}
+    ```
+
+  * Backend responds:
+
+    ```json
+    { "assigned": true }
+    ```
+
+  * If assigned → show *Add Report / Add Victim / Add Aid* buttons
+
+  * If not assigned → show *Join Disaster* button
+
+2. **When user clicks “Join Disaster”**
+
+  * API request:
+
+    ```
+    POST /api/disaster-volunteers
+    {
+      "disaster_id": "{uuid-of-disaster}"
+    }
+    ```
+
+  * Backend logic:
+
+    ```php
+    if (!DisasterVolunteer::where('user_id', auth()->id())
+                          ->where('disaster_id', $request->disaster_id)
+                          ->exists()) {
+        DisasterVolunteer::create([
+            'id' => Str::uuid(),
+            'user_id' => auth()->id(),
+            'disaster_id' => $request->disaster_id,
+        ]);
+    }
+    ```
+
+  * Response:
+
+    ```json
+    { "message": "You are now assigned to this disaster." }
+    ```
+
+3. **Android UI Behavior**
+
+  * If not assigned → “Join Disaster” button visible
+  * Confirmation modal before joining:
+
+    > “Are you sure you want to join this disaster response team?”
+  * After joining:
+
+    * Backend creates record in `disaster_volunteers`
+    * App refreshes and displays new options:
+
+      * Add Report
+      * Add Victim
+      * Add Aid
+
+This ensures only assigned volunteers/officers can perform actions within a disaster context.
 
 ---
 
 ## API Integration
 
-* All network requests use **Retrofit**.
-* `BASE_URL` points to Laravel backend API:
-  `https://edisaster.siunand.my.id/api/`
-* All API responses are **JSON-based**.
-* FCM tokens are stored on the Laravel backend for targeted push notifications.
+* All network requests use **Retrofit**
+* `BASE_URL`: `https://edisaster.siunand.my.id/api/`
+* All API responses: **JSON-based**
+* FCM tokens stored in Laravel for targeted notifications
 
 ---
 
 ## Notification Behavior
 
 | Type               | Triggered From       | Description                 |
-|--------------------|----------------------|-----------------------------|
+| ------------------ | -------------------- | --------------------------- |
 | `new_disaster`     | BMKG auto-fetch job  | New disaster detected       |
 | `disaster_update`  | Admin/officer action | Status or details updated   |
-| `new_report`       | Volunteer submission | New field report            |
+| `new_report`       | Volunteer submission | New disaster report         |
+| `new_victim_report`| Volunteer submission | New disaster victim report  |
+| `new_aid_report`   | Volunteer submission | New disaster aid report     |
 | `volunteer_status` | Admin approval       | Volunteer accepted/rejected |
 
-Notifications are received via **FCM** and displayed using a local notification channel.
-When opened, the app navigates to the related screen (e.g., Disaster Detail).
+Notifications are received via **FCM** and displayed through the local notification system.
+Tapping a notification navigates the user to the relevant screen.
 
 ---
 
-## Data Access Flow Example (MVVM + Retrofit)
+## Data Flow Example (MVVM + Retrofit)
 
 ```
 1. User opens "Disaster List" screen
 2. UI triggers → ViewModel.loadDisasters()
 3. ViewModel calls → repository.getDisasters()
-4. Repository sends → Retrofit API request to /api/disasters
-5. Laravel backend returns → JSON list of disasters
-6. Repository parses response → returns List<Disaster> to ViewModel
+4. Repository sends → Retrofit request to /api/disasters
+5. Backend returns → JSON list
+6. Repository parses → returns List<Disaster>
 7. ViewModel updates StateFlow → UI recomposes automatically
 ```
 
-**Example ViewModel flow:**
+Example:
 
 ```kotlin
 class DisasterViewModel(
@@ -327,7 +357,7 @@ class DisasterViewModel(
 
 ## Development Notes
 
-* Follow **MVVM separation**: `UI` ↔ `ViewModel` ↔ `Repository`.
-* Always update this file (`CONTEXT.md`) when architecture or API flow changes.
-* This file serves as a reference for **AI coding assistants** (Copilot, Cursor, etc.) to understand context, design patterns, and data flow.
-* Keep it **short, factual, and current**.
+* Follow **MVVM separation**: `UI` ↔ `ViewModel` ↔ `Repository`
+* Always update this file (`AGENT.md`) when architecture or API flow changes
+* This file serves as a reference for **AI coding assistants** (Copilot, Cursor, etc.)
+* Keep it **short, factual, and current**
