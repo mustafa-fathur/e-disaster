@@ -1,13 +1,12 @@
 package com.example.e_disaster.ui.screens
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.AppTopAppBar
 
@@ -16,19 +15,27 @@ fun UpdateDisasterVictimScreen(navController: NavController, victimId: String?) 
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Ubah Data Korban",
+                title = "Update Laporan Korban",
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Text("Ini halaman ubah data korban bencana dengan ID korban: $victimId.")
+            // TODO: Fetch existing victim data using victimId and pass as initial values
+            VictimForm(
+                buttonText = "Ubah",
+                onFormSubmit = { nik, name, age, description ->
+                    // TODO: Implement ViewModel logic to update victim
+                    println("Updating Victim ID $victimId: NIK=$nik, Name=$name, Age=$age, Desc=$description")
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
