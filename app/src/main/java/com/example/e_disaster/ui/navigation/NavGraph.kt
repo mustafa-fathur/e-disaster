@@ -18,6 +18,7 @@ import com.example.e_disaster.ui.screens.DisasterVictimListScreen
 import com.example.e_disaster.ui.screens.HistoryScreen
 import com.example.e_disaster.ui.screens.HomeScreen
 import com.example.e_disaster.ui.screens.LoginScreen
+import com.example.e_disaster.ui.screens.NearbyAidsScreen
 import com.example.e_disaster.ui.screens.NotificationScreen
 import com.example.e_disaster.ui.screens.ProfileScreen
 import com.example.e_disaster.ui.screens.RegisterScreen
@@ -153,6 +154,22 @@ fun NavGraph() {
         ) { backStackEntry ->
             val aidId = backStackEntry.arguments?.getString("aidId")
             UpdateDisasterAidScreen(navController = navController, aidId = aidId)
+        }
+
+        composable(
+            route = "nearby-aids/{latitude}/{longitude}",
+            arguments = listOf(
+                navArgument("latitude") { type = NavType.StringType },
+                navArgument("longitude") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull()
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull()
+            NearbyAidsScreen(
+                navController = navController,
+                userLatitude = latitude,
+                userLongitude = longitude
+            )
         }
 
     }
