@@ -8,6 +8,7 @@ import com.example.e_disaster.data.model.CreateDisasterAidRequest
 import com.example.e_disaster.data.model.DisasterAid
 import com.example.e_disaster.data.model.UpdateDisasterAidRequest
 import com.example.e_disaster.data.repository.DisasterAidRepository
+import com.example.e_disaster.utils.DummyData
 import com.example.e_disaster.utils.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +54,27 @@ class DisasterAidViewModel : ViewModel() {
         userLongitude: Double? = null
     ) {
         viewModelScope.launch {
+            // Untuk sementara gunakan data dummy, nanti diganti dengan API call
+            try {
+                _disasterAids.value = Resource.Loading()
+
+                // Simulate API delay
+                kotlinx.coroutines.delay(500)
+
+                // Filter data dummy berdasarkan disasterId (untuk demo)
+                val filteredAids = DummyData.dummyDisasterAids.filter { aid ->
+                    (_selectedStatus.value == null || aid.status == _selectedStatus.value?.value) &&
+                    (_selectedType.value == null || aid.type == _selectedType.value?.value)
+                }
+
+                _disasterAids.value = Resource.Success(filteredAids)
+
+            } catch (e: Exception) {
+                _disasterAids.value = Resource.Error("Gagal memuat data: ${e.localizedMessage}")
+            }
+
+            // Uncomment below when API is ready
+            /*
             repository.getDisasterAids(
                 disasterId = disasterId,
                 userLatitude = userLatitude,
@@ -63,6 +85,7 @@ class DisasterAidViewModel : ViewModel() {
             ).collect { resource ->
                 _disasterAids.value = resource
             }
+            */
         }
     }
 

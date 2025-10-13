@@ -34,6 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +50,7 @@ import com.example.e_disaster.data.model.AidType
 import com.example.e_disaster.data.model.DisasterAid
 import com.example.e_disaster.ui.components.AppTopAppBar
 import com.example.e_disaster.ui.viewmodel.DisasterAidViewModel
+import com.example.e_disaster.utils.DummyData
 import com.example.e_disaster.utils.Resource
 
 @Composable
@@ -60,12 +64,26 @@ fun DisasterAidListScreen(
     val selectedType by viewModel.selectedType.collectAsState()
     val radius by viewModel.radius.collectAsState()
 
-    // Load data saat screen pertama kali dibuka
-    LaunchedEffect(disasterId) {
-        disasterId?.let {
-            // TODO: Get user location and pass coordinates
-            viewModel.loadDisasterAids(it)
+    var filteredAids by remember { mutableStateOf<List<DisasterAid>>(emptyList()) }
+
+    // Filter data berdasarkan selected filters
+    LaunchedEffect(disasterAids, selectedStatus, selectedType) {
+        val aids = when (disasterAids) {
+            is Resource.Success -> (disasterAids as Resource.Success<List<DisasterAid>>).data ?: emptyList()
+            else -> emptyList()
         }
+
+        filteredAids = aids.filter { aid ->
+            (selectedStatus == null || aid.status == selectedStatus?.value) &&
+            (selectedType == null || aid.type == selectedType?.value)
+        }
+    }
+
+    // Load data saat screen pertama kali dibuka (untuk demo menggunakan data dummy)
+    LaunchedEffect(disasterId) {
+        // Untuk sementara gunakan data dummy, nanti diganti dengan API call
+        val dummyAids = DummyData.dummyDisasterAids
+        viewModel.loadDisasterAids("demo-disaster-id") // Placeholder untuk demo
     }
 
     Scaffold(
@@ -129,14 +147,19 @@ fun DisasterAidListScreen(
                     }
                 }
                 is Resource.Success -> {
-                    val aids = (disasterAids as Resource.Success<List<DisasterAid>>).data
-                    if (aids.isNullOrEmpty()) {
-                        EmptyState(
-                            onAddAid = { navController.navigate("add-disaster-aid/$disasterId") }
-                        )
+                    if (filteredAids.isEmpty()) {
+                        if (selectedStatus != null || selectedType != null) {
+                            EmptyFilterState(
+                                onResetFilters = { viewModel.resetFilters() }
+                            )
+                        } else {
+                            EmptyState(
+                                onAddAid = { navController.navigate("add-disaster-aid/$disasterId") }
+                            )
+                        }
                     } else {
                         AidList(
-                            aids = aids,
+                            aids = filteredAids,
                             onAidClick = { aid ->
                                 navController.navigate("update-disaster-aid/${aid.id}")
                             }
@@ -381,6 +404,27 @@ private fun EmptyState(onAddAid: () -> Unit) {
 
         OutlinedButton(onClick = onAddAid) {
             Text("Tambah Bantuan Pertama")
+        }
+    }
+}
+
+@Composable
+private fun EmptyFilterState(onResetFilters: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Tidak ada bantuan yang sesuai dengan filter",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(onClick = onResetFilters) {
+            Text("Reset Filter")
         }
     }
 }
