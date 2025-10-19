@@ -1,30 +1,52 @@
 package com.example.e_disaster.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.e_disaster.ui.components.AppBottomNavBar
 import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.theme.EDisasterTheme
 
+data class Disaster(
+    val id: String,
+    val title: String,
+    val description: String,
+    val status: String,
+    val imageUrl: String
+)
 
 @Composable
-fun DisasterListScreen(navController: NavController) {
-    val disasterId = "coba-coba-saja-le-2025"
+fun DisasterListScreen(navController: NavHostController) {
+
+    val dummyDisasters = listOf(
+        Disaster(
+            "1",
+            "Banjir Padang",
+            "Ketinggian air mencapai 1 meter di daerah Ulak Karang.",
+            "Sedang Berlangsung",
+            "https://images.unsplash.com/photo-1657069345471-c54f2432b79c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"
+        ),
+        Disaster(
+            "2",
+            "Kebakaran Bukittinggi",
+            "Kebakaran hebat terjadi di Pasar Atas.",
+            "Selesai",
+            "https://images.unsplash.com/photo-1495467033336-2effd8753d51?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"
+        )
+    )
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -41,31 +63,62 @@ fun DisasterListScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            AppBottomNavBar(navController = navController as NavHostController)
+            AppBottomNavBar(navController = navController)
         },
         content = { innerPadding ->
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .padding(innerPadding)
                     .padding(16.dp)
                     .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Ini halaman daftar bencana")
+                item {
+                    Text(
+                        "Daftar Bencana Terkini",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        navController.navigate("disaster-detail/$disasterId") {
+                items(dummyDisasters) { disaster ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            AsyncImage(
+                                model = disaster.imageUrl,
+                                contentDescription = disaster.title,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(disaster.title, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(disaster.description, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                disaster.status,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text("Detail Bencana")
+                    }
                 }
             }
         }
     )
+}
+
+@Composable
+@Preview(showBackground = true)
+fun DisasterListScreenPreview() {
+    val navController = rememberNavController()
+    EDisasterTheme {
+        DisasterListScreen(navController = navController)
+    }
 }

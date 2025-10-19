@@ -51,7 +51,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
 
     // Networking dependencies
     implementation(libs.retrofit)
@@ -61,6 +62,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.volley)
     implementation(libs.androidx.core.telecom)
+    implementation(libs.androidx.media3.exoplayer)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
