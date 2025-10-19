@@ -11,6 +11,9 @@ val OrangePrimaryLight = Color(0xFFFF8A50)
 val OrangeSecondary = Color(0xFF757575)
 val OrangeTertiary = Color(0xFF8D6E63)
 
+val OrangeSecondaryLight = Color(0xFFfce4e5)
+
+
 //val Purple80 = Color(0xFFD0BCFF)
 //val PurpleGrey80 = Color(0xFFCCC2DC)
 //val Pink80 = Color(0xFFEFB8C8)
