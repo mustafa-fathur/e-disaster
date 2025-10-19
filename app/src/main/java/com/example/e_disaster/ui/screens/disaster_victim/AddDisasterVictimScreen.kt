@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster_victim
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

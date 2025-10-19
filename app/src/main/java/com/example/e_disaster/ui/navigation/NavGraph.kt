@@ -6,27 +6,27 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.e_disaster.ui.screens.AddDisasterAidScreen
-import com.example.e_disaster.ui.screens.AddDisasterReportScreen
-import com.example.e_disaster.ui.screens.AddDisasterScreen
-import com.example.e_disaster.ui.screens.AddDisasterVictimScreen
-import com.example.e_disaster.ui.screens.DisasterAidListScreen
-import com.example.e_disaster.ui.screens.DisasterDetailScreen
-import com.example.e_disaster.ui.screens.DisasterListScreen
-import com.example.e_disaster.ui.screens.DisasterVictimDetailScreen
-import com.example.e_disaster.ui.screens.DisasterVictimListScreen
-import com.example.e_disaster.ui.screens.HistoryDetailScreen
-import com.example.e_disaster.ui.screens.HistoryScreen
+import com.example.e_disaster.ui.screens.disaster_aid.AddDisasterAidScreen
+import com.example.e_disaster.ui.screens.disaster_report.AddDisasterReportScreen
+import com.example.e_disaster.ui.screens.disaster.AddDisasterScreen
+import com.example.e_disaster.ui.screens.disaster_victim.AddDisasterVictimScreen
+import com.example.e_disaster.ui.screens.disaster_aid.DisasterAidListScreen
+import com.example.e_disaster.ui.screens.disaster.DisasterDetailScreen
+import com.example.e_disaster.ui.screens.disaster.DisasterListScreen
+import com.example.e_disaster.ui.screens.disaster_victim.DisasterVictimDetailScreen
+import com.example.e_disaster.ui.screens.disaster_victim.DisasterVictimListScreen
+import com.example.e_disaster.ui.screens.disaster_history.HistoryDetailScreen
+import com.example.e_disaster.ui.screens.disaster_history.HistoryScreen
 import com.example.e_disaster.ui.screens.HomeScreen
-import com.example.e_disaster.ui.screens.LoginScreen
-import com.example.e_disaster.ui.screens.NearbyAidsScreen
-import com.example.e_disaster.ui.screens.NotificationScreen
-import com.example.e_disaster.ui.screens.ProfileScreen
-import com.example.e_disaster.ui.screens.RegisterScreen
-import com.example.e_disaster.ui.screens.UpdateDisasterAidScreen
-import com.example.e_disaster.ui.screens.UpdateDisasterReportScreen
-import com.example.e_disaster.ui.screens.UpdateDisasterScreen
-import com.example.e_disaster.ui.screens.UpdateDisasterVictimScreen
+import com.example.e_disaster.ui.screens.auth.LoginScreen
+import com.example.e_disaster.ui.screens.disaster_aid.NearbyAidsScreen
+import com.example.e_disaster.ui.screens.notification.NotificationScreen
+import com.example.e_disaster.ui.screens.auth.ProfileScreen
+import com.example.e_disaster.ui.screens.auth.RegisterScreen
+import com.example.e_disaster.ui.screens.disaster_aid.UpdateDisasterAidScreen
+import com.example.e_disaster.ui.screens.disaster_report.UpdateDisasterReportScreen
+import com.example.e_disaster.ui.screens.disaster.UpdateDisasterScreen
+import com.example.e_disaster.ui.screens.disaster_victim.UpdateDisasterVictimScreen
 
 @Composable
 fun NavGraph() {

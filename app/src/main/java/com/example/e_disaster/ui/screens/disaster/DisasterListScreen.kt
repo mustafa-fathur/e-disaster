@@ -1,5 +1,6 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -86,7 +87,9 @@ fun DisasterListScreen(navController: NavHostController) {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = {navController.navigate("disaster-detail/${disaster.id}") })
                     ) {
                         Column(Modifier.padding(16.dp)) {
                             AsyncImage(

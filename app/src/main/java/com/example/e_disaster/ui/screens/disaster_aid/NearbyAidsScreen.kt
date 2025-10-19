@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster_aid
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,26 +10,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,74 +46,55 @@ import com.example.e_disaster.data.model.AidType
 import com.example.e_disaster.data.model.DisasterAid
 import com.example.e_disaster.ui.components.AppTopAppBar
 import com.example.e_disaster.ui.viewmodel.DisasterAidViewModel
-import com.example.e_disaster.utils.DummyData
 import com.example.e_disaster.utils.Resource
 
 @Composable
-fun DisasterAidListScreen(
+fun NearbyAidsScreen(
     navController: NavController,
-    disasterId: String?,
+    userLatitude: Double? = null,
+    userLongitude: Double? = null,
     viewModel: DisasterAidViewModel = viewModel()
 ) {
-    val disasterAids by viewModel.disasterAids.collectAsState()
+    val nearbyAids by viewModel.nearbyAids.collectAsState()
     val selectedStatus by viewModel.selectedStatus.collectAsState()
     val selectedType by viewModel.selectedType.collectAsState()
     val radius by viewModel.radius.collectAsState()
 
-    var filteredAids by remember { mutableStateOf<List<DisasterAid>>(emptyList()) }
+    var currentLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
-    // Filter data berdasarkan selected filters
-    LaunchedEffect(disasterAids, selectedStatus, selectedType) {
-        val aids = when (disasterAids) {
-            is Resource.Success -> (disasterAids as Resource.Success<List<DisasterAid>>).data ?: emptyList()
-            else -> emptyList()
+    // Load data saat screen pertama kali dibuka
+    LaunchedEffect(userLatitude, userLongitude) {
+        if (userLatitude != null && userLongitude != null) {
+            currentLocation = Pair(userLatitude, userLongitude)
+            viewModel.loadNearbyAids(userLatitude, userLongitude)
         }
-
-        filteredAids = aids.filter { aid ->
-            (selectedStatus == null || aid.status == selectedStatus?.value) &&
-            (selectedType == null || aid.type == selectedType?.value)
-        }
-    }
-
-    // Load data saat screen pertama kali dibuka (untuk demo menggunakan data dummy)
-    LaunchedEffect(disasterId) {
-        // Untuk sementara gunakan data dummy, nanti diganti dengan API call
-        val dummyAids = DummyData.dummyDisasterAids
-        viewModel.loadDisasterAids("demo-disaster-id") // Placeholder untuk demo
     }
 
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Daftar Bantuan",
+                title = "Bantuan Terdekat",
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
                     IconButton(onClick = {
-                        disasterId?.let { viewModel.refreshData(it) }
+                        currentLocation?.let { (lat, lng) ->
+                            viewModel.refreshData(latitude = lat, longitude = lng)
+                        }
                     }) {
                         Icon(
                             Icons.Default.Refresh,
                             contentDescription = "Refresh"
                         )
                     }
-                    IconButton(onClick = { /* TODO: Show filter dialog */ }) {
+                    IconButton(onClick = { /* TODO: Show location picker */ }) {
                         Icon(
-                            Icons.Default.MoreVert,
-                            contentDescription = "Filter"
+                            Icons.Default.LocationOn,
+                            contentDescription = "Pilih Lokasi"
                         )
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate("add-disaster-aid/$disasterId")
-                }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Bantuan")
-            }
         }
     ) { innerPadding ->
         Column(
@@ -125,6 +102,15 @@ fun DisasterAidListScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            // Location info
+            currentLocation?.let { (lat, lng) ->
+                LocationInfo(
+                    latitude = lat,
+                    longitude = lng,
+                    radius = radius
+                )
+            }
+
             // Filter chips
             FilterChips(
                 selectedStatus = selectedStatus,
@@ -137,7 +123,7 @@ fun DisasterAidListScreen(
             )
 
             // Content
-            when (disasterAids) {
+            when (nearbyAids) {
                 is Resource.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -147,33 +133,68 @@ fun DisasterAidListScreen(
                     }
                 }
                 is Resource.Success -> {
-                    if (filteredAids.isEmpty()) {
-                        if (selectedStatus != null || selectedType != null) {
-                            EmptyFilterState(
-                                onResetFilters = { viewModel.resetFilters() }
-                            )
-                        } else {
-                            EmptyState(
-                                onAddAid = { navController.navigate("add-disaster-aid/$disasterId") }
-                            )
-                        }
+                    val aids = (nearbyAids as Resource.Success<List<DisasterAid>>).data
+                    if (aids.isNullOrEmpty()) {
+                        EmptyStateNearby()
                     } else {
-                        AidList(
-                            aids = filteredAids,
-                            onAidClick = { aid ->
-                                navController.navigate("update-disaster-aid/${aid.id}")
-                            }
-                        )
+                        NearbyAidList(aids = aids)
                     }
                 }
                 is Resource.Error -> {
                     ErrorState(
-                        message = (disasterAids as Resource.Error<List<DisasterAid>>).message ?: "Terjadi kesalahan",
+                        message = (nearbyAids as Resource.Error<List<DisasterAid>>).message ?: "Terjadi kesalahan",
                         onRetry = {
-                            disasterId?.let { viewModel.loadDisasterAids(it) }
+                            currentLocation?.let { (lat, lng) ->
+                                viewModel.loadNearbyAids(lat, lng)
+                            }
                         }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationInfo(
+    latitude: Double,
+    longitude: Double,
+    radius: Double
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.LocationOn,
+                contentDescription = "Lokasi",
+                tint = MaterialTheme.colorScheme.primary
+            )
+            // Spacer removed for compatibility
+            Column {
+                Text(
+                    text = "Lokasi Anda",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "Lat: ${String.format("%.4f", latitude)}, Lng: ${String.format("%.4f", longitude)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "Radius: ${radius}km",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
     }
@@ -250,31 +271,21 @@ private fun FilterChips(
 }
 
 @Composable
-private fun AidList(
-    aids: List<DisasterAid>,
-    onAidClick: (DisasterAid) -> Unit
-) {
+private fun NearbyAidList(aids: List<DisasterAid>) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(aids) { aid ->
-            AidCard(
-                aid = aid,
-                onClick = { onAidClick(aid) }
-            )
+            NearbyAidCard(aid = aid)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AidCard(
-    aid: DisasterAid,
-    onClick: () -> Unit
-) {
+private fun NearbyAidCard(aid: DisasterAid) {
     Card(
-        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -301,6 +312,15 @@ private fun AidCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    if (aid.disasterName != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Bencana: ${aid.disasterName}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
                     if (aid.location != null) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -309,7 +329,7 @@ private fun AidCard(
                                 contentDescription = "Lokasi",
                                 tint = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            // Spacer removed for compatibility
                             Text(
                                 text = aid.location,
                                 style = MaterialTheme.typography.bodySmall,
@@ -322,11 +342,14 @@ private fun AidCard(
                 Column(horizontalAlignment = Alignment.End) {
                     StatusChip(status = aid.status)
 
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     if (aid.distance != null) {
                         Text(
                             text = "${String.format("%.1f", aid.distance)} km",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -388,44 +411,26 @@ private fun StatusChip(status: String) {
 }
 
 @Composable
-private fun EmptyState(onAddAid: () -> Unit) {
+private fun EmptyStateNearby() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Belum ada bantuan yang tersedia",
+            text = "Tidak ada bantuan di sekitar lokasi Anda",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedButton(onClick = onAddAid) {
-            Text("Tambah Bantuan Pertama")
-        }
-    }
-}
-
-@Composable
-private fun EmptyFilterState(onResetFilters: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
         Text(
-            text = "Tidak ada bantuan yang sesuai dengan filter",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = "Coba perbesar radius pencarian atau periksa lokasi Anda",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedButton(onClick = onResetFilters) {
-            Text("Reset Filter")
-        }
     }
 }
 
@@ -448,7 +453,7 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(16.dp))

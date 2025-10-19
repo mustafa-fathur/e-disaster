@@ -1,7 +1,8 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -60,7 +61,7 @@ fun AddDisasterScreen(navController: NavController) {
 
     // State for image picker
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var imageBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(

@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster_history
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

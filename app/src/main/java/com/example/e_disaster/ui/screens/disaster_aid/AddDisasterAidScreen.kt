@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster_aid
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,11 +12,11 @@ import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.AppTopAppBar
 
 @Composable
-fun AddDisasterReportScreen(navController: NavController, disasterId: String?) {
+fun AddDisasterAidScreen(navController: NavController, disasterId: String?) {
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Tambah Perkembangan Bencana",
+                title = "Tambah Bantuan Bencana",
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
@@ -28,7 +28,7 @@ fun AddDisasterReportScreen(navController: NavController, disasterId: String?) {
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Ini halaman form tambah perkembangan bencana dengan ID bencana: $disasterId.")
+            Text("Ini halaman form tambah bantuan bencana dengan ID bencana: $disasterId.")
         }
     }
 }
