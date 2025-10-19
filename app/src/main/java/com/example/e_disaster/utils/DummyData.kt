@@ -1,10 +1,14 @@
 package com.example.e_disaster.utils
 
 import com.example.e_disaster.data.model.DisasterAid
+import com.example.e_disaster.data.model.History
+import com.example.e_disaster.data.model.Participant
 import com.example.e_disaster.data.model.Notification
 import com.example.e_disaster.data.model.NotificationData
 import com.example.e_disaster.data.model.NotificationPriority
 import com.example.e_disaster.data.model.NotificationType
+import androidx.core.telecom.util.ExperimentalAppActions
+
 
 object DummyData {
 
@@ -210,6 +214,77 @@ object DummyData {
             disasterName = "Bencana Surabaya"
         )
     )
+
+    @OptIn(ExperimentalAppActions::class)
+    private val participants1 = listOf(
+        Participant("u1", "Ahmad Budi", "officer", "https://i.pravatar.cc/150?u=a1"),
+        Participant("u2", "Citra Lestari", "volunteer", "https://i.pravatar.cc/150?u=a2"),
+        Participant("u3", "Doni Setiawan", "volunteer", "https://i.pravatar.cc/150?u=a3")
+    )
+
+    @OptIn(ExperimentalAppActions::class)
+    private val participants2 = listOf(
+        Participant("u4", "Eka Putri", "officer", "https://i.pravatar.cc/150?u=a4"),
+        Participant("u5", "Fajar Nugraha", "volunteer", "https://i.pravatar.cc/150?u=a5")
+    )
+
+    val historyList = listOf(
+        History(
+            id = "1",
+            disasterName = "Banjir Bandang Garut",
+            location = "Garut, Jawa Barat",
+            date = "15 Juli 2024",
+            description = "Banjir bandang melanda beberapa wilayah di Garut akibat hujan deras yang terus menerus selama 3 hari.",
+            imageUrl = "https://picsum.photos/seed/banjir/400/400",
+            status = "completed",
+            participants = participants1
+        ),
+        History(
+            id = "2",
+            disasterName = "Tanah Longsor Sukabumi",
+            location = "Sukabumi, Jawa Barat",
+            date = "22 Mei 2024",
+            description = "Tanah longsor terjadi di daerah perbukitan Sukabumi yang mengakibatkan beberapa rumah tertimbun.",
+            imageUrl = "https://picsum.photos/seed/banjir/400/400",
+            status = "completed",
+            participants = participants2
+        ),
+        History(
+            id = "3",
+            disasterName = "Gempa Bumi Cianjur",
+            location = "Cianjur, Jawa Barat",
+            date = "21 November 2023",
+            imageUrl = "https://picsum.photos/seed/banjir/400/400",
+            status = "completed",
+            description = "Gempa bumi berkekuatan 5.6 SR mengguncang wilayah Cianjur, menyebabkan kerusakan pada infrastruktur dan bangunan.",
+            participants = participants1
+        ),
+        History(
+            id = "4",
+            disasterName = "Kekeringan Gunungkidul",
+            location = "Gunungkidul, Yogyakarta",
+            date = "10 Agustus 2023",
+            imageUrl = "https://picsum.photos/seed/banjir/400/400",
+            status = "completed",
+            description = "Kekeringan melanda wilayah Gunungkidul akibat musim kemarau yang berkepanjangan, mengakibatkan krisis air bersih.",
+            participants = participants2
+        ),
+        History(
+            id = "5",
+            disasterName = "Erupsi Gunung Merapi",
+            location = "Sleman, Yogyakarta",
+            date = "11 Maret 2023",
+            imageUrl = "https://picsum.photos/seed/banjir/400/400",
+            status = "completed",
+            description = "Gunung Merapi mengalami erupsi yang mengeluarkan abu vulkanik dan lava, memaksa evakuasi warga sekitar.",
+            participants = participants1
+        )
+    )
+
+    fun getHistoryById(id: String?): History? {
+        if (id == null) return null
+        return historyList.find { it.id == id }
+    }
 
     // Fungsi untuk mendapatkan notifikasi berdasarkan tipe
     fun getNotificationsByType(type: NotificationType): List<Notification> {
