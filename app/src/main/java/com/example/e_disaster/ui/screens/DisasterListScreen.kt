@@ -84,12 +84,11 @@ fun DisasterListScreen(navController: NavHostController) {
 
                 items(dummyDisasters) { disaster ->
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(Modifier.padding(16.dp)) {
-                            // ✅ Gambar dummy
                             AsyncImage(
                                 model = disaster.imageUrl,
                                 contentDescription = disaster.title,
