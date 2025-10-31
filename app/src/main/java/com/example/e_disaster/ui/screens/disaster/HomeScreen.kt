@@ -1,8 +1,6 @@
-package com.example.e_disaster.ui.screens
+package com.example.e_disaster.ui.screens.disaster
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

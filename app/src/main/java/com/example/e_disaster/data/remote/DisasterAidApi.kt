@@ -2,16 +2,20 @@ package com.example.e_disaster.data.remote
 
 import com.example.e_disaster.data.model.CreateDisasterAidRequest
 import com.example.e_disaster.data.model.DisasterAid
+import com.example.e_disaster.data.model.HealthCheckResponse
 import com.example.e_disaster.data.model.UpdateDisasterAidRequest
 import retrofit2.Response
 import retrofit2.http.*
 
 interface DisasterAidApi {
 
+    @GET("health")
+    suspend fun getHealth(): Response<HealthCheckResponse>
+
     /**
      * Mendapatkan daftar bantuan untuk bencana tertentu
      */
-    @GET("v1/disasters/{disasterId}/aids")
+    @GET("disasters/{disasterId}/aids")
     suspend fun getDisasterAids(
         @Path("disasterId") disasterId: String,
         @Query("latitude") latitude: Double? = null,
@@ -24,7 +28,7 @@ interface DisasterAidApi {
     /**
      * Mendapatkan daftar bantuan di sekitar lokasi tertentu (tidak terikat pada bencana tertentu)
      */
-    @GET("v1/aids/nearby")
+    @GET("aids/nearby")
     suspend fun getNearbyAids(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
@@ -36,7 +40,7 @@ interface DisasterAidApi {
     /**
      * Membuat bantuan baru untuk bencana tertentu
      */
-    @POST("v1/disasters/{disasterId}/aids")
+    @POST("disasters/{disasterId}/aids")
     suspend fun createDisasterAid(
         @Path("disasterId") disasterId: String,
         @Body aidRequest: CreateDisasterAidRequest
@@ -45,7 +49,7 @@ interface DisasterAidApi {
     /**
      * Mendapatkan detail bantuan tertentu
      */
-    @GET("v1/disasters/{disasterId}/aids/{aidId}")
+    @GET("disasters/{disasterId}/aids/{aidId}")
     suspend fun getDisasterAid(
         @Path("disasterId") disasterId: String,
         @Path("aidId") aidId: String
@@ -54,7 +58,7 @@ interface DisasterAidApi {
     /**
      * Update bantuan tertentu
      */
-    @PUT("v1/disasters/{disasterId}/aids/{aidId}")
+    @PUT("disasters/{disasterId}/aids/{aidId}")
     suspend fun updateDisasterAid(
         @Path("disasterId") disasterId: String,
         @Path("aidId") aidId: String,
@@ -64,7 +68,7 @@ interface DisasterAidApi {
     /**
      * Hapus bantuan tertentu
      */
-    @DELETE("v1/disasters/{disasterId}/aids/{aidId}")
+    @DELETE("disasters/{disasterId}/aids/{aidId}")
     suspend fun deleteDisasterAid(
         @Path("disasterId") disasterId: String,
         @Path("aidId") aidId: String
@@ -73,7 +77,7 @@ interface DisasterAidApi {
     /**
      * Update status bantuan
      */
-    @PATCH("v1/disasters/{disasterId}/aids/{aidId}/status")
+    @PATCH("disasters/{disasterId}/aids/{aidId}/status")
     suspend fun updateAidStatus(
         @Path("disasterId") disasterId: String,
         @Path("aidId") aidId: String,
