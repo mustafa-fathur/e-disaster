@@ -48,7 +48,7 @@ fun AppTopAppBar(
                 // Show App Logo
                 IconButton(onClick = { /* Logo is not clickable for now */ }) {
                     Image(
-                        painter = painterResource(id = R.drawable.logo),
+                        painter = painterResource(id = R.drawable.app_logo),
                         contentDescription = "App Logo"
                     )
                 }

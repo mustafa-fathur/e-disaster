@@ -17,7 +17,7 @@ import com.example.e_disaster.ui.screens.disaster_victim.DisasterVictimDetailScr
 import com.example.e_disaster.ui.screens.disaster_victim.DisasterVictimListScreen
 import com.example.e_disaster.ui.screens.disaster_history.HistoryDetailScreen
 import com.example.e_disaster.ui.screens.disaster_history.HistoryScreen
-import com.example.e_disaster.ui.screens.HomeScreen
+import com.example.e_disaster.ui.screens.disaster.HomeScreen
 import com.example.e_disaster.ui.screens.auth.LoginScreen
 import com.example.e_disaster.ui.screens.disaster_aid.NearbyAidsScreen
 import com.example.e_disaster.ui.screens.notification.NotificationScreen

@@ -20,14 +20,20 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.e_disaster.ui.viewmodel.HealthViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.R
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    // These 'remember' states will hold the text from the input fields
+fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel = viewModel()) {    // These 'remember' states will hold the text from the input fields
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val healthStatus by healthViewModel.healthStatus.collectAsState()
+
+    LaunchedEffect(Unit) {
+        healthViewModel.checkHealth()
+    }
 
     Column(
         modifier = Modifier
@@ -36,6 +42,15 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        healthStatus?.let {
+            Text("Status: ${it.status}")
+            Text("Message: ${it.message}")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
