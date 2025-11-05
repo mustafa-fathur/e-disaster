@@ -21,8 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.example.e_disaster.ui.components.AppBottomNavBar
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppBottomNavBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.HistoryItem
 import com.example.e_disaster.utils.DummyData.historyList
 

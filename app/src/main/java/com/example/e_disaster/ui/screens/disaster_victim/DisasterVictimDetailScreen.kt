@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 
 @Composable
 fun DisasterVictimDetailScreen(navController: NavController, victimId: String?) {

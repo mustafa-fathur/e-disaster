@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 
 data class Victim(
     val id: String,

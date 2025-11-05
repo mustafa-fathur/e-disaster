@@ -28,8 +28,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.data.model.home.DummyHomeData
-import com.example.e_disaster.ui.components.AppBottomNavBar
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppBottomNavBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.dashboard.DisasterCard
 import com.example.e_disaster.ui.theme.EDisasterTheme
 import androidx.compose.foundation.lazy.items

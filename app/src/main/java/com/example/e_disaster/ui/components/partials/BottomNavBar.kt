@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.components
+package com.example.e_disaster.ui.components.partials
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

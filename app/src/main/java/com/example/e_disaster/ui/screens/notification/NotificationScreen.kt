@@ -49,8 +49,8 @@ import androidx.navigation.NavHostController
 import com.example.e_disaster.data.model.Notification
 import com.example.e_disaster.data.model.NotificationPriority
 import com.example.e_disaster.data.model.NotificationType
-import com.example.e_disaster.ui.components.AppBottomNavBar
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppBottomNavBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.utils.DummyData
 
 @Composable

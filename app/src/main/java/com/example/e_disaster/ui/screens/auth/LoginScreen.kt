@@ -14,16 +14,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.e_disaster.ui.viewmodel.HealthViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.R
+import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
 fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel = viewModel()) {    // These 'remember' states will hold the text from the input fields
@@ -52,17 +58,30 @@ fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel =
         Spacer(modifier = Modifier.height(24.dp))
 
         Image(
-            painter = painterResource(id = R.drawable.logo),
+            painter = painterResource(id = R.drawable.app_logo),
             contentDescription = "Logo",
             modifier = Modifier
                 .size(128.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Selamat datang di e-Disaster",
-            style = MaterialTheme.typography.headlineMedium
+            text = "e-Disaster",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 32.sp
+            ),
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(12.dp)) // Adds space between elements
+
+        Text(
+            text = "Masuk",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontFamily = FontFamily.Default
+            ),
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(24.dp)) // Adds space between elements
@@ -129,4 +148,14 @@ private fun RegisterLink(navController: NavController) {
                 }
         }
     )
+}
+
+@Preview
+@Composable
+private fun LoginScreenPreview() {
+    EDisasterTheme {
+        LoginScreen(
+            navController = NavController(LocalContext.current),
+        )
+    }
 }
