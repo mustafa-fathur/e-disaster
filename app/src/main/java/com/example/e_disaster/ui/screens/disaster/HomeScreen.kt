@@ -58,6 +58,7 @@ fun HomeScreen(navController: NavController) {
         bottomBar = {
             AppBottomNavBar(navController = navController as NavHostController)
         },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
