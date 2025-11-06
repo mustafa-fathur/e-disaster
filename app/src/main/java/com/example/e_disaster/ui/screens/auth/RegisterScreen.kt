@@ -2,6 +2,7 @@
 
 package com.example.e_disaster.ui.screens.auth
 
+import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -24,10 +25,15 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -35,6 +41,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,10 +71,32 @@ fun RegisterScreen(navController: NavController) {
     var address by remember { mutableStateOf("") }
     val genderOptions = listOf("Laki-laki", "Perempuan")
     var selectedGender by remember { mutableStateOf(genderOptions[0]) }
-    var birthDate by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
+    var showDatePicker by remember { mutableStateOf(false) }
+    var birthDate by remember { mutableStateOf("") }
+
+    fun onDateSelected(dateMillis: Long?) {
+        dateMillis?.let {
+            val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
+            birthDate = simpleDateFormat.format(Date(it))
+        }
+    }
+
+    val datePickerColors = DatePickerDefaults.colors(
+        containerColor = MaterialTheme.colorScheme.surface, // Dialog background
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        headlineContentColor = MaterialTheme.colorScheme.primary,
+        weekdayContentColor = MaterialTheme.colorScheme.onSurface,
+        dayContentColor = MaterialTheme.colorScheme.onSurface,
+        selectedDayContainerColor = MaterialTheme.colorScheme.primary, // The selected day's background circle
+        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary, // The number inside the selected day circle
+        todayDateBorderColor = MaterialTheme.colorScheme.primary, // Border around today's date
+        todayContentColor = MaterialTheme.colorScheme.primary, // Today's number
+    )
 
     Scaffold(
         topBar = {
@@ -169,7 +199,44 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedTextField(value = birthDate, onValueChange = { birthDate = it }, label = { Text("Tanggal Lahir") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) })
+                OutlinedTextField(
+                    value = birthDate,
+                    onValueChange = { },
+                    label = { Text("Tanggal Lahir") },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Pilih tanggal")
+                        }
+                    },
+                    readOnly = true,
+                )
+
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            Button(onClick = {
+                                onDateSelected(datePickerState.selectedDateMillis)
+                                showDatePicker = false
+                            },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            ) { Text("OK") }
+                        },
+                        dismissButton = { OutlinedButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                        },
+                        colors = datePickerColors
+                    ) {
+                        DatePicker(
+                            state = datePickerState,
+                            colors = datePickerColors
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(value = reason, onValueChange = { reason = it }, label = { Text("Alasan Bergabung") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.text_fields), contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
@@ -217,5 +284,24 @@ private fun RegisterScreenLight() {
 private fun RegisterScreenDark() {
     EDisasterTheme(darkTheme = true) {
         RegisterScreen(navController = NavController(LocalContext.current))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "Date Picker - Light Mode")
+@Composable
+private fun DatePickerPreviewLight() {
+    EDisasterTheme(darkTheme = false) {
+        // The DatePicker is the component inside the dialog
+        DatePicker(state = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis()))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "Date Picker - Dark Mode")
+@Composable
+private fun DatePickerPreviewDark() {
+    EDisasterTheme(darkTheme = true) {
+        DatePicker(state = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis()))
     }
 }
