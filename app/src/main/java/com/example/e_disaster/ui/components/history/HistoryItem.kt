@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.components
+package com.example.e_disaster.ui.components.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

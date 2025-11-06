@@ -20,6 +20,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.e_disaster.R
@@ -34,14 +36,21 @@ fun AppTopAppBar(
     actions: @Composable (() -> Unit)? = null
 ) {
     TopAppBar(
-        title = { Text(text = title) },
+        title = {
+            Text(
+                text = title,
+                fontFamily = FontFamily.Default,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            ) },
         navigationIcon = {
             if (canNavigateBack) {
                 // Show Back Arrow
                 IconButton(onClick = onNavigateUp) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali"
+                        contentDescription = "Kembali",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             } else {
@@ -63,7 +72,8 @@ fun AppTopAppBar(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile"
+                            contentDescription = "Profile",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -83,7 +93,7 @@ fun AppTopAppBar(
 fun MainTopAppBarPreview() {
     EDisasterTheme {
         AppTopAppBar(
-            title = "Beranda",
+            title = "e-Disaster",
             canNavigateBack = false,
             onNavigateUp = {}
         )
@@ -114,13 +124,13 @@ fun DetailWithEditActionPreview() {
                 TextButton(
                     onClick = { /* TODO: Handle edit click */ },
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.tertiary
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Ubah",
-                        tint = MaterialTheme.colorScheme.tertiary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Edit")

@@ -3,19 +3,38 @@
 package com.example.e_disaster.ui.screens.auth
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,121 +42,180 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.e_disaster.R
+import com.example.e_disaster.ui.theme.EDisasterTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var nik by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    val genderOptions = listOf("Laki-laki", "Perempuan")
+    var selectedGender by remember { mutableStateOf(genderOptions[0]) }
+    var birthDate by remember { mutableStateOf("") }
+    var reason by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Logo",
-            modifier = Modifier.size(128.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Daftar Akun",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = {Text("Nama")},
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = {Text("Email")},
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = {Text("Password")},
-            modifier = Modifier
-                .fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = {Text("Konfirmasi Password")},
-            modifier = Modifier
-                .fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { /* Register logic */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-        ) {
-            Text("Daftar")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
         }
+    ) { paddingValues ->
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Image(
+                    painter = painterResource(
+                        id = if (isSystemInDarkTheme()) {
+                            R.drawable.dark_app_logo
+                        } else {
+                            R.drawable.app_logo
+                        }
+                    ),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(100.dp)
+                )
 
-        LoginLink(navController = navController)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "e-Disaster",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontFamily = FontFamily.Monospace
+                    ),
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Daftar Relawan",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = FontFamily.Default
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Form Fields
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Lengkap") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = nik, onValueChange = { nik = it }, label = { Text("NIK") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.id_card), contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Nomor Telepon") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Alamat") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Gender Selection
+                Text("Jenis Kelamin", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth())
+                Row(Modifier.fillMaxWidth()) {
+                    genderOptions.forEach { text ->
+                        Row(
+                            Modifier
+                                .selectable(
+                                    selected = (text == selectedGender),
+                                    onClick = { selectedGender = text }
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (text == selectedGender),
+                                onClick = { selectedGender = text }
+                            )
+                            Text(text = text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 8.dp))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(value = birthDate, onValueChange = { birthDate = it }, label = { Text("Tanggal Lahir") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = reason, onValueChange = { reason = it }, label = { Text("Alasan Bergabung") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.text_fields), contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Konfirmasi Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = { /* TODO: Register logic */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text("Daftar", fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "⚠\uFE0F Akun Anda akan ditinjau oleh admin sebelum diaktifkan",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+            }
+        }
     }
 }
 
+@Preview(showBackground = true, name = "Light Mode")
 @Composable
-private fun LoginLink(navController: NavController) {
-    val annotatedText = buildAnnotatedString {
-        append("Sudah punya akun? ")
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-            pushStringAnnotation(tag = "LOGIN", annotation = "login")
-            append("Masuk")
-            pop()
-        }
+private fun RegisterScreenLight() {
+    EDisasterTheme(darkTheme = false) {
+        RegisterScreen(navController = NavController(LocalContext.current))
     }
+}
 
-    ClickableText(
-        text = annotatedText,
-        onClick = { offset ->
-            annotatedText.getStringAnnotations(tag = "LOGIN", start = offset, end = offset)
-                .firstOrNull()?.let {
-                    navController.navigate("login") {
-                        popUpTo("login") {inclusive = true}
-                    }
-                }
-        }
-    )
+@Preview(showBackground = true, name = "Dark Mode")
+@Composable
+private fun RegisterScreenDark() {
+    EDisasterTheme(darkTheme = true) {
+        RegisterScreen(navController = NavController(LocalContext.current))
+    }
 }

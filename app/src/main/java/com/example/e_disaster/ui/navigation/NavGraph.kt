@@ -1,11 +1,13 @@
 package com.example.e_disaster.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.e_disaster.ui.screens.Welcome
 import com.example.e_disaster.ui.screens.disaster_aid.AddDisasterAidScreen
 import com.example.e_disaster.ui.screens.disaster_report.AddDisasterReportScreen
 import com.example.e_disaster.ui.screens.disaster.AddDisasterScreen
@@ -27,14 +29,25 @@ import com.example.e_disaster.ui.screens.disaster_aid.UpdateDisasterAidScreen
 import com.example.e_disaster.ui.screens.disaster_report.UpdateDisasterReportScreen
 import com.example.e_disaster.ui.screens.disaster.UpdateDisasterScreen
 import com.example.e_disaster.ui.screens.disaster_victim.UpdateDisasterVictimScreen
+import kotlinx.coroutines.delay
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "welcome"
     ) {
+        composable("welcome") {
+            Welcome()
+            LaunchedEffect(Unit) {
+                delay(3000) // 3 seconds delay
+                navController.navigate("login") {
+                    popUpTo("welcome") { inclusive = true }
+                }
+            }
+        }
+
         composable("login") {
             LoginScreen(navController = navController)
         }
