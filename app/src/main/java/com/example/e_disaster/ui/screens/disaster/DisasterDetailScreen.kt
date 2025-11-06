@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -27,7 +30,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,6 +78,11 @@ data class FabMenuItem(
     val label: String,
     val onClick: () -> Unit
 )
+
+// Mock Data Classes for list items
+data class ReportItem(val id: String, val title: String, val date: String)
+data class VictimItem(val id: String, val name: String, val status: String)
+data class AidItem(val id: String, val type: String, val amount: String)
 
 @Composable
 fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
@@ -142,12 +152,16 @@ fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+            // Use a different scroll modifier depending on content
         ) {
             if (isAssigned) {
+                // Scroll is handled inside each tab's LazyColumn
                 AssignedDisasterContent(navController, disasterId)
             } else {
-                UnassignedDisasterContent(onJoinClick = { showJoinDialog = true })
+                // Unassigned content is shorter and can use a simple column scroll
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    UnassignedDisasterContent(onJoinClick = { showJoinDialog = true })
+                }
             }
         }
 
@@ -165,10 +179,6 @@ fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
 
 /**
  * A Speed Dial Floating Action Button that expands to show multiple menu items.
- *
- * @param isExpanded The current state of the menu (expanded or collapsed).
- * @param onFabClick Lambda to toggle the expansion state.
- * @param items The list of [FabMenuItem] to display when expanded.
  */
 @Composable
 fun SpeedDialFab(
@@ -182,7 +192,6 @@ fun SpeedDialFab(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Animated visibility for the menu items
         AnimatedVisibility(
             visible = isExpanded,
             enter = fadeIn(),
@@ -198,7 +207,6 @@ fun SpeedDialFab(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.clickable(onClick = item.onClick)
                     ) {
-                        // Text label next to the small FAB
                         Card(
                             shape = CircleShape,
                             colors = CardDefaults.cardColors(
@@ -214,7 +222,6 @@ fun SpeedDialFab(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                             )
                         }
-                        // Small FAB for the menu item
                         SmallFloatingActionButton(
                             onClick = item.onClick,
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -249,34 +256,21 @@ fun SpeedDialFab(
 
 @Composable
 fun UnassignedDisasterContent(onJoinClick: () -> Unit) {
-    // --- Sample list of images ---
-    val images = listOf(
-        R.drawable.placeholder,
-        R.drawable.placeholder,
-        R.drawable.placeholder
-    )
+    val images = listOf(R.drawable.placeholder, R.drawable.placeholder, R.drawable.placeholder)
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // --- Use the new ImageSlider component ---
         ImageSlider(images = images)
-
-        // A new inner Column holds the padded content
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))
-            // Disaster Info Card
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
                     Text("Gempa Bumi Cianjur", style = MaterialTheme.typography.titleLarge)
                     Text("Gempa bumi berkekuatan 5.6 SR mengguncang wilayah Cianjur dan sekitarnya", style = MaterialTheme.typography.bodyMedium)
-                    // Add more details as needed
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Join Action Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
@@ -303,75 +297,125 @@ fun UnassignedDisasterContent(onJoinClick: () -> Unit) {
     }
 }
 
-// --- AssignedDisasterContent is largely the same, just the top level Column is changed ---
 @Composable
 fun AssignedDisasterContent(navController: NavController, disasterId: String?) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Identitas", "Laporan", "Korban", "Bantuan")
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    // Mock data for the lists
+    val reports = listOf(ReportItem("r1", "Kondisi Terkini", "12 Nov 2025"), ReportItem("r2", "Kerusakan Infrastruktur", "11 Nov 2025"))
+    val victims = listOf(VictimItem("v1", "Budi Santoso", "Luka Ringan"), VictimItem("v2", "Siti Aminah", "Hilang"))
+    val aids = listOf(AidItem("a1", "Makanan", "100 dus"), AidItem("a2", "Pakaian", "50 karung"))
 
-        // 2. Replace ScrollableTabRow with TabRow
+    Column(modifier = Modifier.fillMaxSize()) {
         TabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = MaterialTheme.colorScheme.surface,
-            // 1. Remove contentColor from the TabRow to allow individual Tab colors
         ) {
             tabs.forEachIndexed { index, title ->
-                val isSelected = selectedTabIndex == index
                 Tab(
-                    selected = isSelected,
+                    selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
                     text = { Text(title) },
-                    // 2. Set colors conditionally on each Tab
                     selectedContentColor = MaterialTheme.colorScheme.primary,
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
         }
 
-        // --- Content for each tab would go here ---
-        // This part remains the same
         when (selectedTabIndex) {
             0 -> IdentityTabContent()
-            1 -> Text("Content for Laporan", Modifier.padding(16.dp)) // Placeholder
-            2 -> Text("Content for Korban", Modifier.padding(16.dp))   // Placeholder
-            3 -> Text("Content for Bantuan", Modifier.padding(16.dp))  // Placeholder
+            1 -> ReportsTabContent(navController, reports)
+            2 -> VictimsTabContent(navController, victims)
+            3 -> AidsTabContent(navController, aids)
         }
     }
 }
 
 @Composable
 fun IdentityTabContent() {
-    // --- Sample list of images ---
-    val images = listOf(
-        R.drawable.placeholder,
-        R.drawable.placeholder,
-        R.drawable.placeholder
-    )
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // --- Use the new ImageSlider component ---
+    val images = listOf(R.drawable.placeholder, R.drawable.placeholder, R.drawable.placeholder)
+    // Use verticalScroll as content is static and of a known size
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         ImageSlider(images = images)
-
-        // Rest of the content is in a new, padded Column
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Gempa Bumi Cianjur", style = MaterialTheme.typography.titleLarge)
                     Text("Gempa bumi berkekuatan 5.6 SR mengguncang wilayah Cianjur dan sekitarnya", style = MaterialTheme.typography.bodyMedium)
-                    // Add more details...
                 }
             }
         }
     }
 }
 
+@Composable
+fun ReportsTabContent(navController: NavController, reports: List<ReportItem>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(reports) { report ->
+            ListItemCard(
+                title = report.title,
+                subtitle = report.date,
+                onClick = { navController.navigate("disaster-report-detail/${report.id}") }
+            )
+        }
+    }
+}
+
+@Composable
+fun VictimsTabContent(navController: NavController, victims: List<VictimItem>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(victims) { victim ->
+            ListItemCard(
+                title = victim.name,
+                subtitle = victim.status,
+                onClick = { navController.navigate("disaster-victim-detail/${victim.id}") }
+            )
+        }
+    }
+}
+
+@Composable
+fun AidsTabContent(navController: NavController, aids: List<AidItem>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(aids) { aid ->
+            ListItemCard(
+                title = aid.type,
+                subtitle = aid.amount,
+                onClick = { navController.navigate("disaster-aid-detail/${aid.id}") }
+            )
+        }
+    }
+}
+
+@Composable
+fun ListItemCard(title: String, subtitle: String, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+        }
+    }
+}
+
 /**
  * A reusable composable for a slideable image gallery with dot indicators.
- * @param images A list of drawable resource IDs for the images.
  */
 @Composable
 fun ImageSlider(images: List<Int>) {
@@ -382,7 +426,6 @@ fun ImageSlider(images: List<Int>) {
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        // --- Horizontal Pager for Images ---
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
@@ -394,8 +437,6 @@ fun ImageSlider(images: List<Int>) {
                 modifier = Modifier.fillMaxSize()
             )
         }
-
-        // --- Dot Indicators ---
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -416,7 +457,6 @@ fun ImageSlider(images: List<Int>) {
     }
 }
 
-
 @Composable
 fun JoinConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
@@ -436,6 +476,7 @@ fun JoinConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     )
 }
 
+// Previews
 @Preview(showBackground = true, name = "Unassigned Light")
 @Composable
 fun DisasterDetailLight() {

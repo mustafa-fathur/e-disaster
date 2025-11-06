@@ -28,6 +28,8 @@ import com.example.e_disaster.ui.screens.auth.RegisterScreen
 import com.example.e_disaster.ui.screens.disaster_aid.UpdateDisasterAidScreen
 import com.example.e_disaster.ui.screens.disaster_report.UpdateDisasterReportScreen
 import com.example.e_disaster.ui.screens.disaster.UpdateDisasterScreen
+import com.example.e_disaster.ui.screens.disaster_aid.DisasterAidDetailScreen
+import com.example.e_disaster.ui.screens.disaster_report.DisasterReportDetailScreen
 import com.example.e_disaster.ui.screens.disaster_victim.UpdateDisasterVictimScreen
 import kotlinx.coroutines.delay
 
@@ -115,6 +117,14 @@ fun NavGraph() {
         }
 
         composable(
+            "disaster-report-detail/{reportId}",
+            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reportId = backStackEntry.arguments?.getString("reportId")
+            DisasterReportDetailScreen(navController = navController, reportId = reportId)
+        }
+
+        composable(
             route = "update-disaster-report/{reportId}",
             arguments = listOf(navArgument("reportId") { type = NavType.StringType })
         ) { backStackEntry ->
@@ -168,6 +178,14 @@ fun NavGraph() {
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
             AddDisasterAidScreen(navController = navController, disasterId = disasterId)
+        }
+
+        composable(
+            "disaster-aid-detail/{aidId}",
+            arguments = listOf(navArgument("aidId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val aidId = backStackEntry.arguments?.getString("aidId")
+            DisasterAidDetailScreen(navController = navController, aidId = aidId)
         }
 
         composable(
