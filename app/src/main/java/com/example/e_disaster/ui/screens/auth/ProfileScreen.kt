@@ -3,7 +3,6 @@ package com.example.e_disaster.ui.screens.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +29,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,6 +47,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.R
+import com.example.e_disaster.ui.components.badges.UserStatusBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
@@ -77,7 +76,7 @@ fun ProfileScreen(navController: NavController) {
                 name = "Ahmad Rizki Pratama",
                 email = "ahmad.rizki@example.com",
                 role = "Relawan",
-                status = "Aktif"
+                status = "active"
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -175,34 +174,12 @@ fun ProfileHeaderCard(name: String, email: String, role: String, status: String)
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
-                    StatusBadge(text = status)
+                    UserStatusBadge(status = status)
                 }
             }
         }
     }
 }
-
-@Composable
-fun StatusBadge(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-    ) {
-        Surface(
-            color = Color(0xFFE8F5E9), // A light green color
-            shape = MaterialTheme.shapes.small
-        ) {
-            Text(
-                text = text,
-                color = Color(0xFF2E7D32), // A dark green color
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
-
 
 @Composable
 fun PersonalInfoCard() {

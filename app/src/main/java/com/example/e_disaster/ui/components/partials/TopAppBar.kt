@@ -1,6 +1,7 @@
 package com.example.e_disaster.ui.components.partials
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,7 +58,13 @@ fun AppTopAppBar(
                 // Show App Logo
                 IconButton(onClick = { /* Logo is not clickable for now */ }) {
                     Image(
-                        painter = painterResource(id = R.drawable.app_logo),
+                        painter = painterResource(
+                            id = if (isSystemInDarkTheme()) {
+                                R.drawable.dark_app_logo
+                            } else {
+                                R.drawable.app_logo
+                            }
+                        ),
                         contentDescription = "App Logo"
                     )
                 }
