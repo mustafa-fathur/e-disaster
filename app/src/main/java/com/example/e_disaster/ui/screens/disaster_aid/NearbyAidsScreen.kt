@@ -44,7 +44,7 @@ import androidx.navigation.NavController
 import com.example.e_disaster.data.model.AidStatus
 import com.example.e_disaster.data.model.AidType
 import com.example.e_disaster.data.model.DisasterAid
-import com.example.e_disaster.ui.components.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.viewmodel.DisasterAidViewModel
 import com.example.e_disaster.utils.Resource
 

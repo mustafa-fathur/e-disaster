@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.components.dashboard
+package com.example.e_disaster.ui.screens.home.dashboard
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

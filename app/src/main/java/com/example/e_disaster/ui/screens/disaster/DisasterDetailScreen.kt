@@ -1,49 +1,79 @@
 package com.example.e_disaster.ui.screens.disaster
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.e_disaster.ui.components.AppTopAppBar
+import androidx.navigation.compose.rememberNavController
+import com.example.e_disaster.R
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
+import com.example.e_disaster.ui.screens.disaster.detail.AssignedDisasterContent
+import com.example.e_disaster.ui.screens.disaster.detail.JoinConfirmationDialog
+import com.example.e_disaster.ui.screens.disaster.detail.UnassignedDisasterContent
+import com.example.e_disaster.ui.screens.disaster.detail.components.SpeedDialFab
+import com.example.e_disaster.ui.theme.EDisasterTheme
+
+// --- DATA CLASSES (can be moved to a 'model' or 'domain' package later) ---
+data class FabMenuItem(
+    val icon: ImageVector? = null,
+    val iconPainter: Painter? = null,
+    val label: String,
+    val onClick: () -> Unit
+)
+data class ReportItem(val id: String, val title: String, val date: String)
+data class VictimItem(val id: String, val name: String, val status: String)
+data class AidItem(val id: String, val type: String, val amount: String)
+// -------------------------------------------------------------------------
 
 @Composable
 fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
-    val reportId = "coba-coba-le-2026"
+    val isAssigned by remember(disasterId) { mutableStateOf(disasterId == "2") }
+    var showJoinDialog by remember { mutableStateOf(false) }
+    var isFabMenuExpanded by remember { mutableStateOf(false) }
+
+    val fabMenuItems = listOf(
+        FabMenuItem(
+            iconPainter = painterResource(id = R.drawable.id_card),
+            label = "Tambah Laporan",
+            onClick = { navController.navigate("add-disaster-report/$disasterId") }
+        ),
+        FabMenuItem(
+            icon = Icons.Default.Person,
+            label = "Tambah Data Korban",
+            onClick = { navController.navigate("add-disaster-victim/$disasterId") }
+        ),
+        FabMenuItem(
+            iconPainter = painterResource(id = R.drawable.package_box),
+            label = "Tambah Data Bantuan",
+            onClick = { navController.navigate("add-disaster-aid/$disasterId") }
+        )
+    )
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -51,139 +81,89 @@ fun DisasterDetailScreen(navController: NavController, disasterId: String?) {
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
-                    TextButton(
-                        onClick = {
-                            navController.navigate("update-disaster/$disasterId")
-                        }, colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.tertiary
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Ubah",
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Ubah")
+                    if (isAssigned) {
+                        TextButton(
+                            onClick = { navController.navigate("update-disaster/$disasterId") },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Ubah",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Ubah")
+                        }
                     }
                 }
             )
         },
-        bottomBar = {
-            DisasterDetailBottomBar(
-                onVictimClick = {
-                    navController.navigate("disaster-victim-list/$disasterId")
-                },
-                onMapClick = { /* TODO: Navigate to map view */ },
-                onAidClick = {
-                    navController.navigate("disaster-aid-list/$disasterId")
-                }
-            )
-        }
+        floatingActionButton = {
+            if (isAssigned) {
+                SpeedDialFab(
+                    isExpanded = isFabMenuExpanded,
+                    onFabClick = { isFabMenuExpanded = !isFabMenuExpanded },
+                    items = fabMenuItems
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxSize()
         ) {
-            Text("Ini halaman detail bencana dengan ID bencana: $disasterId.")
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                navController.navigate("add-disaster-report/$disasterId")
-            }) {
-                Text("Tambah Laporan Perkembangan Bencana")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                navController.navigate("update-disaster-report/$reportId")
-            }) {
-                Text("Ubah Laporan Perkembangan Bencana")
-            }
-        }
-    }
-}
-
-@Composable
-private fun DisasterDetailBottomBar(
-    onVictimClick: () -> Unit,
-    onMapClick: () -> Unit,
-    onAidClick: () -> Unit
-) {
-    BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            DetailBottomNavItem(
-                label = "Daftar Korban",
-                icon = Icons.Default.Person,
-                onClick = onVictimClick
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .clickable(onClick = onMapClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.surface
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "Lihat Peta"
-                        )
-                    }
+            if (isAssigned) {
+                AssignedDisasterContent(navController, disasterId)
+            } else {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    UnassignedDisasterContent(onJoinClick = { showJoinDialog = true })
                 }
             }
+        }
 
-            DetailBottomNavItem(
-                label = "Daftar Bantuan",
-                icon = Icons.Default.Favorite,
-                onClick = onAidClick
+        if (showJoinDialog) {
+            JoinConfirmationDialog(
+                onConfirm = {
+                    showJoinDialog = false
+                    // TODO: In a real app, call ViewModel to join, then refresh state to `isAssigned = true`
+                },
+                onDismiss = { showJoinDialog = false }
             )
         }
     }
 }
 
+@Preview(showBackground = true, name = "Unassigned Light")
 @Composable
-private fun RowScope.DetailBottomNavItem(
-    label: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .weight(1f)
-            .height(56.dp)
-            .clickable(onClick = onClick)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = Color.Gray
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray
-        )
+fun DisasterDetailUnassignedPreview() {
+    EDisasterTheme(darkTheme = false) {
+        DisasterDetailScreen(navController = rememberNavController(), disasterId = "1")
     }
 }
 
+@Preview(showBackground = true, name = "Unassigned Dark")
+@Composable
+fun DisasterDetailUnassignedDarkPreview() {
+    EDisasterTheme(darkTheme = true) {
+        DisasterDetailScreen(navController = rememberNavController(), disasterId = "1")
+    }
+}
+
+@Preview(showBackground = true, name = "Assigned Light")
+@Composable
+fun DisasterDetailAssignedPreview() {
+    EDisasterTheme(darkTheme = false) {
+        DisasterDetailScreen(navController = rememberNavController(), disasterId = "2")
+    }
+}
+
+@Preview(showBackground = true, name = "Assigned Dark")
+@Composable
+fun DisasterDetailAssignedDarkPreview() {
+    EDisasterTheme(darkTheme = true) {
+        DisasterDetailScreen(navController = rememberNavController(), disasterId = "2")
+    }
+}
