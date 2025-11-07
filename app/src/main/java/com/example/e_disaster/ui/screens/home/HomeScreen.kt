@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.screens.disaster
+package com.example.e_disaster.ui.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,7 +30,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.data.model.home.DummyHomeData
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.components.dashboard.DisasterCard
+import com.example.e_disaster.ui.screens.home.dashboard.DisasterCard
 import com.example.e_disaster.ui.theme.EDisasterTheme
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
