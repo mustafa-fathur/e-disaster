@@ -2,59 +2,62 @@
 
 package com.example.e_disaster.ui.features.auth.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.theme.EDisasterTheme
-import com.example.e_disaster.ui.features.HealthViewModel
 
 @Composable
-fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel = viewModel()) {    // These 'remember' states will hold the text from the input fields
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val healthStatus by healthViewModel.healthStatus.collectAsState()
+fun LoginScreen(
+    navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel() // Use Hilt to get the ViewModel
+) {
+    // Collect the UI state from the ViewModel
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        healthViewModel.checkHealth()
+    // This effect runs when the uiState changes to Success or Error
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is LoginUiState.Success -> {
+                // Navigate to home and clear the back stack so the user can't go back to login
+                navController.navigate("home") {
+                    popUpTo(0)
+                }
+            }
+            is LoginUiState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
+            else -> {} // Do nothing for Idle or Loading states
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -65,54 +68,39 @@ fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel =
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            healthStatus?.let {
-                Text("Status: ${it.status}")
-                Text("Message: ${it.message}")
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
+            Text(
+                text = viewModel.healthCheckMessage,
+                color = if (viewModel.healthCheckMessage.contains("API Error")) Color.Red else Color.Gray,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             Image(
                 painter = painterResource(
-                    id = if (isSystemInDarkTheme()) {
-                        R.drawable.dark_app_logo
-                    } else {
-                        R.drawable.app_logo
-                    }
+                    id = if (isSystemInDarkTheme()) R.drawable.dark_app_logo else R.drawable.app_logo
                 ),
                 contentDescription = "Logo",
-                modifier = Modifier
-                    .size(128.dp)
+                modifier = Modifier.size(128.dp)
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = "e-Disaster",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 32.sp
-                ),
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
                 color = MaterialTheme.colorScheme.primary
             )
-
-            Spacer(modifier = Modifier.height(12.dp)) // Adds space between elements
-
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Masuk",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.Default
-                ),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default),
                 color = MaterialTheme.colorScheme.onSurface
             )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp)) // Adds space between elements
-
-            // Email Text Field
+            // Email Text Field - Now connected to the ViewModel
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = viewModel.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
@@ -121,58 +109,57 @@ fun LoginScreen(navController: NavController, healthViewModel: HealthViewModel =
                         contentDescription = "Email Icon",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
-                }
+                },
+                isError = uiState is LoginUiState.Error // Highlight field on error
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Password Text Field
+            // Password Text Field - Now connected to the ViewModel
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = viewModel.password,
+                onValueChange = { viewModel.onPasswordChange(it) },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Email Icon",
+                        contentDescription = "Password Icon",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 },
-                supportingText = {
-                    Text(text = "Lupa Password?", color = MaterialTheme.colorScheme.primary)
-                }
+                isError = uiState is LoginUiState.Error // Highlight field on error
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login Button
+            // Login Button - Now connected to the ViewModel
             Button(
-                onClick = {
-                    /* TODO: Login logic, sekarang direct ke home screen aja langsung... */
-                    navController.navigate("home") {
-                        popUpTo(0)
-                    }
-                },
+                onClick = { viewModel.loginUser() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(48.dp),
+                enabled = uiState !is LoginUiState.Loading // Disable button while loading
             ) {
-                Text("Masuk")
+                if (uiState is LoginUiState.Loading) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                } else {
+                    Text("Masuk")
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
             RegisterLink(navController = navController)
         }
     }
 }
 
+// RegisterLink and Previews remain the same
 @Composable
 private fun RegisterLink(navController: NavController) {
     val annotatedText = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)){
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
             append("Belum punya akun? ")
         }
         withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {

@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.auth
+package com.example.e_disaster.ui.features.auth.profile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
@@ -54,7 +55,7 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -106,6 +107,8 @@ fun ProfileScreen(navController: NavController) {
 
             Button(
                 onClick = {
+                    // --- THIS IS THE KEY CHANGE ---
+                    viewModel.logout() // Call the logout function from the ViewModel
                     navController.navigate("login") {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
