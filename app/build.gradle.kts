@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -39,6 +41,10 @@ android {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -60,6 +66,20 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    // Hilt for Dependency Injection
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    // Hilt and Jetpack Compose Integration
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    // Lifecycle ViewModel KTX (for viewModelScope and Hilt injection)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+
+    // Jetpack DataStore for storing the auth token
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     implementation(libs.volley)
     implementation(libs.androidx.core.telecom)
     implementation(libs.androidx.media3.exoplayer)

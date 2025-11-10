@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "https://bekendisaster.siunand.my.id/api/v1/" // Changed to local development API
+    private const val BASE_URL = "http://localhost:8000/api/v1/" // Changed to local development API
 
     private val gson: Gson = GsonBuilder()
         .setLenient()
