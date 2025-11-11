@@ -46,7 +46,7 @@ data class FabMenuItem(
     val onClick: () -> Unit
 )
 data class ReportItem(val id: String, val title: String, val date: String)
-data class VictimItem(val id: String, val name: String, val status: String)
+data class VictimItem(val id: String, val name: String, val description: String, val status: String, val isEvacuated: Boolean)
 data class AidItem(val id: String, val type: String, val amount: String)
 // -------------------------------------------------------------------------
 

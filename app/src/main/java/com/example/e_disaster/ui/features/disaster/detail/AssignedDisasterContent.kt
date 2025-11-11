@@ -3,12 +3,12 @@ package com.example.e_disaster.ui.features.disaster.detail
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow // <-- IMPORT a non-deprecated TabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf // <-- Use mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,15 +23,22 @@ import com.example.e_disaster.ui.features.disaster.detail.tabs.VictimsTabContent
 
 @Composable
 fun AssignedDisasterContent(navController: NavController, disasterId: String?) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    // Use mutableIntStateOf for primitive types like Int for better performance
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Identitas", "Laporan", "Korban", "Bantuan")
 
+    // The disasterId is passed down for potential use in fetching data for these tabs
+    // In a real app, you'd pass this disasterId to a ViewModel.
     val reports = listOf(ReportItem("r1", "Kondisi Terkini", "12 Nov 2025"), ReportItem("r2", "Kerusakan Infrastruktur", "11 Nov 2025"))
-    val victims = listOf(VictimItem("v1", "Budi Santoso", "Luka Ringan"), VictimItem("v2", "Siti Aminah", "Hilang"))
+    val victims = listOf(
+        VictimItem("v1", "Budi Santoso", "Luka ringan di kaki akibat reruntuhan", "minor_injury", true),
+        VictimItem("v2", "Siti Aminah", "Belum ditemukan sejak kejadian bencana", "lost", false)
+    )
     val aids = listOf(AidItem("a1", "Makanan", "100 dus"), AidItem("a2", "Pakaian", "50 karung"))
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(
+        // Use PrimaryTabRow instead of the deprecated TabRow
+        PrimaryTabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
