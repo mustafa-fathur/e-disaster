@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -39,6 +41,10 @@ android {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -49,10 +55,20 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
-    implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // Hilt for Dependency Injection
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.core.telecom)
+    kapt(libs.hilt.compiler)
+
+    // Hilt and Jetpack Compose Integration
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Lifecycle ViewModel KTX (for viewModelScope and Hilt injection)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     // Networking dependencies
     implementation(libs.retrofit)
@@ -60,9 +76,17 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
-    implementation(libs.volley)
-    implementation(libs.androidx.core.telecom)
-    implementation(libs.androidx.media3.exoplayer)
+
+    // Image loading
+    implementation(libs.coil.compose)
+
+    // Jetpack DataStore for storing the auth token
+    implementation(libs.androidx.datastore.preferences)
+
+// Don't need for now
+//    implementation(libs.volley)
+//    implementation(libs.androidx.core.telecom)
+//    implementation(libs.androidx.media3.exoplayer)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

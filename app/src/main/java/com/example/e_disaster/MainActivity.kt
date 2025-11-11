@@ -10,7 +10,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.e_disaster.ui.navigation.NavGraph
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
