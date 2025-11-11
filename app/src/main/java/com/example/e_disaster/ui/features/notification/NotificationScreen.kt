@@ -19,14 +19,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.e_disaster.data.model.Notification
@@ -51,28 +50,30 @@ import com.example.e_disaster.data.model.NotificationPriority
 import com.example.e_disaster.data.model.NotificationType
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.MainViewModel
 import com.example.e_disaster.utils.DummyData
 
 @Composable
-fun NotificationScreen(navController: NavController) {
+fun NotificationScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel = hiltViewModel()
+) {
     var selectedFilter by remember { mutableStateOf<NotificationType?>(null) }
     val notifications = remember(selectedFilter) {
         selectedFilter?.let { DummyData.getNotificationsByType(it) } ?: DummyData.dummyNotifications
     }
 
+    val user = mainViewModel.user
+
     Scaffold(
         topBar = {
             AppTopAppBar(
                 title = "Notifikasi",
+                profilePictureUrl = user?.profilePicture,
                 canNavigateBack = false,
-                actions = {
-                    IconButton(onClick = { navController.navigate("profile") }) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile"
-                        )
-                    }
-                }
+                onProfileClick = {
+                    navController.navigate("profile")
+                },
             )
         },
         bottomBar = {

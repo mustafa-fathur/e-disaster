@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.auth.profile
+package com.example.e_disaster.ui.components.partials
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,48 +10,30 @@ import com.example.e_disaster.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import java.io.IOException
-import retrofit2.HttpException
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
+    // This will hold the user data that can be observed by any screen.
     var user by mutableStateOf<User?>(null)
         private set
 
-    var isLoading by mutableStateOf(true)
-        private set
-
-    var errorMessage by mutableStateOf<String?>(null)
-        private set
-
     init {
+        // Fetch the user profile as soon as this ViewModel is created.
         fetchUserProfile()
     }
 
     private fun fetchUserProfile() {
-        isLoading = true
-        errorMessage = null
         viewModelScope.launch {
             try {
+                // We re-use the same repository function from ProfileViewModel
                 user = authRepository.getProfile()
-            } catch (e: HttpException) {
-                errorMessage = "API Error: ${e.code()} - ${e.message()}"
-            } catch (e: IOException) {
-                errorMessage = "Network Error: ${e.message}"
             } catch (e: Exception) {
-                errorMessage = "An Error Occurred: ${e.message}"
-            } finally {
-                isLoading = false
+                // Handle error if needed, e.g., by setting a default user or error state
+                user = null
             }
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.logout()
         }
     }
 }
