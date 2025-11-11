@@ -72,7 +72,11 @@ class AuthRepository @Inject constructor(
             address = dto.address ?: "Tidak ada data",
             dateOfBirth = formattedDate,
             gender = if (dto.gender == false) "Laki-laki" else "Perempuan",
-            profilePicture = dto.profilePicture ?: "Tidak ada data"
+            profilePicture = if (dto.profilePicture != null) {
+                "http://10.0.2.2:8000" + dto.profilePicture.url
+            } else {
+                "Tidak ada data"
+            }
         )
     }
 }

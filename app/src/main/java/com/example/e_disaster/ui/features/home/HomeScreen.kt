@@ -35,24 +35,27 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.e_disaster.ui.components.partials.MainViewModel
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel = hiltViewModel()
+) {
     val dummy = DummyHomeData
+
+    val user = mainViewModel.user
 
     Scaffold(
         topBar = {
             AppTopAppBar(
                 title = "Beranda",
+                profilePictureUrl = user?.profilePicture,
                 canNavigateBack = false,
-                actions = {
-                    IconButton(onClick = { navController.navigate("profile") }) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile"
-                        )
-                    }
-                }
+                onProfileClick = {
+                    navController.navigate("profile")
+                },
             )
         },
         bottomBar = {

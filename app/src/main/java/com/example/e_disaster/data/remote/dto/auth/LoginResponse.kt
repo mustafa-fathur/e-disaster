@@ -12,6 +12,14 @@ data class ProfileResponse(
     val user: UserDto
 )
 
+data class PictureDto(
+    @SerializedName("id")
+    val id: String,
+
+    @SerializedName("url")
+    val url: String
+)
+
 data class UserDto(
     val id: String,
     val name: String,
@@ -25,5 +33,5 @@ data class UserDto(
     @SerializedName("date_of_birth")
     val dateOfBirth: String?,
     @SerializedName("profile_picture")
-    val profilePicture: String?
+    val profilePicture: PictureDto?
 )

@@ -4,8 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,11 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
+import com.example.e_disaster.ui.components.partials.MainViewModel
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 data class Disaster(
@@ -29,7 +29,10 @@ data class Disaster(
 )
 
 @Composable
-fun DisasterListScreen(navController: NavHostController) {
+fun DisasterListScreen(
+    navController: NavHostController,
+    mainViewModel: MainViewModel = hiltViewModel()
+) {
 
     val dummyDisasters = listOf(
         Disaster(
@@ -48,19 +51,17 @@ fun DisasterListScreen(navController: NavHostController) {
         )
     )
 
+    val user = mainViewModel.user
+
     Scaffold(
         topBar = {
             AppTopAppBar(
                 title = "Daftar Bencana",
+                profilePictureUrl = user?.profilePicture,
                 canNavigateBack = false,
-                actions = {
-                    IconButton(onClick = { navController.navigate("profile") }) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile"
-                        )
-                    }
-                }
+                onProfileClick = {
+                    navController.navigate("profile")
+                },
             )
         },
         bottomBar = {

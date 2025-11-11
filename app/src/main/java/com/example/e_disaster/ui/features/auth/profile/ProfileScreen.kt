@@ -54,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.badges.UserStatusBadge
+import com.example.e_disaster.ui.components.badges.UserTypeBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
@@ -203,11 +204,7 @@ fun ProfileHeaderCard(name: String, email: String, role: String, status: String,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = role,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+                    UserTypeBadge(type = role)
                     UserStatusBadge(status = status)
                 }
             }
