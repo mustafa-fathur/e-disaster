@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,6 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +51,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.badges.UserStatusBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
@@ -56,6 +60,8 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
+    val user = viewModel.user
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -66,81 +72,102 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            ProfileHeaderCard(
-                name = "Ahmad Rizki Pratama",
-                email = "ahmad.rizki@example.com",
-                role = "Relawan",
-                status = "active"
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            PersonalInfoCard()
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = { /* TODO: Navigate to Edit Profile Screen */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Icon",
-                    modifier = Modifier.size(20.dp)
+        if (viewModel.errorMessage != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = viewModel.errorMessage!!,
+                    color = Color.Red,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Edit Profil", fontSize = 16.sp)
             }
+        } else if (viewModel.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (user != null) {
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ProfileHeaderCard(
+                    name = user.name,
+                    email = user.email,
+                    role = user.userType,
+                    status = user.status,
+                    profilePicture = user.profilePicture
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = {
-                    // --- THIS IS THE KEY CHANGE ---
-                    viewModel.logout() // Call the logout function from the ViewModel
-                    navController.navigate("login") {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = true
+                PersonalInfoCard(
+                    nik = user.nik,
+                    phone = user.phone,
+                    address = user.address,
+                    dateOfBirth = user.dateOfBirth,
+                    gender = user.gender
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { /* TODO: Navigate to Edit Profile Screen */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Edit Profil", fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate("login") {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
                         }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // A standard red color
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                    contentDescription = "Keluar Icon",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Keluar", fontSize = 16.sp)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // A standard red color
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Keluar Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Keluar", fontSize = 16.sp)
+                }
+
+
+                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(32.dp))
+
+
+                FooterCredit()
             }
-
-
-            Spacer(modifier = Modifier.weight(1f))
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-            FooterCredit()
         }
     }
 }
 
 @Composable
-fun ProfileHeaderCard(name: String, email: String, role: String, status: String) {
+fun ProfileHeaderCard(name: String, email: String, role: String, status: String, profilePicture: String?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -153,10 +180,12 @@ fun ProfileHeaderCard(name: String, email: String, role: String, status: String)
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.codenity), // Replace with actual image
+            AsyncImage(
+                model = profilePicture ?: R.drawable.codenity,
                 contentDescription = "Profile Picture",
                 contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.codenity),
+                error = painterResource(id = R.drawable.codenity),
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
@@ -187,7 +216,7 @@ fun ProfileHeaderCard(name: String, email: String, role: String, status: String)
 }
 
 @Composable
-fun PersonalInfoCard() {
+fun PersonalInfoCard(nik: String, phone: String, address: String, dateOfBirth: String, gender: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -203,11 +232,11 @@ fun PersonalInfoCard() {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            InfoRow(icon = painterResource(id = R.drawable.id_card), label = "NIK", value = "3175012345670001")
-            InfoRow(icon = Icons.Default.Phone, label = "Nomor Telepon", value = "081234567890")
-            InfoRow(icon = Icons.Default.LocationOn, label = "Alamat", value = "Jl. Merdeka No. 123, Jakarta Pusat")
-            InfoRow(icon = Icons.Default.DateRange, label = "Tanggal Lahir", value = "15 Juni 1995")
-            InfoRow(icon = Icons.Default.Person, label = "Jenis Kelamin", value = "Laki-laki")
+            InfoRow(icon = painterResource(id = R.drawable.id_card), label = "NIK", value = nik)
+            InfoRow(icon = Icons.Default.Phone, label = "Nomor Telepon", value = phone)
+            InfoRow(icon = Icons.Default.LocationOn, label = "Alamat", value = address)
+            InfoRow(icon = Icons.Default.DateRange, label = "Tanggal Lahir", value = dateOfBirth)
+            InfoRow(icon = Icons.Default.Person, label = "Jenis Kelamin", value = gender)
         }
     }
 }
