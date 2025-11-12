@@ -100,7 +100,7 @@ val dummyDisasterList = listOf(
         location = "Cianjur, Jawa Barat",
         dateTime = "2024-10-28 • 13:21 WIB",
         type = "Banjir",
-        status = "cancelled",
+        status = "completed",
     )
 )
 
@@ -154,6 +154,7 @@ fun DisasterListScreen(
                             disabledContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
