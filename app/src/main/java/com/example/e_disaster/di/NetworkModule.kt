@@ -1,8 +1,9 @@
 package com.example.e_disaster.di
 
 import com.example.e_disaster.data.local.UserPreferences
-import com.example.e_disaster.data.repository.AuthRepository
 import com.example.e_disaster.data.remote.service.AuthApiService
+import com.example.e_disaster.data.remote.service.DisasterAidApiService
+import com.example.e_disaster.data.remote.service.DisasterApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +16,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
-import kotlin.jvm.java
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -82,4 +82,17 @@ object NetworkModule {
 
     // You can add providers for other API services here in the future
     // e.g., fun provideDisasterApiService(...)
+
+    // Provides the DisasterAidApiService implementation
+    @Provides
+    @Singleton
+    fun provideDisasterAidApiService(retrofit: Retrofit): DisasterAidApiService {
+        return retrofit.create(DisasterAidApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDisasterApiService(retrofit: Retrofit): DisasterApiService {
+        return retrofit.create(DisasterApiService::class.java)
+    }
 }
