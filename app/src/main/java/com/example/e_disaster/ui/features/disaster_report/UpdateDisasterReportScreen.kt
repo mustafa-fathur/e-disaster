@@ -136,14 +136,12 @@ fun UpdateDisasterReportContent(
             onValueChange = onTitleChange,
             label = { Text(text = "Judul Laporan") },
             leadingIcon = {
-                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Tt",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "Tt",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -162,14 +160,12 @@ fun UpdateDisasterReportContent(
             onValueChange = onDescriptionChange,
             label = { Text(text = "Deskripsi") },
             leadingIcon = {
-                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Tt",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "Tt",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()

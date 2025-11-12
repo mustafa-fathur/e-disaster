@@ -43,7 +43,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.theme.EDisasterTheme
@@ -123,22 +122,15 @@ fun AddDisasterReportContent(
             onValueChange = onTitleChange,
             label = { Text(text = "Judul Laporan") },
             leadingIcon = {
-                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Tt",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "Tt",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                disabledIndicatorColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
             trailingIcon = {
                 if (title.isNotEmpty()) {
                     IconButton(onClick = { onTitleChange("") }) {
@@ -148,30 +140,21 @@ fun AddDisasterReportContent(
             }
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
-
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text(text = "Deskripsi") },
             leadingIcon = {
-                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Tt",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "Tt",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                disabledIndicatorColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
             trailingIcon = {
                 if (description.isNotEmpty()) {
                     IconButton(onClick = { onDescriptionChange("") }) {
