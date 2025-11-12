@@ -81,6 +81,7 @@ fun HistoryScreen(
         bottomBar = {
             AppBottomNavBar(navController = navController as NavHostController)
         },
+        containerColor = MaterialTheme.colorScheme.surface,
         content = { innerPadding ->
             Box(
                 modifier = Modifier

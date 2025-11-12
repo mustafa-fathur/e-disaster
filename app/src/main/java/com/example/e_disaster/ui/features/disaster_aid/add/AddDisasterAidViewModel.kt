@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster_aid
+package com.example.e_disaster.ui.features.disaster_aid.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

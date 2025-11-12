@@ -66,7 +66,8 @@ fun UpdateDisasterReportScreen(navController: NavController, reportId: String?) 
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         Box(
             modifier = Modifier

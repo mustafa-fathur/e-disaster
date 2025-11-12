@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster_report
+package com.example.e_disaster.ui.features.disaster_aid.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,10 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,28 +28,43 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.e_disaster.R
+import com.example.e_disaster.ui.components.badges.DisasterAidCategoryBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
+import com.example.e_disaster.ui.features.disaster.AidItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
-fun DisasterReportDetailScreen(navController: NavController, reportId: String?) {
+fun DisasterAidDetailScreen(navController: NavController, aidId: String?) {
+    // Dummy data source mimicking the one from DisasterDetailScreen.kt
+    val dummyAids = listOf(
+        AidItem("a1", "Paket Sembako", "150 Paket", "Beras 10kg, mie instan, minyak goreng, gula", "food"),
+        AidItem("a2", "Pakaian Layak Pakai", "200 set", "Pakaian bekas layak pakai untuk dewasa dan anak-anak", "clothing")
+    )
+
+    // Find the aid by ID, or use the first one as a fallback for preview
+    val aid = remember(aidId) {
+        dummyAids.find { it.id == aidId } ?: dummyAids.first()
+    }
+
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = "Detail Laporan",
+                title = "Detail Bantuan",
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
-                    IconButton(onClick = { navController.navigate("update-disaster-report/$reportId") }) {
+                    IconButton(onClick = { navController.navigate("update-disaster-aid/$aidId") }) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Ubah",
@@ -70,26 +84,14 @@ fun DisasterReportDetailScreen(navController: NavController, reportId: String?) 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            ReportInfoCard(
-                title = "Update Korban dan Kerusakan",
-                description = "15 rumah rusak berat, 30 rumah rusak ringan. Total korban luka ringan bertambah menjadi 25 orang.",
-                reporter = "Ahmad Wijaya",
-                time = "2024-10-28 14:30",
-                location = "-6.8167, 107.1464"
-            )
+            AidInfoCard(aid = aid)
             PhotoSection()
         }
     }
 }
 
 @Composable
-private fun ReportInfoCard(
-    title: String,
-    description: String,
-    reporter: String,
-    time: String,
-    location: String
-) {
+private fun AidInfoCard(aid: AidItem) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -106,15 +108,17 @@ private fun ReportInfoCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = aid.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    DisasterAidCategoryBadge(category = aid.category)
+                }
                 Icon(
-                    imageVector = Icons.Default.ErrorOutline,
-                    contentDescription = "Report Icon",
+                    painter = painterResource(id = R.drawable.package_box),
+                    contentDescription = "Aid Icon",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
@@ -122,18 +126,43 @@ private fun ReportInfoCard(
 
             // Description
             Text(
-                text = description,
+                text = aid.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            // Details Grid
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    DetailItem(label = "Jumlah", value = aid.amount)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    DetailItem(label = "Kategori", value = aid.category.replaceFirstChar { it.uppercase() })
+                }
+            }
+
             // Detail List
-            DetailItemWithIcon(icon = Icons.Default.Person, label = "Pelapor", value = reporter)
-            DetailItemWithIcon(icon = Icons.Default.CalendarMonth, label = "Waktu Laporan", value = time)
-            DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Koordinat Lokasi", value = location)
+            DetailItemWithIcon(icon = Icons.Default.CalendarMonth, label = "Tanggal Distribusi", value = "29 Oktober 2025")
+            DetailItemWithIcon(icon = Icons.Default.Star, label = "Donatur", value = "Kemensos RI")
+            DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Lokasi Distribusi", value = "Posko Utama Cianjur")
         }
+    }
+}
+
+@Composable
+private fun DetailItem(label: String, value: String) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -149,19 +178,7 @@ private fun DetailItemWithIcon(icon: ImageVector, label: String, value: String) 
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(24.dp)
         )
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium
-            )
-        }
+        DetailItem(label = label, value = value)
     }
 }
 
@@ -174,12 +191,12 @@ private fun PhotoSection() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.Image,
-                contentDescription = "Foto Laporan",
+                contentDescription = "Foto Bantuan",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.padding(horizontal = 4.dp))
             Text(
-                text = "Foto Laporan (2)",
+                text = "Foto Bantuan (2)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -188,7 +205,7 @@ private fun PhotoSection() {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items(3) { // Dummy items for photo placeholders
+            items(3) {
                 Card(
                     modifier = Modifier.size(140.dp, 120.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -218,18 +235,20 @@ private fun PhotoSection() {
     }
 }
 
-@Preview(showBackground = true, name = "Detail Report Light")
+
+@Preview(showBackground = true, name = "Detail Aid Light")
 @Composable
-fun DisasterReportDetailScreenLightPreview() {
+fun DisasterAidDetailScreenLightPreview() {
     EDisasterTheme(darkTheme = false) {
-        DisasterReportDetailScreen(navController = rememberNavController(), reportId = "1")
+        DisasterAidDetailScreen(navController = rememberNavController(), aidId = "a1")
     }
 }
 
-@Preview(showBackground = true, name = "Detail Report Dark")
+@Preview(showBackground = true, name = "Detail Aid Dark")
 @Composable
-fun DisasterReportDetailScreenDarkPreview() {
+fun DisasterAidDetailScreenDarkPreview() {
     EDisasterTheme(darkTheme = true) {
-        DisasterReportDetailScreen(navController = rememberNavController(), reportId = "1")
+        DisasterAidDetailScreen(navController = rememberNavController(), aidId = "a1")
     }
 }
+

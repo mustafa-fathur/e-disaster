@@ -34,7 +34,7 @@ fun AssignedDisasterContent(navController: NavController, disasterId: String?) {
         VictimItem("v1", "Budi Santoso", "Luka ringan di kaki akibat reruntuhan", "minor_injury", true),
         VictimItem("v2", "Siti Aminah", "Belum ditemukan sejak kejadian bencana", "lost", false)
     )
-    val aids = listOf(AidItem("a1", "Makanan", "100 dus"), AidItem("a2", "Pakaian", "50 karung"))
+    val aids = listOf(AidItem("a1", "Bantuan Makanan", "100 dus", "Bantuan Makanan dari pemerintah", "food"), AidItem("a2", "Pakaian Bagus", "50 karung", "Pakaian Layak dari Hamba Allah", "clothes"))
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Use PrimaryTabRow instead of the deprecated TabRow

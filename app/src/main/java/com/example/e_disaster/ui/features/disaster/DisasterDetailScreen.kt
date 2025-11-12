@@ -47,7 +47,13 @@ data class FabMenuItem(
 )
 data class ReportItem(val id: String, val title: String, val date: String)
 data class VictimItem(val id: String, val name: String, val description: String, val status: String, val isEvacuated: Boolean)
-data class AidItem(val id: String, val type: String, val amount: String)
+data class AidItem(
+    val id: String,
+    val title: String,
+    val amount: String,
+    val description: String,
+    val category: String // e.g., "food", "clothing", "housing"
+)
 // -------------------------------------------------------------------------
 
 @Composable
