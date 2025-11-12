@@ -107,7 +107,8 @@ fun AddDisasterScreen(navController: NavController) {
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier

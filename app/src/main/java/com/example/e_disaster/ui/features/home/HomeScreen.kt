@@ -1,6 +1,9 @@
 package com.example.e_disaster.ui.features.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,43 +11,51 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.e_disaster.data.model.home.DummyHomeData
+import coil.compose.AsyncImage
+import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.home.dashboard.DisasterCard
-import com.example.e_disaster.ui.theme.EDisasterTheme
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.e_disaster.ui.components.partials.MainViewModel
+import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val dummy = DummyHomeData
-
     val user = mainViewModel.user
 
     Scaffold(
@@ -66,47 +77,248 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
                 .fillMaxSize()
         ) {
             item {
-                Text("Laporan Bencana", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    StatBox(title = "Sedang Berlangsung", value = dummy.ongoingDisasters)
-                    StatBox(title = "Selesai", value = dummy.completedDisasters)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Dashboard",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        DashboardCard(
+                            title = "Total Bencana Terjadi",
+                            count = 2,
+                            icon = Icons.Default.Warning,
+                            backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                            iconColor = MaterialTheme.colorScheme.error
+                        )
+                        DashboardCard(
+                            title = "Total Bencana Berlangsung",
+                            count = 2,
+                            icon = Icons.Default.Warning,
+                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                            iconColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        DashboardCard(
+                            title = "Total Bencana Ditangani",
+                            count = 2,
+                            icon = Icons.Default.Warning,
+                            backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            iconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        DashboardCard(
+                            title = "Total Bencana Diselesaikan",
+                            count = 2,
+                            icon = Icons.Default.CheckCircle,
+                            backgroundColor = Color(0xFFE8F5E9),
+                            iconColor = Color(0xFF4CAF50)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Bencana Aktif",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        TextButton(onClick = { navController.navigate("disaster-list") }) {
+                            Text(
+                                text = "Lihat Semua >",
+                                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Bencana Terkini", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
             }
-            items(dummy.recentDisasters) { disaster ->
-                DisasterCard(disaster = disaster)
+            item {
+                LazyRow(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    items(DummyDisasters.list) { disaster ->
+                        DisasterItem(disaster = disaster)
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun StatBox(title: String, value: Int) {
+fun DashboardCard(
+    title: String,
+    count: Int,
+    icon: ImageVector,
+    backgroundColor: Color,
+    iconColor: Color
+) {
     Card(
-        modifier = Modifier.width(150.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = MaterialTheme.shapes.small,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .width(160.dp)
+            .height(80.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(value.toString(), fontWeight = FontWeight.Bold)
-            Text(title, style = MaterialTheme.typography.bodySmall)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(iconColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = iconColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(
+                    text = count.toString(),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodySmall,
+                    lineHeight = 14.sp
+                )
+            }
         }
     }
 }
+
+@Composable
+fun DisasterItem(disaster: Disaster) {
+    Card(
+        modifier = Modifier
+            .width(280.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column {
+            Box {
+                AsyncImage(
+                    model = disaster.imageUrl,
+                    contentDescription = disaster.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Berlangsung",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = disaster.type,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = disaster.title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_location),
+                        contentDescription = "Location",
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = disaster.location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_date),
+                        contentDescription = "Date",
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = disaster.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+object DummyDisasters {
+    val list = listOf(
+        Disaster(
+            imageUrl = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            type = "Gempa Bumi",
+            title = "Gempa Bumi Cianjur",
+            location = "Cianjur, Jawa Barat",
+            date = "2024-10-28 • 13:21 WIB"
+        ),
+        Disaster(
+            imageUrl = "https://images.unsplash.com/photo-1567697879034-b5a26d4b358b?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            type = "Banjir",
+            title = "Banjir Bandang",
+            location = "Jakarta Selatan",
+            date = "2024-10-28 • 13:21 WIB"
+        )
+    )
+}
+
+data class Disaster(
+    val imageUrl: String,
+    val type: String,
+    val title: String,
+    val location: String,
+    val date: String
+)
 
 
 @Preview(showBackground = true)
