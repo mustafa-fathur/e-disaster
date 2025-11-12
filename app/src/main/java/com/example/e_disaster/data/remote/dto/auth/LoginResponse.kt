@@ -35,3 +35,7 @@ data class UserDto(
     @SerializedName("profile_picture")
     val profilePicture: PictureDto?
 )
+data class RegisterResponse(
+    val message: String,
+    val user: UserDto
+)

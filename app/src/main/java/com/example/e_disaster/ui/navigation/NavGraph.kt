@@ -24,7 +24,7 @@ import com.example.e_disaster.ui.features.auth.login.LoginScreen
 //import com.example.e_disaster.ui.features.disaster_aid.NearbyAidsScreen
 import com.example.e_disaster.ui.features.notification.NotificationScreen
 import com.example.e_disaster.ui.features.auth.profile.ProfileScreen
-import com.example.e_disaster.ui.features.auth.RegisterScreen
+import com.example.e_disaster.ui.features.auth.register.RegisterScreen
 import com.example.e_disaster.ui.features.disaster_aid.UpdateDisasterAidScreen
 import com.example.e_disaster.ui.features.disaster_report.UpdateDisasterReportScreen
 import com.example.e_disaster.ui.features.disaster.UpdateDisasterScreen

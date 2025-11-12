@@ -5,6 +5,8 @@ import androidx.annotation.RequiresApi
 import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.model.User
 import com.example.e_disaster.data.remote.dto.auth.LoginRequest
+import com.example.e_disaster.data.remote.dto.auth.RegisterRequest
+import com.example.e_disaster.data.remote.dto.auth.RegisterResponse
 import com.example.e_disaster.data.remote.dto.auth.UserDto
 import com.example.e_disaster.data.remote.service.AuthApiService
 import okhttp3.ResponseBody
@@ -22,6 +24,10 @@ class AuthRepository @Inject constructor(
 ) {
     suspend fun checkHealth(): ResponseBody {
         return apiService.healthCheck()
+    }
+
+    suspend fun register(request: RegisterRequest): RegisterResponse {
+        return apiService.register(request)
     }
     
     /**
