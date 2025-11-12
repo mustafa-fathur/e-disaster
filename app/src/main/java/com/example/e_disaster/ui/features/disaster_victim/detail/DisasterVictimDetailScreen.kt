@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster_victim
+package com.example.e_disaster.ui.features.disaster_victim.detail
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
+import com.example.e_disaster.ui.features.disaster_victim.Victim
 
 @Composable
 fun DisasterVictimDetailScreen(navController: NavController, victimId: String?) {

@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster_victim
+package com.example.e_disaster.ui.features.disaster_victim.add
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
