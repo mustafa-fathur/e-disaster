@@ -29,14 +29,14 @@ fun UpdateDisasterVictimScreen(navController: NavController, victimId: String?) 
                 .padding(16.dp)
         ) {
             // TODO: Fetch existing victim data using victimId and pass as initial values
-            VictimForm(
-                buttonText = "Ubah",
-                onFormSubmit = { nik, name, age, description ->
-                    // TODO: Implement ViewModel logic to update victim
-                    println("Updating Victim ID $victimId: NIK=$nik, Name=$name, Age=$age, Desc=$description")
-                    navController.popBackStack()
-                }
-            )
+//            VictimForm(
+//                buttonText = "Ubah",
+//                onFormSubmit = { nik, name, age, description ->
+//                    // TODO: Implement ViewModel logic to update victim
+//                    println("Updating Victim ID $victimId: NIK=$nik, Name=$name, Age=$age, Desc=$description")
+//                    navController.popBackStack()
+//                }
+//            )
         }
     }
 }
