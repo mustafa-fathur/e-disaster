@@ -21,7 +21,6 @@ fun AidsTabContent(navController: NavController, aids: List<AidItem>) {
         items(aids) { aid ->
             // Call the updated ListItemCard
             ListItemCard(
-                title = aid.type,
                 onClick = { navController.navigate("disaster-victim-detail/${aid.id}") }
             ) {
                 // This is the custom content for the card's body.

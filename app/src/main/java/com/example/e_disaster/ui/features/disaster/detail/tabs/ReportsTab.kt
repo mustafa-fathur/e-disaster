@@ -22,7 +22,6 @@ fun ReportsTabContent(navController: NavController, reports: List<ReportItem>) {
         items(reports) { report ->
             // Call the updated ListItemCard
             ListItemCard(
-                title = report.title,
                 onClick = { navController.navigate("disaster-victim-detail/${report.id}") }
             ) {
                 // This is the custom content for the card's body.

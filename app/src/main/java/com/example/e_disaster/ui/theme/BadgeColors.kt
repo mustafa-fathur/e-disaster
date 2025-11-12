@@ -287,6 +287,8 @@ object BadgeColors {
                 text = Color(0xFFB71C1C),
                 border = Color(0xFFD32F2F)
             )
+            val evacuated = DisasterStatus.Light.completed
+            val notEvacuated = DisasterStatus.Light.ongoing
         }
 
         object Dark {
@@ -310,6 +312,8 @@ object BadgeColors {
                 text = Color(0xFFEF9A9A),
                 border = Color(0xFFE57373)
             )
+            val evacuated = DisasterStatus.Dark.completed
+            val notEvacuated = DisasterStatus.Dark.ongoing
         }
     }
 

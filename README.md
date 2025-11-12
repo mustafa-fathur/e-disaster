@@ -23,10 +23,12 @@ Aplikasi ini merupakan bagian dari sistem **e-Disaster**, di mana:
 
 * Bahasa Pemrograman: Kotlin
 * UI Framework: Jetpack Compose
-* Arsitektur: MVVM (Model - ViewModel - View)
-* Networking: Retrofit
-* State Management: ViewModel + StateFlow
+* Arsitektur: MVVM (Model - ViewModel - View) dengan prinsip package-by-feature
+* Manajemen State: ViewModel + Kotlin StateFlow & collectAsStateWithLifecycle()
+* Dependency Injection: Hilt
+* Networking: Retrofit & OkHttp
 * Navigation: Jetpack Navigation Compose
+* Penyimpanan Lokal: DataStore & Room
 * Push Notification: Firebase Cloud Messaging (FCM)
 * Backend: REST API Laravel (dari proyek [e-Disaster Web](https://github.com/mustafa-fathur/e-disaster-web))
 
@@ -35,23 +37,36 @@ Aplikasi ini merupakan bagian dari sistem **e-Disaster**, di mana:
 ## Struktur Proyek
 
 ```
-app/
- └── src/main/java/com/example/edisaster/
-      ├── data/
-      │   ├── model/         # Data class untuk API & response
-      │   ├── remote/        # Retrofit API service
-      │   └── repository/    # Repository untuk koneksi data
-      │
-      ├── ui/
-      │   ├── screen/        # UI tiap fitur (Login, Dashboard, dsb)
-      │   ├── viewmodel/     # ViewModel tiap fitur
-      │   ├── components/    # Komponen UI umum (Button, Card)
-      │   ├── navigation/    # Navigasi antar layar
-      │   └── theme/         # Warna dan typography
-      │
-      ├── notification/      # Layanan Firebase & handler notifikasi
-      ├── utils/             # Const & helper
-      └── MainActivity.kt    # Entry point aplikasi
+app/src/main/java/com/example/e_disaster/
+│
+├── data/                            # LAYER DATA (MODEL)
+│   ├── local/                        # Penyimpanan lokal (Jetpack DataStore & Room later...)
+│   ├── model/                        # Data class bersih untuk UI (domain models)
+│   ├── remote/                       # Konfigurasi & service Retrofit
+│   │   ├── dto/                      # Data Transfer Objects (DTO) untuk response API
+│   │   └── service/                  # Interface Retrofit (AuthApiService, dll)
+│   └── repository/                   # Repository sebagai Single Source of Truth
+│
+├── di/                              # DEPENDENCY INJECTION (HILT)
+│   ├── AppModule.kt                  # Menyediakan dependensi level aplikasi (Repository, Preferences)
+│   └── NetworkModule.kt              # Menyediakan dependensi jaringan (Retrofit, OkHttp)
+│
+├── notification/                     # Layanan Firebase & handler notifikasi (jika ada)
+│
+└── ui/                              # LAYER UI (VIEW & VIEWMODEL)
+    ├── components/                   # Komponen UI global (TopAppBar, Badge, dll)
+    ├── features/                     # Fitur aplikasi
+    │   ├── auth/                     #   - Fitur Autentikasi
+    │   │   ├── login/
+    │   │   └── profile/
+    │   ├── disaster/                 #   - Fitur Manajemen Bencana
+    │   │   ├── list/
+    │   │   └── detail/
+    │   └── ... (fitur lainnya seperti home, history)
+    │
+    ├── navigation/                   # Konfigurasi NavGraph Jetpack Navigation
+    └── theme/                        # Tema aplikasi (Color, Typography)
+
 ```
 
 ---
@@ -62,7 +77,7 @@ app/
 2. Clone repositori ini:
 
    ```bash
-   git clone https://github.com/mustafa-fathur/e-disaster-android.git
+   git clone https://github.com/mustafa-fathur/e-disaster.git
    ```
 3. Buka proyek di Android Studio.
 4. Pastikan koneksi internet aktif dan API Laravel sudah berjalan.
@@ -75,7 +90,7 @@ app/
 Ubah `BASE_URL` pada file berikut agar sesuai dengan alamat server Laravel kamu:
 
 ```kotlin
-// data/remote/ApiClient.kt
+// di/NetworkModule.kt
 private const val BASE_URL = "https://edisaster.siunand.my.id/api/"
 ```
 
