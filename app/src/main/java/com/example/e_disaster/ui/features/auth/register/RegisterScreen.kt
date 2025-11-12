@@ -1,8 +1,9 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.e_disaster.ui.features.auth
+package com.example.e_disaster.ui.features.auth.register
 
 import android.icu.text.SimpleDateFormat
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -26,7 +27,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,37 +53,45 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.AppDatePickerDialog
-import com.example.e_disaster.ui.theme.EDisasterTheme
+import kotlinx.coroutines.flow.collectLatest
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var nik by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    val genderOptions = listOf("Laki-laki", "Perempuan")
-    var selectedGender by remember { mutableStateOf(genderOptions[0]) }
-    var reason by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+fun RegisterScreen(
+    navController: NavController,
+    viewModel: RegisterViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
 
+    // Listener untuk event dari ViewModel
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is RegisterUiState.Success -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                    // Kembali ke layar login setelah berhasil
+                    navController.popBackStack()
+                }
+                else -> { /* Handle other one-time events if needed */ }
+            }
+        }
+    }
+
+    // State untuk DatePicker
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
     var showDatePicker by remember { mutableStateOf(false) }
-    var birthDate by remember { mutableStateOf("") }
 
     fun onDateSelected(dateMillis: Long?) {
         dateMillis?.let {
-            val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
-            birthDate = simpleDateFormat.format(Date(it))
+            val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+            viewModel.birthDate = simpleDateFormat.format(Date(it))
         }
     }
 
@@ -102,7 +112,8 @@ fun RegisterScreen(navController: NavController) {
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -149,35 +160,32 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Form Fields
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Lengkap") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) })
+                OutlinedTextField(value = viewModel.name, onValueChange = { viewModel.name = it }, label = { Text("Nama Lengkap") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) })
+                OutlinedTextField(value = viewModel.email, onValueChange = { viewModel.email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = nik, onValueChange = { nik = it }, label = { Text("NIK") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.id_card), contentDescription = null) })
+                OutlinedTextField(value = viewModel.nik, onValueChange = { viewModel.nik = it }, label = { Text("NIK") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.id_card), contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Nomor Telepon") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) })
+                OutlinedTextField(value = viewModel.phone, onValueChange = { viewModel.phone = it }, label = { Text("Nomor Telepon") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Alamat") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) })
+                OutlinedTextField(value = viewModel.address, onValueChange = { viewModel.address = it }, label = { Text("Alamat") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Gender Selection
+                // --- Gender Selection dihubungkan ke ViewModel ---
                 Text("Jenis Kelamin", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth())
                 Row(Modifier.fillMaxWidth()) {
-                    genderOptions.forEach { text ->
+                    listOf("Laki-laki", "Perempuan").forEach { text ->
                         Row(
-                            Modifier
-                                .selectable(
-                                    selected = (text == selectedGender),
-                                    onClick = { selectedGender = text }
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            Modifier.selectable(
+                                selected = (text == viewModel.selectedGender),
+                                onClick = { viewModel.selectedGender = text }
+                            ).padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = (text == selectedGender),
-                                onClick = { selectedGender = text }
+                                selected = (text == viewModel.selectedGender),
+                                onClick = { viewModel.selectedGender = text }
                             )
                             Text(text = text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 8.dp))
                         }
@@ -186,32 +194,27 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // --- Tanggal Lahir dihubungkan ke ViewModel ---
                 OutlinedTextField(
-                    value = birthDate,
-                    onValueChange = { },
+                    value = viewModel.birthDate,
+                    onValueChange = {},
                     label = { Text("Tanggal Lahir") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showDatePicker = true },
-                    leadingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Pilih tanggal")
-                        }
-                    },
+                    modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+                    leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = "Pilih tanggal") },
                     readOnly = true,
                     enabled = false,
                     colors = OutlinedTextFieldDefaults.colors(
                         disabledTextColor = MaterialTheme.colorScheme.onSurface,
                         disabledBorderColor = MaterialTheme.colorScheme.outline,
-                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 )
 
                 if (showDatePicker) {
                     AppDatePickerDialog(
                         datePickerState = datePickerState,
-                        onDismiss = {showDatePicker = false},
+                        onDismiss = { showDatePicker = false },
                         onConfirm = {
                             onDateSelected(datePickerState.selectedDateMillis)
                             showDatePicker = false
@@ -220,21 +223,37 @@ fun RegisterScreen(navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = reason, onValueChange = { reason = it }, label = { Text("Alasan Bergabung") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.text_fields), contentDescription = null) })
+                OutlinedTextField(value = viewModel.reasonToJoin, onValueChange = { viewModel.reasonToJoin = it }, label = { Text("Alasan Bergabung") }, modifier = Modifier.fillMaxWidth(), leadingIcon = { Icon(painterResource(id = R.drawable.text_fields), contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
+                OutlinedTextField(value = viewModel.password, onValueChange = { viewModel.password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Konfirmasi Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
+                OutlinedTextField(value = viewModel.confirmPassword, onValueChange = { viewModel.confirmPassword = it }, label = { Text("Konfirmasi Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) })
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Tampilkan pesan error jika ada
+                val currentState = viewModel.uiState
+                if (currentState is RegisterUiState.Error) {
+                    Text(
+                        text = currentState.message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { /* TODO: Register logic */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
+                    onClick = { viewModel.onRegisterClicked() },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    enabled = currentState !is RegisterUiState.Loading
                 ) {
-                    Text("Daftar", fontSize = 16.sp)
+                    if (currentState is RegisterUiState.Loading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                    } else {
+                        Text("Daftar", fontSize = 16.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -242,48 +261,10 @@ fun RegisterScreen(navController: NavController) {
                 Text(
                     text = "⚠\uFE0F Akun Anda akan ditinjau oleh admin sebelum diaktifkan",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.fillMaxWidth()
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
                 Spacer(modifier = Modifier.height(24.dp))
-
             }
         }
-    }
-}
-
-@Preview(showBackground = true, name = "Light Mode")
-@Composable
-private fun RegisterScreenLight() {
-    EDisasterTheme(darkTheme = false) {
-        RegisterScreen(navController = NavController(LocalContext.current))
-    }
-}
-
-@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-private fun RegisterScreenDark() {
-    EDisasterTheme(darkTheme = true) {
-        RegisterScreen(navController = NavController(LocalContext.current))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Date Picker - Light Mode")
-@Composable
-private fun DatePickerPreviewLight() {
-    EDisasterTheme(darkTheme = false) {
-        // The DatePicker is the component inside the dialog
-        DatePicker(state = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis()))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Date Picker - Dark Mode")
-@Composable
-private fun DatePickerPreviewDark() {
-    EDisasterTheme(darkTheme = true) {
-        DatePicker(state = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis()))
     }
 }
