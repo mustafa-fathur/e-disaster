@@ -228,7 +228,7 @@ object DummyData {
         Participant("u5", "Fajar Nugraha", "volunteer", "https://i.pravatar.cc/150?u=a5")
     )
 
-    val historyList = listOf(
+    private val _historyList = mutableListOf(
         History(
             id = "1",
             disasterName = "Banjir Bandang Garut",
@@ -280,6 +280,7 @@ object DummyData {
             participants = participants1
         )
     )
+    val historyList: List<History> = _historyList
 
     fun getHistoryById(id: String?): History? {
         if (id == null) return null
@@ -294,6 +295,19 @@ object DummyData {
     // Fungsi untuk mendapatkan notifikasi yang belum dibaca
     fun getUnreadNotifications(): List<Notification> {
         return dummyNotifications.filter { !it.isRead }
+    }
+
+    // Fungsi untuk memperbarui data history
+    fun updateHistory(updatedHistory: History) {
+        val index = _historyList.indexOfFirst { it.id == updatedHistory.id }
+        if (index != -1) {
+            _historyList[index] = updatedHistory
+        }
+    }
+
+    // Fungsi untuk menambahkan data history baru
+    fun addHistory(newHistory: History) {
+        _historyList.add(newHistory)
     }
 
 //    // Fungsi untuk mendapatkan bantuan berdasarkan status
