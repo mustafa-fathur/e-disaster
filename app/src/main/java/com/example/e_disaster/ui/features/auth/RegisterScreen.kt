@@ -4,6 +4,7 @@ package com.example.e_disaster.ui.features.auth
 
 import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,16 +26,13 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -58,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.e_disaster.R
+import com.example.e_disaster.ui.components.AppDatePickerDialog
 import com.example.e_disaster.ui.theme.EDisasterTheme
 import java.util.Date
 
@@ -85,18 +84,6 @@ fun RegisterScreen(navController: NavController) {
             birthDate = simpleDateFormat.format(Date(it))
         }
     }
-
-    val datePickerColors = DatePickerDefaults.colors(
-        containerColor = MaterialTheme.colorScheme.surface, // Dialog background
-        titleContentColor = MaterialTheme.colorScheme.onSurface,
-        headlineContentColor = MaterialTheme.colorScheme.primary,
-        weekdayContentColor = MaterialTheme.colorScheme.onSurface,
-        dayContentColor = MaterialTheme.colorScheme.onSurface,
-        selectedDayContainerColor = MaterialTheme.colorScheme.primary, // The selected day's background circle
-        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary, // The number inside the selected day circle
-        todayDateBorderColor = MaterialTheme.colorScheme.primary, // Border around today's date
-        todayContentColor = MaterialTheme.colorScheme.primary, // Today's number
-    )
 
     Scaffold(
         topBar = {
@@ -203,38 +190,33 @@ fun RegisterScreen(navController: NavController) {
                     value = birthDate,
                     onValueChange = { },
                     label = { Text("Tanggal Lahir") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true },
                     leadingIcon = {
                         IconButton(onClick = { showDatePicker = true }) {
                             Icon(Icons.Default.DateRange, contentDescription = "Pilih tanggal")
                         }
                     },
                     readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+                    )
                 )
 
                 if (showDatePicker) {
-                    DatePickerDialog(
-                        onDismissRequest = { showDatePicker = false },
-                        confirmButton = {
-                            Button(onClick = {
-                                onDateSelected(datePickerState.selectedDateMillis)
-                                showDatePicker = false
-                            },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            ) { Text("OK") }
-                        },
-                        dismissButton = { OutlinedButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-                        },
-                        colors = datePickerColors
-                    ) {
-                        DatePicker(
-                            state = datePickerState,
-                            colors = datePickerColors
-                        )
-                    }
+                    AppDatePickerDialog(
+                        datePickerState = datePickerState,
+                        onDismiss = {showDatePicker = false},
+                        onConfirm = {
+                            onDateSelected(datePickerState.selectedDateMillis)
+                            showDatePicker = false
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))

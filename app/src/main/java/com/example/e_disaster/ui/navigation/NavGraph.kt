@@ -11,11 +11,11 @@ import com.example.e_disaster.ui.features.Welcome
 import com.example.e_disaster.ui.features.disaster_aid.AddDisasterAidScreen
 import com.example.e_disaster.ui.features.disaster_report.AddDisasterReportScreen
 import com.example.e_disaster.ui.features.disaster.AddDisasterScreen
-import com.example.e_disaster.ui.features.disaster_victim.AddDisasterVictimScreen
+import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimScreen
 //import com.example.e_disaster.ui.features.disaster_aid.DisasterAidListScreen
 import com.example.e_disaster.ui.features.disaster.DisasterDetailScreen
 import com.example.e_disaster.ui.features.disaster.DisasterListScreen
-import com.example.e_disaster.ui.features.disaster_victim.DisasterVictimDetailScreen
+import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
 import com.example.e_disaster.ui.features.disaster_victim.DisasterVictimListScreen
 import com.example.e_disaster.ui.features.disaster_history.HistoryDetailScreen
 import com.example.e_disaster.ui.features.disaster_history.HistoryScreen
@@ -30,7 +30,7 @@ import com.example.e_disaster.ui.features.disaster_report.UpdateDisasterReportSc
 import com.example.e_disaster.ui.features.disaster.UpdateDisasterScreen
 import com.example.e_disaster.ui.features.disaster_aid.DisasterAidDetailScreen
 import com.example.e_disaster.ui.features.disaster_report.DisasterReportDetailScreen
-import com.example.e_disaster.ui.features.disaster_victim.UpdateDisasterVictimScreen
+import com.example.e_disaster.ui.features.disaster_victim.update.UpdateDisasterVictimScreen
 import kotlinx.coroutines.delay
 
 @Composable
