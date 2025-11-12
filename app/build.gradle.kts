@@ -62,6 +62,7 @@ dependencies {
     // Hilt for Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.core.telecom)
+    implementation(libs.androidx.compose.foundation.layout)
     kapt(libs.hilt.compiler)
 
     // Hilt and Jetpack Compose Integration
