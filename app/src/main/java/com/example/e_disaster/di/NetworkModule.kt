@@ -22,7 +22,7 @@ import javax.inject.Singleton
 object NetworkModule {
 
     // Using the BASE_URL from your AGENT.md
-    private const val BASE_URL = "http://10.44.10.20:8000/api/v1/"
+    private const val BASE_URL = "https://edisaster.fathur.tech/api/v1/"
 
     // Provides the logging interceptor for debugging network requests
     @Provides

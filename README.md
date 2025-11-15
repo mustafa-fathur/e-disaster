@@ -91,7 +91,7 @@ Ubah `BASE_URL` pada file berikut agar sesuai dengan alamat server Laravel kamu:
 
 ```kotlin
 // di/NetworkModule.kt
-private const val BASE_URL = "https://edisaster.siunand.my.id/api/"
+private const val BASE_URL = "https://edisaster.fathur.tech/api/v1"
 ```
 
 ---
