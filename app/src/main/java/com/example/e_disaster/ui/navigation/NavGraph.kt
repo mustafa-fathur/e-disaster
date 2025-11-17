@@ -13,7 +13,7 @@ import com.example.e_disaster.ui.features.disaster_report.AddDisasterReportScree
 import com.example.e_disaster.ui.features.disaster.AddDisasterScreen
 import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimScreen
 import com.example.e_disaster.ui.features.disaster.DisasterDetailScreen
-import com.example.e_disaster.ui.features.disaster.DisasterListScreen
+import com.example.e_disaster.ui.features.disaster.list.DisasterListScreen
 import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
 import com.example.e_disaster.ui.features.disaster_victim.DisasterVictimListScreen
 import com.example.e_disaster.ui.features.disaster_history.HistoryScreen

@@ -3,7 +3,9 @@ package com.example.e_disaster.di
 import android.content.Context
 import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.remote.service.AuthApiService
+import com.example.e_disaster.data.remote.service.DisasterApiService
 import com.example.e_disaster.data.repository.AuthRepository
+import com.example.e_disaster.data.repository.DisasterRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,5 +32,11 @@ object AppModule {
         userPreferences: UserPreferences // Hilt will get this from the provider above
     ): AuthRepository {
         return AuthRepository(apiService, userPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDisasterRepository(apiService: DisasterApiService): DisasterRepository {
+        return DisasterRepository(apiService)
     }
 }

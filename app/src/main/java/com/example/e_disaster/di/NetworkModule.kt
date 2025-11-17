@@ -80,8 +80,11 @@ object NetworkModule {
         return retrofit.create(AuthApiService::class.java)
     }
 
-    // You can add providers for other API services here in the future
-    // e.g., fun provideDisasterApiService(...)
+    @Provides
+    @Singleton
+    fun provideDisasterApiService(retrofit: Retrofit): DisasterApiService {
+        return retrofit.create(DisasterApiService::class.java)
+    }
 
     // Provides the DisasterAidApiService implementation
     @Provides
@@ -90,9 +93,4 @@ object NetworkModule {
         return retrofit.create(DisasterAidApiService::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideDisasterApiService(retrofit: Retrofit): DisasterApiService {
-        return retrofit.create(DisasterApiService::class.java)
-    }
 }

@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster
+package com.example.e_disaster.ui.features.disaster.list
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -22,9 +22,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -43,7 +46,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,6 +57,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.e_disaster.R
+import com.example.e_disaster.data.model.Disaster
 import com.example.e_disaster.ui.components.badges.DisasterStatusBadge
 import com.example.e_disaster.ui.components.badges.DisasterTypeBadge
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
@@ -108,12 +114,18 @@ val dummyDisasterList = listOf(
 @Composable
 fun DisasterListScreen(
     navController: NavHostController,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    disasterListViewModel: DisasterListViewModel = hiltViewModel()
 ) {
     val user = mainViewModel.user
+
     var searchQuery by remember { mutableStateOf("") }
     val filterOptions = listOf("Semua", "Gempa Bumi", "Banjir", "BMKG", "Manual")
     var selectedFilter by remember { mutableStateOf(filterOptions.first()) }
+
+    val realDisasters = disasterListViewModel.realDisasters
+    val isLoading = disasterListViewModel.isLoading
+    val errorMessage = disasterListViewModel.errorMessage
 
     Scaffold(
         topBar = {
@@ -164,7 +176,7 @@ fun DisasterListScreen(
                                 onClick = { selectedFilter = filter },
                                 shape = RoundedCornerShape(12.dp),
                                 border = BorderStroke(1.dp, if(selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
-                                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                colors = ButtonDefaults.outlinedButtonColors(
                                     containerColor = if(selectedFilter == filter) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent
                                 )
                             ) {
@@ -179,6 +191,46 @@ fun DisasterListScreen(
                 Column(Modifier.padding(horizontal = 16.dp)){
                     DisasterListItem(disaster = it, navController = navController)
                 }
+            }
+
+            item {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                    Text(
+                        text = "Prototype Data Bencana Asli dari API",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+
+            if (isLoading) {
+                item {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+            } else if (errorMessage != null) {
+                item {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                items(realDisasters, key = { it.id }) { disaster ->
+                    RealDisasterItemPrototype(disaster = disaster, navController = navController)
+                }
+            }
+
+            // Add some space at the bottom
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -244,7 +296,7 @@ fun DisasterListItem(disaster: DisasterListItemData, navController: NavHostContr
 
             // Details
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = disaster.title, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Text(text = disaster.title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold))
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = disaster.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray, lineHeight = 20.sp)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -269,6 +321,31 @@ fun DisasterListItem(disaster: DisasterListItemData, navController: NavHostContr
                     Text(text = "Magnitudo ${disaster.magnitude} SR • Kedalaman: ${disaster.depth} km", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RealDisasterItemPrototype(disaster: Disaster, navController: NavHostController) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable {
+                // Navigate to the detail screen with the real disaster ID
+                navController.navigate("disaster-detail/${disaster.id}")
+            },
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = disaster.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            Text(text = disaster.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(text = disaster.description, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
         }
     }
 }

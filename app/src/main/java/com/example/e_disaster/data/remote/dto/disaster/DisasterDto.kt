@@ -4,8 +4,14 @@ import com.google.gson.annotations.SerializedName
 
 data class DisasterDto(
     val id: String,
-    val name: String?,
+    val title: String,
+    val description: String?,
     val location: String?,
-    @SerializedName("lat") val lat: Double?,
-    @SerializedName("long") val long: Double?
+    val status: String,
+
+    @SerializedName("types")
+    val disasterCategory: String,
+
+    @SerializedName("date")
+    val disasterDate: String,
 )

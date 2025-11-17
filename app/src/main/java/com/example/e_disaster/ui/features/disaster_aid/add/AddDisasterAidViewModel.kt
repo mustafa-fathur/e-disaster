@@ -48,8 +48,8 @@ class AddDisasterAidViewModel @Inject constructor(
             _locationError.value = null
             try {
                 val disaster = disasterApiService.getDisaster(disasterId)
-                _lat.value = disaster.lat
-                _long.value = disaster.long
+//                _lat.value = disaster.lat
+//                _long.value = disaster.long
             } catch (e: HttpException) {
                 _locationError.value = "API Error: ${e.code()} - ${e.message()}"
             } catch (e: IOException) {
