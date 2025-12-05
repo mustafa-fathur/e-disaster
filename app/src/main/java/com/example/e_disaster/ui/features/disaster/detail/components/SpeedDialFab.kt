@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.e_disaster.ui.features.disaster.FabMenuItem
+import com.example.e_disaster.ui.features.disaster.detail.FabMenuItem
 
 @Composable
 fun SpeedDialFab(

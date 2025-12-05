@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.badges.DisasterReportStatusBadge
-import com.example.e_disaster.ui.features.disaster.ReportItem
+import com.example.e_disaster.ui.features.disaster.detail.ReportItem
 import com.example.e_disaster.ui.features.disaster.detail.components.ListItemCard
 
 @Composable

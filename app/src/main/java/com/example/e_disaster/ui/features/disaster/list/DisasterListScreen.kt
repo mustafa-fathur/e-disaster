@@ -1,19 +1,11 @@
 package com.example.e_disaster.ui.features.disaster.list
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -22,23 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,12 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.e_disaster.R
 import com.example.e_disaster.data.model.Disaster
@@ -63,52 +39,8 @@ import com.example.e_disaster.ui.components.badges.DisasterTypeBadge
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
-import com.example.e_disaster.ui.theme.EDisasterTheme
-
-data class DisasterListItemData(
-    val id: String,
-    val reporterName: String,
-    val reporterImageUrl: String? = null,
-    val reportDate: String,
-    val title: String,
-    val description: String,
-    val imageUrl: String,
-    val location: String,
-    val dateTime: String,
-    val type: String,
-    val status: String,
-    val magnitude: Double? = null,
-    val depth: Int? = null
-)
-
-val dummyDisasterList = listOf(
-    DisasterListItemData(
-        id = "1",
-        reporterName = "Mustafa Fathur Rahman",
-        reportDate = "11 November 2025",
-        title = "Gempa Bumi Cianjur",
-        description = "Gempa bumi berkekuatan 5.6 SR mengguncang wilayah Cianjur dan sekitarnya",
-        imageUrl = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        location = "Cianjur, Jawa Barat",
-        dateTime = "2024-10-28 • 13:21 WIB",
-        type = "Gempa Bumi",
-        status = "ongoing",
-        magnitude = 5.6,
-        depth = 10
-    ),
-    DisasterListItemData(
-        id = "2",
-        reporterName = "Mustafa Fathur Rahman",
-        reportDate = "11 November 2025",
-        title = "Banjir Bandang Jakarta Selatan",
-        description = "Banjir bandang melanda kawasan Jakarta Selatan akibat hujan deras",
-        imageUrl = "https://images.unsplash.com/photo-1567697879034-b5a26d4b358b?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        location = "Cianjur, Jawa Barat",
-        dateTime = "2024-10-28 • 13:21 WIB",
-        type = "Banjir",
-        status = "completed",
-    )
-)
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,9 +55,27 @@ fun DisasterListScreen(
     val filterOptions = listOf("Semua", "Gempa Bumi", "Banjir", "BMKG", "Manual")
     var selectedFilter by remember { mutableStateOf(filterOptions.first()) }
 
-    val realDisasters = disasterListViewModel.realDisasters
+    val disasters = disasterListViewModel.disasters
     val isLoading = disasterListViewModel.isLoading
     val errorMessage = disasterListViewModel.errorMessage
+
+    val filteredDisasters = remember(disasters, searchQuery, selectedFilter) {
+        disasters.filter { disaster ->
+            val matchesSearch = (disaster.title?.contains(searchQuery, ignoreCase = true) ?: false) ||
+                    (disaster.description?.contains(searchQuery, ignoreCase = true) ?: false) ||
+                    (disaster.location?.contains(searchQuery, ignoreCase = true) ?: false)
+
+            val matchesFilter = when (selectedFilter) {
+                "Semua" -> true
+                "Gempa Bumi" -> disaster.types.equals("earthquake", ignoreCase = true)
+                "Banjir" -> disaster.types.equals("flood", ignoreCase = true)
+                "BMKG" -> disaster.source.equals("bmkg", ignoreCase = true)
+                "Manual" -> disaster.source.equals("manual", ignoreCase = true)
+                else -> true
+            }
+            matchesSearch && matchesFilter
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -147,11 +97,11 @@ fun DisasterListScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -175,186 +125,209 @@ fun DisasterListScreen(
                             OutlinedButton(
                                 onClick = { selectedFilter = filter },
                                 shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, if(selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
+                                border = BorderStroke(1.dp, if (selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if(selectedFilter == filter) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent
+                                    containerColor = if (selectedFilter == filter) MaterialTheme.colorScheme.primaryContainer.copy(
+                                        alpha = 0.5f
+                                    ) else Color.Transparent
                                 )
                             ) {
-                                Text(text = filter, color = if(selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                                Text(
+                                    text = filter,
+                                    color = if (selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
                             }
                         }
                     }
                 }
             }
 
-            items(dummyDisasterList, key = { it.id }) {
-                Column(Modifier.padding(horizontal = 16.dp)){
-                    DisasterListItem(disaster = it, navController = navController)
-                }
-            }
-
-            item {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                    Text(
-                        text = "Prototype Data Bencana Asli dari API",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-
-            if (isLoading) {
-                item {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+            when {
+                isLoading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxSize()
+                                .padding(vertical = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
-            } else if (errorMessage != null) {
-                item {
-                    Text(
-                        text = errorMessage,
-                        color = Color.Red,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            } else {
-                items(realDisasters, key = { it.id }) { disaster ->
-                    RealDisasterItemPrototype(disaster = disaster, navController = navController)
-                }
-            }
-
-            // Add some space at the bottom
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
-}
-
-
-@Composable
-fun DisasterListItem(disaster: DisasterListItemData, navController: NavHostController) {
-    Card(
-        modifier = Modifier.clickable { navController.navigate("disaster-detail/${disaster.id}") },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-    ) {
-        Column() {
-            // Reporter Info
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (disaster.reporterImageUrl != null) {
-                    AsyncImage(
-                        model = disaster.reporterImageUrl,
-                        contentDescription = "Reporter",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
+                errorMessage != null -> {
+                    item {
                         Text(
-                            text = disaster.reporterName.first().toString(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         )
                     }
                 }
+                filteredDisasters.isEmpty() -> {
+                    item {
+                        Text(
+                            text = "Tidak ada data bencana yang ditemukan.",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 64.dp)
+                        )
+                    }
+                }
+                else -> {
+                    items(filteredDisasters, key = { it.id ?: "" }) { disaster ->
+                        Column(Modifier.padding(horizontal = 16.dp)) {
+                            DisasterListItem(disaster = disaster, navController = navController)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun DisasterListItem(disaster: Disaster, navController: NavHostController) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun formatDate(dateString: String?): String {
+        if (dateString.isNullOrEmpty()) return "Tanggal tidak valid"
+        return try {
+            val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+        } catch (e: Exception) {
+            "Tanggal tidak valid"
+        }
+    }
+
+    fun formatDisasterType(type: String?): String {
+        return when (type?.lowercase()) {
+            "earthquake" -> "Gempa Bumi"
+            "tsunami" -> "Tsunami"
+            "volcanic_eruption" -> "Gunung Meletus"
+            "flood" -> "Banjir"
+            "drought" -> "Kekeringan"
+            "tornado" -> "Angin Topan"
+            "landslide" -> "Tanah Longsor"
+            "non_natural_disaster" -> "Bencana Non Alam"
+            "social_disaster" -> "Bencana Sosial"
+            else -> "Lainnya"
+        }
+    }
+
+    Card(
+        modifier = Modifier.clickable {
+            disaster.id?.let { navController.navigate("disaster-detail/$it") }
+        },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_person_24),
+                        contentDescription = "Reporter Icon",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(text = disaster.reporterName, fontWeight = FontWeight.Bold)
-                    Text(text = disaster.reportDate, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Dilaporkan oleh ${disaster.source?.replaceFirstChar { it.uppercase() } ?: "Tidak Diketahui"}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = "Pada ${formatDate(disaster.createdAt)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
-            // Image
             AsyncImage(
-                model = disaster.imageUrl,
+                model = "https://images.unsplash.com/photo-1543418575-84e1b93302a8?q=80&w=2070&auto=format&fit=crop",
                 contentDescription = disaster.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
-                    .background(Color.LightGray),
+                    .height(180.dp),
                 contentScale = ContentScale.Crop
             )
 
-            // Details
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = disaster.title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold))
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = disaster.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray, lineHeight = 20.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(id = R.drawable.ic_location), contentDescription = "Location", modifier = Modifier.size(16.dp), tint = Color.Gray)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = disaster.location, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Column(Modifier.padding(16.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DisasterTypeBadge(type = formatDisasterType(disaster.types))
+                    DisasterStatusBadge(status = disaster.status ?: "unknown")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = disaster.title ?: "Tanpa Judul",
+                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default),
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = disaster.description ?: "Tidak ada deskripsi.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(id = R.drawable.ic_date), contentDescription = "Date", modifier = Modifier.size(16.dp), tint = Color.Gray)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = disaster.dateTime, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_location),
+                        contentDescription = "Location",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = disaster.location ?: "Lokasi tidak diketahui",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DisasterTypeBadge(type = disaster.type)
-                    DisasterStatusBadge(status = disaster.status)
-                }
-                if (disaster.magnitude != null && disaster.depth != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Magnitudo ${disaster.magnitude} SR • Kedalaman: ${disaster.depth} km", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_date),
+                        contentDescription = "Date and Time",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${formatDate(disaster.date)} • ${disaster.time?.take(5) ?: ""} WIB",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun RealDisasterItemPrototype(disaster: Disaster, navController: NavHostController) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable {
-                // Navigate to the detail screen with the real disaster ID
-                navController.navigate("disaster-detail/${disaster.id}")
-            },
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = disaster.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-            Text(text = disaster.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            Text(text = disaster.description, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
-        }
-    }
-}
-
-@Composable
-@Preview(showBackground = true)
-fun DisasterListScreenPreview() {
-    val navController = rememberNavController()
-    EDisasterTheme {
-        DisasterListScreen(navController = navController)
     }
 }

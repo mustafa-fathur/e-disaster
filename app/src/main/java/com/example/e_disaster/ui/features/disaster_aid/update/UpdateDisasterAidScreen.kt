@@ -50,7 +50,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.ui.components.AppDatePickerDialog
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.AidItem
+import com.example.e_disaster.ui.features.disaster.detail.AidItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
 import java.text.SimpleDateFormat
 import java.util.Date

@@ -16,7 +16,8 @@ class DisasterListViewModel @Inject constructor(
     private val disasterRepository: DisasterRepository
 ) : ViewModel() {
 
-    var realDisasters by mutableStateOf<List<Disaster>>(emptyList())
+    // Renamed for clarity
+    var disasters by mutableStateOf<List<Disaster>>(emptyList())
         private set
 
     var isLoading by mutableStateOf(true)
@@ -26,16 +27,17 @@ class DisasterListViewModel @Inject constructor(
         private set
 
     init {
-        fetchRealDisasters()
+        fetchDisasters()
     }
 
-    private fun fetchRealDisasters() {
+    // Renamed for clarity
+    private fun fetchDisasters() {
         isLoading = true
         errorMessage = null
         viewModelScope.launch {
             try {
-                kotlinx.coroutines.delay(1000)
-                realDisasters = disasterRepository.getDisasters()
+                // The repository now returns a fully mapped List<Disaster>
+                disasters = disasterRepository.getDisasters()
             } catch (e: Exception) {
                 errorMessage = "Gagal memuat data: ${e.message}"
                 e.printStackTrace()

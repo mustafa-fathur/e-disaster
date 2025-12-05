@@ -47,7 +47,7 @@ class AddDisasterAidViewModel @Inject constructor(
             _locationLoading.value = true
             _locationError.value = null
             try {
-                val disaster = disasterApiService.getDisaster(disasterId)
+//                val disaster = disasterApiService.getDisaster(disasterId)
 //                _lat.value = disaster.lat
 //                _long.value = disaster.long
             } catch (e: HttpException) {
