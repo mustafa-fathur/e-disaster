@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.VictimItem
+import com.example.e_disaster.ui.features.disaster.detail.VictimItem
 import com.example.e_disaster.ui.features.disaster_victim.add.VictimForm
 import com.example.e_disaster.ui.theme.EDisasterTheme
 

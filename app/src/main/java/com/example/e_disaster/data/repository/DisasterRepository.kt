@@ -1,13 +1,9 @@
 package com.example.e_disaster.data.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.example.e_disaster.data.model.Disaster
 import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.remote.service.DisasterApiService
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,30 +11,51 @@ import javax.inject.Singleton
 class DisasterRepository @Inject constructor(
     private val apiService: DisasterApiService
 ) {
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getDisasters(): List<Disaster> {
         val response = apiService.getDisasters()
-
         return response.data.map { mapDisasterDtoToDisaster(it) }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun mapDisasterDtoToDisaster(dto: DisasterDto): Disaster {
-        val inputFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-        val outputFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale("id", "ID"))
+    suspend fun getDisasterById(disasterId: String): Disaster {
+        val response = apiService.getDisasterById(disasterId)
+        return mapDisasterDtoToDisaster(response)
+    }
 
-        val formattedDate = try {
-            val date = LocalDate.parse(dto.disasterDate, inputFormatter)
-            date.format(outputFormatter)
-        } catch (e: Exception) {
-            "Tanggal tidak diketahui"
+    suspend fun checkAssignmentStatus(disasterId: String): Boolean {
+        return try {
+            apiService.getDisasterReports(disasterId)
+            true
+        } catch (e: HttpException) {
+            if (e.code() == 403) {
+                false
+            } else {
+                throw e
+            }
         }
+    }
 
+    suspend fun joinDisaster(disasterId: String) {
+        apiService.joinDisaster(disasterId)
+    }
+
+    private fun mapDisasterDtoToDisaster(dto: DisasterDto): Disaster {
         return Disaster(
-            id = dto.id,
-            name = dto.title,
-            description = dto.description ?: "Tidak ada deskripsi",
-            date = formattedDate
+            id = dto.id ?: "",
+            reportedBy = dto.reportedBy ?: "",
+            source = dto.source ?: "",
+            types = dto.types ?: "",
+            status = dto.status ?: "",
+            title = dto.title ?: "Tanpa Judul",
+            description = dto.description ?: "Tidak ada deskripsi.",
+            date = dto.date ?: "",
+            time = dto.time ?: "",
+            location = dto.location ?: "Lokasi tidak diketahui",
+            lat = dto.lat,
+            long = dto.long,
+            magnitude = dto.magnitude,
+            depth = dto.depth,
+            createdAt = dto.createdAt ?: "",
+            updatedAt = dto.updatedAt ?: ""
         )
     }
 }

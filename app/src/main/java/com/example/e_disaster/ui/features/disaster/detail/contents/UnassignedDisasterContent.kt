@@ -1,4 +1,4 @@
-package com.example.e_disaster.ui.features.disaster.detail
+package com.example.e_disaster.ui.features.disaster.detail.contents
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.example.e_disaster.data.model.Disaster
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -23,12 +26,13 @@ import com.example.e_disaster.R
 import com.example.e_disaster.ui.features.disaster.detail.components.ImageSlider
 
 @Composable
-fun UnassignedDisasterContent(onJoinClick: () -> Unit) {
+fun UnassignedDisasterContent(
+    disaster: Disaster,
+    onJoinClick: () -> Unit
+) {
     val images = listOf(R.drawable.placeholder, R.drawable.placeholder, R.drawable.placeholder)
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         ImageSlider(images = images)
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -39,9 +43,9 @@ fun UnassignedDisasterContent(onJoinClick: () -> Unit) {
                 border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Gempa Bumi Cianjur", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-                    Text("Gempa bumi berkekuatan 5.6 SR mengguncang wilayah Cianjur dan sekitarnya", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                }
+                    Text(disaster.title ?: "Tanpa Judul", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(disaster.description ?: "Tidak ada deskripsi.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)                }
             }
             Spacer(modifier = Modifier.height(24.dp))
             Card(

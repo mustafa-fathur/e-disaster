@@ -38,7 +38,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.ui.components.badges.DisasterEvacuationStatusBadge
 import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.VictimItem
+import com.example.e_disaster.ui.features.disaster.detail.VictimItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable

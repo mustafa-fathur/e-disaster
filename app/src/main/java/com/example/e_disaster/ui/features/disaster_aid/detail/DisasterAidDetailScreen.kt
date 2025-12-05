@@ -41,7 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.badges.DisasterAidCategoryBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.AidItem
+import com.example.e_disaster.ui.features.disaster.detail.AidItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
