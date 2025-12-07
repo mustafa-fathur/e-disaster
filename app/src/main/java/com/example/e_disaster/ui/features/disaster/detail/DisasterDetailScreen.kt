@@ -32,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.e_disaster.R
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
@@ -62,13 +63,18 @@ fun DisasterDetailScreen(
     disasterId: String?,
     viewModel: DisasterDetailViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val disaster = uiState.disaster
     val context = LocalContext.current
 
     var showJoinDialog by remember { mutableStateOf(false) }
     var isFabMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(disasterId) {
+        if (!disasterId.isNullOrEmpty()) {
+            viewModel.getDisasterDetails(disasterId)
+        }
+    }
 
     LaunchedEffect(uiState.joinStatusMessage) {
         uiState.joinStatusMessage?.let {
@@ -81,31 +87,30 @@ fun DisasterDetailScreen(
         FabMenuItem(
             iconPainter = painterResource(id = R.drawable.id_card),
             label = "Tambah Laporan",
-            onClick = { disaster?.id?.let { navController.navigate("add-disaster-report/$it") } }
+            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-report/$it") } }
         ),
         FabMenuItem(
             icon = Icons.Default.Person,
             label = "Tambah Data Korban",
-            onClick = { disaster?.id?.let { navController.navigate("add-disaster-victim/$it") } }
+            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-victim/$it") } }
         ),
         FabMenuItem(
             iconPainter = painterResource(id = R.drawable.package_box),
             label = "Tambah Data Bantuan",
-            onClick = { disaster?.id?.let { navController.navigate("add-disaster-aid/$it") } }
+            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-aid/$it") } }
         )
     )
 
     Scaffold(
         topBar = {
             AppTopAppBar(
-                title = if (disaster != null) "Detail Bencana" else "Memuat...",
+                title = if (uiState.disaster != null) "Detail Bencana" else "Memuat...",
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
-                    if (uiState.isAssigned && disaster != null) {
+                    if (uiState.isAssigned && uiState.disaster != null) {
                         TextButton(
-                            onClick = { navController.navigate("update-disaster/${disaster.id}") },
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                            onClick = { navController.navigate("update-disaster/${uiState.disaster!!.id}") },                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -150,12 +155,16 @@ fun DisasterDetailScreen(
                             .padding(16.dp)
                     )
                 }
-                disaster != null -> {
+                uiState.disaster != null -> {
                     if (uiState.isAssigned) {
-                        AssignedDisasterContent(navController = navController, disaster = disaster)
+                        AssignedDisasterContent(
+                            navController = navController,
+                            disaster = uiState.disaster!!,
+                            victims = uiState.victims
+                        )
                     } else {
                         UnassignedDisasterContent(
-                            disaster = disaster,
+                            disaster = uiState.disaster!!,
                             onJoinClick = { showJoinDialog = true }
                         )
                     }
@@ -174,4 +183,3 @@ fun DisasterDetailScreen(
         }
     }
 }
-

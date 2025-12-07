@@ -15,7 +15,6 @@ import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimS
 import com.example.e_disaster.ui.features.disaster.detail.DisasterDetailScreen
 import com.example.e_disaster.ui.features.disaster.list.DisasterListScreen
 import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
-import com.example.e_disaster.ui.features.disaster_victim.DisasterVictimListScreen
 import com.example.e_disaster.ui.features.disaster_history.HistoryScreen
 import com.example.e_disaster.ui.features.home.HomeScreen
 import com.example.e_disaster.ui.features.auth.login.LoginScreen
@@ -119,14 +118,6 @@ fun NavGraph() {
         ) { backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId")
             UpdateDisasterReportScreen(navController = navController, reportId = reportId)
-        }
-
-        composable(
-            route = "disaster-victim-list/{disasterId}",
-            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val disasterId = backStackEntry.arguments?.getString("disasterId")
-            DisasterVictimListScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(

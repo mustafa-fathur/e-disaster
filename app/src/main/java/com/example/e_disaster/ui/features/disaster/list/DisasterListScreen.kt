@@ -224,7 +224,7 @@ fun DisasterListItem(disaster: Disaster, navController: NavHostController) {
             disaster.id?.let { navController.navigate("disaster-detail/$it") }
         },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
     ) {
         Column {
