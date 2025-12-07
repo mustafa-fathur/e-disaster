@@ -4,6 +4,7 @@ import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.remote.service.AuthApiService
 import com.example.e_disaster.data.remote.service.DisasterAidApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
+import com.example.e_disaster.data.remote.service.DisasterVictimApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,10 +34,12 @@ object NetworkModule {
     // Provides the authentication interceptor. This is the new, Hilt-powered way.
     @Provides
     @Singleton
-    fun provideAuthInterceptor(userPreferences: UserPreferences): Interceptor { // <-- DEPENDS ON UserPreferences
+    fun provideAuthInterceptor(userPreferences: UserPreferences): Interceptor {
         return Interceptor { chain ->
-            // Use runBlocking to synchronously get the token directly from DataStore.
-            val token = runBlocking { userPreferences.authToken.first() } // <-- USES UserPreferences
+            val token = runBlocking { userPreferences.authToken.first() }
+
+            // ADD THIS LOGGING
+            android.util.Log.d("AuthInterceptor", "Token: Bearer $token")
 
             val request = chain.request().newBuilder()
             request.addHeader("Accept", "application/json")
@@ -92,4 +95,10 @@ object NetworkModule {
         return retrofit.create(DisasterAidApiService::class.java)
     }
 
+    // Provides the DisasterVictimApiService implementation
+    @Provides
+    @Singleton
+    fun provideDisasterVictimApiService(retrofit: Retrofit): DisasterVictimApiService {
+        return retrofit.create(DisasterVictimApiService::class.java)
+    }
 }

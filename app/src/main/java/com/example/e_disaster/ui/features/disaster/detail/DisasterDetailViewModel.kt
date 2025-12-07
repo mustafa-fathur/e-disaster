@@ -1,58 +1,74 @@
 package com.example.e_disaster.ui.features.disaster.detail
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.model.Disaster
+import com.example.e_disaster.data.model.DisasterVictim
 import com.example.e_disaster.data.repository.DisasterRepository
+import com.example.e_disaster.data.repository.DisasterVictimRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class DisasterDetailUiState(
-    val isLoading: Boolean = true,
     val disaster: Disaster? = null,
-    val isAssigned: Boolean = false,
+    val victims: List<DisasterVictim> = emptyList(),
+    val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val joinStatusMessage: String? = null
+    val isAssigned: Boolean = false,
+    val joinStatusMessage: String? = null,
 )
 
 @HiltViewModel
 class DisasterDetailViewModel @Inject constructor(
     private val disasterRepository: DisasterRepository,
-    savedStateHandle: SavedStateHandle
+    private val victimRepository: DisasterVictimRepository
 ) : ViewModel() {
 
-    var uiState by mutableStateOf(DisasterDetailUiState())
-        private set
+    private val _uiState = MutableStateFlow(DisasterDetailUiState())
+    val uiState: StateFlow<DisasterDetailUiState> = _uiState.asStateFlow()
 
-    private val disasterId: String = checkNotNull(savedStateHandle["disasterId"])
+    private var currentDisasterId: String? = null
 
-    init {
-        loadInitialData()
-    }
+    fun getDisasterDetails(disasterId: String) {
+        if (disasterId == currentDisasterId && !_uiState.value.isLoading) return
+        currentDisasterId = disasterId
 
-    fun loadInitialData() {
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, errorMessage = null)
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                // Panggilan ini sekarang akan bekerja sesuai dengan arsitektur backend Anda
-                val disasterDetail = disasterRepository.getDisasterById(disasterId)
-                val assignmentStatus = disasterRepository.checkAssignmentStatus(disasterId)
+                val disasterDetailsDeferred = async { disasterRepository.getDisasterById(disasterId) }
+                val assignmentStatusDeferred = async { disasterRepository.isUserAssigned(disasterId) }
 
-                uiState = uiState.copy(
-                    isLoading = false,
-                    disaster = disasterDetail,
-                    isAssigned = assignmentStatus
-                )
+                val disasterDetails = disasterDetailsDeferred.await()
+                val assignmentStatus = assignmentStatusDeferred.await()
+
+                val victims = if (assignmentStatus) {
+                    victimRepository.getDisasterVictims(disasterId)
+                } else {
+                    emptyList()
+                }
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        disaster = disasterDetails,
+                        isAssigned = assignmentStatus,
+                        victims = victims
+                    )
+                }
             } catch (e: Exception) {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    errorMessage = "Gagal memuat data detail: ${e.message}"
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Gagal memuat detail: ${e.message}"
+                    )
+                }
                 e.printStackTrace()
             }
         }
@@ -60,21 +76,21 @@ class DisasterDetailViewModel @Inject constructor(
 
     fun joinDisaster() {
         viewModelScope.launch {
-            try {
-                // Panggilan ini sekarang akan mengarah ke endpoint yang benar
-                disasterRepository.joinDisaster(disasterId)
-                uiState = uiState.copy(
-                    isAssigned = true,
-                    joinStatusMessage = "Anda berhasil bergabung!"
-                )
-            } catch (e: Exception) {
-                uiState = uiState.copy(joinStatusMessage = "Gagal bergabung: ${e.message}")
-                e.printStackTrace()
+            currentDisasterId?.let { id ->
+                try {
+                    _uiState.update { it.copy(joinStatusMessage = null) }
+                    val message = disasterRepository.joinDisaster(id)
+                    _uiState.update { it.copy(joinStatusMessage = message) }
+                    getDisasterDetails(id)
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(joinStatusMessage = "Gagal bergabung: ${e.message}") }
+                    e.printStackTrace()
+                }
             }
         }
     }
 
     fun clearJoinStatusMessage() {
-        uiState = uiState.copy(joinStatusMessage = null)
+        _uiState.update { it.copy(joinStatusMessage = null) }
     }
 }

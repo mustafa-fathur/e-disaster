@@ -1,12 +1,17 @@
 package com.example.e_disaster.ui.features.disaster.detail.tabs
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,96 +28,119 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.e_disaster.data.model.DisasterVictim
 import com.example.e_disaster.ui.components.AppSearchBar
 import com.example.e_disaster.ui.components.FilterChipGroup
 import com.example.e_disaster.ui.components.badges.DisasterEvacuationStatusBadge
 import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
-import com.example.e_disaster.ui.features.disaster.detail.VictimItem
 import com.example.e_disaster.ui.features.disaster.detail.components.ListItemCard
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import kotlin.text.format
+
 
 @Composable
-fun VictimsTabContent(navController: NavController, victims: List<VictimItem>) {
+fun VictimsTabContent(
+    navController: NavController,
+    victims: List<DisasterVictim>
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Semua") }
 
     val filteredVictims = remember(searchQuery, selectedFilter, victims) {
         victims.filter { victim ->
-            val matchesSearch = victim.name.contains(searchQuery, ignoreCase = true)
+            val matchesSearch = victim.name.contains(searchQuery, ignoreCase = true) ||
+                    victim.nik.contains(searchQuery, ignoreCase = true)
             val matchesFilter = when (selectedFilter) {
                 "Semua" -> true
                 "Luka Ringan" -> victim.status.equals("minor_injury", ignoreCase = true)
                 "Luka Berat" -> victim.status.equals("serious_injuries", ignoreCase = true)
-                "Hilang" -> victim.status.equals("lost", ignoreCase = true)
+                "Meninggal" -> victim.status.equals("deceased", ignoreCase = true)
+                "Hilang" -> victim.status.equals("missing", ignoreCase = true)
                 else -> true
             }
             matchesSearch && matchesFilter
         }
     }
 
-    val filterOptions = listOf("Semua", "Luka Ringan", "Luka Berat", "Hilang")
+    val filterOptions = listOf("Semua", "Luka Ringan", "Luka Berat", "Meninggal", "Hilang")
 
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                AppSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    placeholderText = "Cari nama korban..."
-                )
-                FilterChipGroup(
-                    filterOptions = filterOptions,
-                    selectedFilter = selectedFilter,
-                    onFilterSelected = { newFilter ->
-                        selectedFilter = newFilter
-                    }
-                )
-            }
+    Column {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AppSearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                placeholderText = "Cari nama atau NIK..."
+            )
+            FilterChipGroup(
+                filterOptions = filterOptions,
+                selectedFilter = selectedFilter,
+                onFilterSelected = { newFilter ->
+                    selectedFilter = newFilter
+                }
+            )
         }
 
-        items(filteredVictims) { victim ->
-            ListItemCard(
-                onClick = { navController.navigate("disaster-victim-detail/${victim.id}") }
+        if (filteredVictims.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Tidak ada data korban.",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                VictimCardContent(victim = victim)
+                items(filteredVictims) { victim ->
+                    ListItemCard(
+                        onClick = { /* navController.navigate("disaster-victim-detail/${victim.id}") */ }
+                    ) {
+                        VictimCardContent(victim = victim)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun VictimCardContent(victim: VictimItem) {
-    // This composable defines the layout inside each victim card
+private fun VictimCardContent(victim: DisasterVictim) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Top row: Name
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun formatDate(dateString: String?): String {
+            if (dateString.isNullOrEmpty()) return "Tanggal tidak valid"
+            return try {
+                val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+            } catch (e: Exception) {
+                "Tanggal tidak valid"
+            }
+        }
         Text(
             text = victim.name,
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default),
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-
-        // Middle row: Gender and Phone
         Text(
-            text = "Laki-laki • 08226810", // Placeholder data
+            text = "${victim.gender} • ${victim.contactInfo}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
-        // Description row
         Text(
-            text = victim.description, // Assuming VictimItem has a description field
+            text = victim.description,
             style = MaterialTheme.typography.bodyMedium
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Footer row: Reporter and Timestamp
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -127,21 +155,18 @@ private fun VictimCardContent(victim: VictimItem) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Ahmad Wijaya", // Placeholder reporter name
+                    text = victim.reporterName,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = "2024-10-28 15:30", // Placeholder timestamp
+                text = formatDate(victim.createdAt),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Badges row
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DisasterEvacuationStatusBadge(isEvacuated = victim.isEvacuated)
             DisasterVictimStatusBadge(status = victim.status)
