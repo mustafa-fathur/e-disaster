@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.core.telecom)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.core.i18n)
+    implementation(libs.androidx.material3)
     kapt(libs.hilt.compiler)
 
     // Hilt and Jetpack Compose Integration
