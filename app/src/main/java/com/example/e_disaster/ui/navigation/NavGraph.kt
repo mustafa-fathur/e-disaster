@@ -106,11 +106,15 @@ fun NavGraph() {
         }
 
         composable(
-            "disaster-report-detail/{reportId}",
-            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+            "disaster-report-detail/{disasterId}/{reportId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("reportId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val reportId = backStackEntry.arguments?.getString("reportId")
-            DisasterReportDetailScreen(navController = navController, reportId = reportId)
+            DisasterReportDetailScreen(navController = navController, disasterId = disasterId, reportId = reportId)
         }
 
         composable(

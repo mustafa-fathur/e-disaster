@@ -2,7 +2,8 @@ package com.example.e_disaster.data.remote.dto.disaster_report
 
 import com.google.gson.annotations.SerializedName
 
-data class DisasterReportListResponse(
+data class DisasterReportDetailResponse(
     @SerializedName("data")
-    val data: List<DisasterReportDto>
+    val data: DisasterReportDto
 )
+

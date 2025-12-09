@@ -26,18 +26,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.components.badges.DisasterReportStatusBadge
-import com.example.e_disaster.ui.features.disaster.detail.ReportItem
+import com.example.e_disaster.data.model.DisasterReport
 import com.example.e_disaster.ui.features.disaster.detail.components.ListItemCard
 
 @Composable
-fun ReportsTabContent(navController: NavController, reports: List<ReportItem>) {
+fun ReportsTabContent(navController: NavController, reports: List<DisasterReport>) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(reports, key = { it.id }) { report ->
             ListItemCard(
-                onClick = { navController.navigate("disaster-report-detail/${report.id}") }
+                onClick = { navController.navigate("disaster-report-detail/${report.disasterId}/${report.id}") }
             ) {
                 ReportCardContent(report = report)
             }
@@ -46,7 +46,7 @@ fun ReportsTabContent(navController: NavController, reports: List<ReportItem>) {
 }
 
 @Composable
-private fun ReportCardContent(report: ReportItem) {
+private fun ReportCardContent(report: DisasterReport) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // Baris atas: Judul Laporan
         Text(
@@ -55,9 +55,9 @@ private fun ReportCardContent(report: ReportItem) {
             fontWeight = FontWeight.Bold
         )
 
-        // Baris tengah: Deskripsi Laporan
+        // Baris tengah: Deskripsi Laporan (gunakan data dari API)
         Text(
-            text = "Tetap Waspada asdasdas das dasjkd bnsajkdbasjb dkasb kdjbnasjk d sada....", // Placeholder deskripsi
+            text = report.description.ifBlank { "Tidak ada deskripsi." },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 2,
@@ -82,18 +82,15 @@ private fun ReportCardContent(report: ReportItem) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Ahmad Wijaya • ${report.date}", // Menggabungkan nama dan waktu
+                    text = "${report.reporterName} • ${report.createdAt}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            // Badge Status di sisi kanan (Contoh: 'Final')
-            // Logika ini hanya contoh, sesuaikan dengan data asli Anda
-            if (report.id == "1") {
-                Box {
-                    DisasterReportStatusBadge(isCompleted = true)
-                }
+            // Badge Status (Final atau Dalam Proses)
+            Box {
+                DisasterReportStatusBadge(isCompleted = report.isFinalStage)
             }
         }
     }
