@@ -1,5 +1,7 @@
 package com.example.e_disaster.ui.components.partials
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository
@@ -25,6 +28,7 @@ class MainViewModel @Inject constructor(
         fetchUserProfile()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchUserProfile() {
         viewModelScope.launch {
             try {
