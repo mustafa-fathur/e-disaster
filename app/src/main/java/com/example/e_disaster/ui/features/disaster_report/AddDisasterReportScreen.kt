@@ -1,62 +1,62 @@
 package com.example.e_disaster.ui.features.disaster_report
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun AddDisasterReportScreen(navController: NavController, disasterId: String?) {
-    // Move state declarations here (like AddDisasterScreen)
+    // ViewModel
+    val viewModel: AddDisasterReportViewModel = hiltViewModel()
+    val uiState = viewModel.uiState
+
+    // Move state declarations here
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var lat by remember { mutableStateOf("") }
-    var long by remember { mutableStateOf("") }
     var isFinal by remember { mutableStateOf(false) }
-    // disasterId is kept in the signature for future use
+
+    // whether saving is allowed (disasterId must be present and not blank)
+    val canSave = !disasterId.isNullOrBlank()
+
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -65,32 +65,39 @@ fun AddDisasterReportScreen(navController: NavController, disasterId: String?) {
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .padding(16.dp)
         ) {
             AddDisasterReportContent(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .align(Alignment.TopCenter),
+                modifier = Modifier.fillMaxWidth(),
                 title = title,
                 onTitleChange = { title = it },
                 description = description,
                 onDescriptionChange = { description = it },
-                lat = lat,
-                onLatChange = { lat = it },
-                long = long,
-                onLongChange = { long = it },
                 isFinal = isFinal,
                 onIsFinalChange = { isFinal = it },
-                onSave = { _, _, _, _, _ ->
-                    // navigate back after saving
-                    navController.navigateUp()
+                isSaving = uiState.isLoading,
+                canSave = canSave,
+                onSave = { t, d, f ->
+                    viewModel.createReport(disasterId, t, d, f)
                 }
             )
+
+            if (!canSave) {
+                Text(
+                    text = "ID bencana tidak tersedia. Tidak dapat menyimpan laporan.",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            } else if (uiState.errorMessage != null) {
+                Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+            }
         }
     }
 }
@@ -103,148 +110,65 @@ fun AddDisasterReportContent(
     onTitleChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
-    lat: String,
-    onLatChange: (String) -> Unit,
-    long: String,
-    onLongChange: (String) -> Unit,
     isFinal: Boolean,
     onIsFinalChange: (Boolean) -> Unit,
-    onSave: (title: String, description: String, lat: String, long: String, isFinal: Boolean) -> Unit = { _, _, _, _, _ -> }
+    isSaving: Boolean = false,
+    canSave: Boolean = true,
+    onSave: (title: String, description: String, isFinal: Boolean) -> Unit = { _, _, _ -> }
 ) {
 
     Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Judul
         OutlinedTextField(
             value = title,
             onValueChange = onTitleChange,
             label = { Text(text = "Judul Laporan") },
-            leadingIcon = {
-                Text(
-                    text = "Tt",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            singleLine = true,
+            placeholder = { Text(text = "Judul Laporan") },
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                if (title.isNotEmpty()) {
-                    IconButton(onClick = { onTitleChange("") }) {
-                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                    }
-                }
-            }
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done)
         )
 
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text(text = "Deskripsi") },
-            leadingIcon = {
-                Text(
-                    text = "Tt",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            placeholder = { Text(text = "Deskripsi") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            trailingIcon = {
-                if (description.isNotEmpty()) {
-                    IconButton(onClick = { onDescriptionChange("") }) {
-                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                    }
-                }
-            }
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done)
         )
 
-        // Lat / Long row
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = lat,
-                onValueChange = onLatChange,
-                label = { Text(text = "Latitude", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                placeholder = { Text(text = "Lat") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                leadingIcon = { Icon(imageVector = Icons.Default.LocationOn, contentDescription = null) },
-                trailingIcon = {
-                    if (lat.isNotEmpty()) {
-                        IconButton(onClick = { onLatChange("") }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                        }
-                    }
-                }
-            )
-
-            OutlinedTextField(
-                value = long,
-                onValueChange = onLongChange,
-                label = { Text(text = "Longitude", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                placeholder = { Text(text = "Long") },
-                singleLine = true,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                leadingIcon = { Icon(imageVector = Icons.Default.LocationOn, contentDescription = null) },
-                trailingIcon = {
-                    if (long.isNotEmpty()) {
-                        IconButton(onClick = { onLongChange("") }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                        }
-                    }
-                }
-            )
-        }
-
-        // Upload photo
-        Text(text = "Foto Bencana", style = MaterialTheme.typography.labelLarge)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // simple placeholder box for image preview
-            Box(
-                modifier = Modifier
-                    .size(84.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF0F0F0)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Foto", fontSize = 12.sp, color = Color.Gray)
-            }
-
-            TextButton(onClick = { /* TODO: open image picker */ }) {
-                Icon(imageVector = Icons.Default.AddAPhoto, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Upload Foto")
-            }
-        }
-
         // Final report checkbox
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = isFinal, onCheckedChange = onIsFinalChange)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Ini adalah laporan tahap akhir")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
-        // Save button (prominent)
+        // Save button (match victim screen style)
         Button(
-            onClick = { onSave(title, description, lat, long, isFinal) },
+            onClick = { onSave(title, description, isFinal) },
+            enabled = canSave && !isSaving,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                .height(56.dp),
+            shape = MaterialTheme.shapes.medium
         ) {
-            Text(text = "Simpan", color = MaterialTheme.colorScheme.onPrimary)
+            if (isSaving) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Menyimpan...", style = MaterialTheme.typography.titleMedium)
+            } else {
+                Text(text = "Simpan", style = MaterialTheme.typography.titleMedium)
+            }
         }
     }
 }
@@ -253,26 +177,22 @@ fun AddDisasterReportContent(
 @Composable
 fun AddDisasterReportPreview() {
     EDisasterTheme {
-        // Provide remembered state holders in preview so the composable signature is satisfied
         var title by remember { mutableStateOf("") }
         var description by remember { mutableStateOf("") }
-        var lat by remember { mutableStateOf("") }
-        var long by remember { mutableStateOf("") }
         var isFinal by remember { mutableStateOf(false) }
 
-        AddDisasterReportContent(
-            modifier = Modifier.padding(16.dp),
-            title = title,
-            onTitleChange = {},
-            description = description,
-            onDescriptionChange = {},
-            lat = lat,
-            onLatChange = {},
-            long = long,
-            onLongChange = {},
-            isFinal = isFinal,
-            onIsFinalChange = {},
-            onSave = { _, _, _, _, _ -> }
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            AddDisasterReportContent(
+                modifier = Modifier.fillMaxWidth(),
+                title = title,
+                onTitleChange = {},
+                description = description,
+                onDescriptionChange = {},
+                isFinal = isFinal,
+                onIsFinalChange = {},
+                canSave = true,
+                onSave = { _, _, _ -> }
+            )
+        }
     }
 }

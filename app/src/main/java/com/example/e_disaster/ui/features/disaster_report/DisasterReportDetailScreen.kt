@@ -28,7 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,13 +39,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
 @Composable
-fun DisasterReportDetailScreen(navController: NavController, reportId: String?) {
+fun DisasterReportDetailScreen(navController: NavController, disasterId: String?, reportId: String?) {
+    val viewModel: DisasterReportDetailViewModel = hiltViewModel()
+    val uiState = viewModel.uiState
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -70,14 +77,25 @@ fun DisasterReportDetailScreen(navController: NavController, reportId: String?) 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            ReportInfoCard(
-                title = "Update Korban dan Kerusakan",
-                description = "15 rumah rusak berat, 30 rumah rusak ringan. Total korban luka ringan bertambah menjadi 25 orang.",
-                reporter = "Ahmad Wijaya",
-                time = "2024-10-28 14:30",
-                location = "-6.8167, 107.1464"
-            )
-            PhotoSection()
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+                uiState.errorMessage != null -> {
+                    Text(text = uiState.errorMessage ?: "", color = MaterialTheme.colorScheme.error)
+                }
+                uiState.report != null -> {
+                    val r = uiState.report!!
+                    ReportInfoCard(
+                        title = r.title,
+                        description = r.description,
+                        reporter = r.reporterName,
+                        time = r.createdAt,
+                        location = r.disasterTitle
+                    )
+                    PhotoSection(pictures = emptyList()) // currently r doesn't have pictures parsed; placeholder
+                }
+            }
         }
     }
 }
@@ -132,7 +150,7 @@ private fun ReportInfoCard(
             // Detail List
             DetailItemWithIcon(icon = Icons.Default.Person, label = "Pelapor", value = reporter)
             DetailItemWithIcon(icon = Icons.Default.CalendarMonth, label = "Waktu Laporan", value = time)
-            DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Koordinat Lokasi", value = location)
+            DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Lokasi/Keterangan Bencana", value = location)
         }
     }
 }
@@ -166,7 +184,7 @@ private fun DetailItemWithIcon(icon: ImageVector, label: String, value: String) 
 }
 
 @Composable
-private fun PhotoSection() {
+private fun PhotoSection(pictures: List<String>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -179,7 +197,7 @@ private fun PhotoSection() {
             )
             Spacer(modifier = Modifier.padding(horizontal = 4.dp))
             Text(
-                text = "Foto Laporan (2)",
+                text = "Foto Laporan (${pictures.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -188,7 +206,7 @@ private fun PhotoSection() {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items(3) { // Dummy items for photo placeholders
+            items(pictures.size) { idx ->
                 Card(
                     modifier = Modifier.size(140.dp, 120.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -222,7 +240,7 @@ private fun PhotoSection() {
 @Composable
 fun DisasterReportDetailScreenLightPreview() {
     EDisasterTheme(darkTheme = false) {
-        DisasterReportDetailScreen(navController = rememberNavController(), reportId = "1")
+        DisasterReportDetailScreen(navController = rememberNavController(), disasterId = "d1", reportId = "r1")
     }
 }
 
@@ -230,6 +248,6 @@ fun DisasterReportDetailScreenLightPreview() {
 @Composable
 fun DisasterReportDetailScreenDarkPreview() {
     EDisasterTheme(darkTheme = true) {
-        DisasterReportDetailScreen(navController = rememberNavController(), reportId = "1")
+        DisasterReportDetailScreen(navController = rememberNavController(), disasterId = "d1", reportId = "r1")
     }
 }

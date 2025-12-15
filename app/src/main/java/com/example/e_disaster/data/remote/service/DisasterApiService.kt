@@ -5,6 +5,10 @@ import com.example.e_disaster.data.remote.dto.disaster.DisasterListResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterVolunteerCheckResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterVolunteerListResponse
 import com.example.e_disaster.data.remote.dto.general.MessageResponse
+import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportListResponse
+import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDetailResponse
+import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -27,6 +31,19 @@ interface DisasterApiService {
     @GET("disasters/{disasterId}/volunteer-check")
     suspend fun checkAssignment(
         @Path("disasterId") disasterId: String
+    ): DisasterReportListResponse
+
+    @GET("disasters/{disasterId}/reports/{reportId}")
+    suspend fun getDisasterReport(
+        @Path("disasterId") disasterId: String,
+        @Path("reportId") reportId: String
+    ): DisasterReportDetailResponse
+
+    @POST("disasters/{disasterId}/reports")
+    suspend fun createDisasterReport(
+        @Path("disasterId") disasterId: String,
+        @Body request: CreateDisasterReportRequest
+    ): DisasterReportDetailResponse
     ): DisasterVolunteerCheckResponse
 
     @GET("disasters/{disasterId}/volunteers")

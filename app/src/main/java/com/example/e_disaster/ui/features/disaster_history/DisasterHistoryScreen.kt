@@ -45,7 +45,6 @@ import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
 import com.example.e_disaster.ui.theme.EDisasterTheme
-import com.example.e_disaster.utils.DummyData.historyList
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
@@ -54,13 +53,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.e_disaster.ui.features.disaster.list.DisasterListViewModel
+import com.example.e_disaster.data.model.Disaster
 
 @Composable
 fun HistoryScreen(
     navController: NavController,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    disasterListViewModel: DisasterListViewModel = hiltViewModel()
 ) {
-    val historyList = historyList
+    // Use disasters from the same ViewModel as the list screen and filter completed ones
+    val allDisasters = disasterListViewModel.disasters
+    val isLoading = disasterListViewModel.isLoading
+    val errorMessage = disasterListViewModel.errorMessage
+
+    // Map Disaster -> History for the UI and only include completed status (case-insensitive)
+    val historyList = allDisasters
+        .filter { it.status?.equals("completed", true) == true }
+        .map { disaster ->
+            History(
+                id = disaster.id ?: "",
+                disasterName = disaster.title ?: run {
+                    // fallback to mapped type or source
+                    disaster.types?.let { it.replace('_', ' ').replaceFirstChar { c -> c.uppercase() } } ?: "Tanpa Judul"
+                },
+                location = disaster.location ?: "Lokasi tidak diketahui",
+                date = disaster.createdAt ?: disaster.date ?: "",
+                description = disaster.description ?: "",
+                imageUrl = "", // API Disaster model doesn't include image; keep empty or provide placeholder
+                status = disaster.status ?: "completed",
+                participants = emptyList()
+            )
+        }
+
     val user = mainViewModel.user
     // pick success color based on current theme
     val isDarkTheme = isSystemInDarkTheme()
@@ -89,110 +114,129 @@ fun HistoryScreen(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (historyList.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Anda belum memiliki riwayat penanganan bencana.",
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator()
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(historyList, key = { it.id }) { history ->
-                            // inline card directly instead of calling a separate HistoryCard composable
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .clickable { navController.navigate("disaster-detail/${history.id}") },
-                                shape = RoundedCornerShape(12.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                            ) {
-                                Row(
+                    errorMessage != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                    historyList.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Anda belum memiliki riwayat penanganan bencana.",
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(historyList, key = { it.id }) { history ->
+                                // inline card directly instead of calling a separate HistoryCard composable
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(IntrinsicSize.Min),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .wrapContentHeight()
+                                        .clickable { navController.navigate("disaster-detail/${history.id}") },
+                                    shape = RoundedCornerShape(12.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    // Left column: title, info rows and badges
-                                    Column(
+                                    Row(
                                         modifier = Modifier
-                                            .weight(1f)
-                                            .padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                            .fillMaxWidth()
+                                            .height(IntrinsicSize.Min),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = history.disasterName,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
+                                        // Left column: title, info rows and badges
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Text(
+                                                text = history.disasterName,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
 
-                                        InfoRow(icon = Icons.Default.LocationOn, text = history.location)
+                                            InfoRow(icon = Icons.Default.LocationOn, text = history.location)
 
-                                        Spacer(modifier = Modifier.height(6.dp))
+                                            Spacer(modifier = Modifier.height(6.dp))
 
-                                        Row {
-                                            OutlinedButton(
-                                                onClick = { /* no-op */ },
-                                                shape = RoundedCornerShape(12.dp),
-                                                border = BorderStroke(1.dp, Color(0xFFEF6C3C)),
-                                                colors = ButtonDefaults.outlinedButtonColors(
-                                                    contentColor = Color(0xFFEF6C3C),
-                                                    containerColor = Color.Transparent
-                                                ),
-                                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
-                                            ) {
-                                                Text(
-                                                    text = history.disasterName.takeIf { it.isNotBlank() } ?: "Jenis",
-                                                    fontSize = 12.sp
-                                                )
-                                            }
+                                            Row {
+                                                OutlinedButton(
+                                                    onClick = { /* no-op */ },
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                                                    colors = ButtonDefaults.outlinedButtonColors(
+                                                        contentColor = MaterialTheme.colorScheme.primary,
+                                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                                    ),
+                                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = history.disasterName.takeIf { it.isNotBlank() } ?: "Jenis",
+                                                        fontSize = 12.sp
+                                                    )
+                                                }
 
-                                            Spacer(modifier = Modifier.width(8.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
 
-                                            OutlinedButton(
-                                                onClick = { /* no-op */ },
-                                                shape = RoundedCornerShape(12.dp),
-                                                border = BorderStroke(1.dp, successBorderColor),
-                                                colors = ButtonDefaults.outlinedButtonColors(
-                                                    contentColor = successContentColor,
-                                                    containerColor = Color.Transparent
-                                                ),
-                                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
-                                            ) {
-                                                Text(
-                                                    text = if (history.status.equals("completed", true)) "Selesai" else history.status,
-                                                    fontSize = 12.sp
-                                                )
+                                                OutlinedButton(
+                                                    onClick = { /* no-op */ },
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    border = BorderStroke(1.dp, successBorderColor),
+                                                    colors = ButtonDefaults.outlinedButtonColors(
+                                                        contentColor = successContentColor,
+                                                        containerColor = successContentColor.copy(alpha = 0.1f)
+                                                    ),
+                                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = if (history.status.equals("completed", true)) "Selesai" else history.status,
+                                                        fontSize = 12.sp
+                                                    )
+                                                }
                                             }
                                         }
-                                    }
 
-                                    // Right image panel (square)
-                                    Box(
-                                        modifier = Modifier
-                                            .width(100.dp)
-                                            .fillMaxHeight()
-                                            .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                                            .background(Color(0xFFF1EAF5)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        AsyncImage(
-                                            model = history.imageUrl,
-                                            contentDescription = "Gambar Bencana",
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
+                                        // Right image panel (square)
+                                        Box(
+                                            modifier = Modifier
+                                                .width(100.dp)
+                                                .fillMaxHeight()
+                                                .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                                                .background(Color(0xFFF1EAF5)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AsyncImage(
+                                                model = history.imageUrl,
+                                                contentDescription = "Gambar Bencana",
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -272,10 +316,10 @@ fun HistoryListPreview() {
                                 OutlinedButton(
                                     onClick = { /* no-op */ },
                                     shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(1.dp, Color(0xFFEF6C3C)),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color(0xFFEF6C3C),
-                                        containerColor = Color.Transparent
+                                        contentColor = MaterialTheme.colorScheme.primary,
+                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                     ),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
                                 ) {
@@ -293,7 +337,7 @@ fun HistoryListPreview() {
                                     border = BorderStroke(1.dp, successBorderColor),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = successContentColor,
-                                        containerColor = Color.Transparent
+                                        containerColor = successContentColor.copy(alpha = 0.1f)
                                     ),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
                                 ) {
