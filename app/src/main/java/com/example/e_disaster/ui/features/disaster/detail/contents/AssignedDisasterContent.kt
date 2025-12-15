@@ -60,6 +60,7 @@ fun AssignedDisasterContent(
                 1 -> ReportsTabContent(navController, dummyReports)
                 2 -> VictimsTabContent(
                     navController = navController,
+                    disasterId = disasterId,
                     victims = victims
                 )
                 3 -> AidsTabContent(navController, dummyAids)

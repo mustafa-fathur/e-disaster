@@ -1,7 +1,6 @@
 package com.example.e_disaster.ui.features.disaster.detail.tabs
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,12 +39,12 @@ import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
 import com.example.e_disaster.ui.features.disaster.detail.components.ListItemCard
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.text.format
 
 
 @Composable
 fun VictimsTabContent(
     navController: NavController,
+    disasterId: String,
     victims: List<DisasterVictim>
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -103,7 +102,16 @@ fun VictimsTabContent(
             ) {
                 items(filteredVictims) { victim ->
                     ListItemCard(
-                        onClick = { /* navController.navigate("disaster-victim-detail/${victim.id}") */ }
+                        onClick = {
+                            if (victim.id.isEmpty() || victim.disasterId.isNullOrEmpty()) {
+                                Log.e(
+                                    "VictimsTab",
+                                    "Navigasi dibatalkan: ID kosong. VictimID: '${victim.id}', DisasterID: '${victim.disasterId}'"
+                                )
+                            } else {
+                                navController.navigate("disaster-victim-detail/${victim.disasterId}/${victim.id}")
+                            }
+                        }
                     ) {
                         VictimCardContent(victim = victim)
                     }
@@ -116,7 +124,6 @@ fun VictimsTabContent(
 @Composable
 private fun VictimCardContent(victim: DisasterVictim) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        @RequiresApi(Build.VERSION_CODES.O)
         fun formatDate(dateString: String?): String {
             if (dateString.isNullOrEmpty()) return "Tanggal tidak valid"
             return try {

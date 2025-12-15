@@ -65,8 +65,6 @@ fun NavGraph() {
             NotificationScreen(navController = navController)
         }
 
-        // Semua route di bawah ini harusnya cuman bisa diakses oleh volunteer nanti.
-
         composable(
             "disaster-detail/{disasterId}",
             arguments = listOf(navArgument("disasterId") {type = NavType.StringType })
@@ -116,19 +114,35 @@ fun NavGraph() {
         }
 
         composable(
-            route = "disaster-victim-detail/{victimId}",
-            arguments = listOf(navArgument("victimId") { type = NavType.StringType })
+            route = "disaster-victim-detail/{disasterId}/{victimId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("victimId") { type = NavType.StringType }
+                )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val victimId = backStackEntry.arguments?.getString("victimId")
-            DisasterVictimDetailScreen(navController = navController, victimId = victimId)
+            DisasterVictimDetailScreen(
+                navController = navController,
+                disasterId = disasterId,
+                victimId = victimId
+            )
         }
 
         composable(
-            route = "update-disaster-victim/{victimId}",
-            arguments = listOf(navArgument("victimId") { type = NavType.StringType })
+            route = "update-disaster-victim/{disasterId}/{victimId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("victimId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val victimId = backStackEntry.arguments?.getString("victimId")
-            UpdateDisasterVictimScreen(navController = navController, victimId = victimId)
+            UpdateDisasterVictimScreen(
+                navController = navController,
+//                disasterId = disasterId,
+                victimId = victimId
+            )
         }
 
         composable(

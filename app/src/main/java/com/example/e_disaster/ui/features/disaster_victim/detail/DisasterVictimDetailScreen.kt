@@ -1,6 +1,12 @@
 package com.example.e_disaster.ui.features.disaster_victim.detail
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,49 +16,73 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import com.example.e_disaster.R
+import com.example.e_disaster.data.model.DisasterVictim
+import com.example.e_disaster.data.model.VictimPicture
 import com.example.e_disaster.ui.components.badges.DisasterEvacuationStatusBadge
 import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.detail.VictimItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun DisasterVictimDetailScreen(navController: NavController, victimId: String?) {
-    // Dummy data source mimicking the one from VictimsTab.kt and DisasterDetailScreen.kt
-    val dummyVictims = listOf(
-        VictimItem("1", "Siti Rahayu", "Luka ringan di kaki kanan akibat reruntuhan", "minor_injury", true),
-        VictimItem("2", "Budi Santoso", "Mengalami dehidrasi", "minor_injury", false),
-        VictimItem("3", "Ahmad Subarjo", "Patah tulang di lengan kiri", "serious_injuries", true)
-    )
+fun DisasterVictimDetailScreen(
+    navController: NavController,
+    disasterId: String?,
+    victimId: String?,
+    viewModel: DisasterVictimDetailViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Find the victim by ID, or use the first one as a fallback for preview
-    val victim = remember(victimId) {
-        dummyVictims.find { it.id == victimId } ?: dummyVictims.first()
+    var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(disasterId, victimId) {
+        Log.d("VictimDetailScreen", "LaunchedEffect triggered. DisasterID: '$disasterId', VictimID: '$victimId'")
+        if (!disasterId.isNullOrEmpty() && !victimId.isNullOrEmpty()) {
+            Log.d("VictimDetailScreen", "IDs are valid, calling loadVictimDetail.")
+            viewModel.loadVictimDetail(disasterId, victimId)
+        } else {
+            Log.e("VictimDetailScreen", "Navigasi Gagal: Satu atau kedua ID null atau kosong.")
+        }
     }
 
     Scaffold(
@@ -62,7 +92,7 @@ fun DisasterVictimDetailScreen(navController: NavController, victimId: String?) 
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
-                    IconButton(onClick = { navController.navigate("update-disaster-victim/${victim.id}") }) {
+                    IconButton(onClick = { navController.navigate("update-disaster-victim/$disasterId/$victimId") }) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Ubah",
@@ -74,22 +104,60 @@ fun DisasterVictimDetailScreen(navController: NavController, victimId: String?) 
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            VictimInfoCard(victim = victim)
-            PhotoSection()
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                uiState.errorMessage != null -> {
+                    Text(
+                        text = uiState.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                    )
+                }
+                uiState.victim != null -> {
+                    VictimDetailContent(
+                        victim = uiState.victim!!,
+                        onImageClick = { imageUrl ->
+                            selectedImageUrl = imageUrl
+                        }
+                    )
+                }
+            }
+        }
+        if (selectedImageUrl != null) {
+            FullScreenImageViewer(
+                imageUrl = selectedImageUrl!!,
+                onDismiss = { selectedImageUrl = null }
+            )
         }
     }
 }
 
 @Composable
-private fun VictimInfoCard(victim: VictimItem) {
+private fun VictimInfoCard(victim: DisasterVictim) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun formatDate(dateString: String): String {
+        return try {
+            val localDate = try {
+                LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            } catch (e: Exception) {
+                LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            }
+            localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+        } catch (e: Exception) {
+            dateString
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -100,58 +168,47 @@ private fun VictimInfoCard(victim: VictimItem) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header: Name and Icon
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                victim.disasterTitle?.let { title ->
                     Text(
-                        text = victim.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                        text = title,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    DisasterVictimStatusBadge(status = victim.status)
                 }
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Victim Icon",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
+                Text(
+                    text = victim.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            // Details Grid
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DisasterVictimStatusBadge(status = victim.status)
+                DisasterEvacuationStatusBadge(isEvacuated = victim.isEvacuated)
+            }
+
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    DetailItem(label = "NIK", value = "123131321321321321")
+                    DetailItem(label = "NIK", value = victim.nik)
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailItem(label = "Tanggal Lahir", value = "15 Mei 1965")
+                    DetailItem(label = "Tanggal Lahir", value = formatDate(victim.dateOfBirth))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DetailItem(label = "Dilaporkan Oleh", value = victim.reporterName)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    DetailItem(label = "Jenis Kelamin", value = "Perempuan")
+                    DetailItem(label = "Jenis Kelamin", value = victim.gender)
                     Spacer(modifier = Modifier.height(16.dp))
-                    DetailItem(label = "Kontak", value = "0821321321")
+                    DetailItem(label = "Kontak", value = victim.contactInfo)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DetailItem(
+                        label = "Tanggal Laporan",
+                        value = formatDate(victim.createdAt)
+                    )
                 }
             }
 
-            // Description
             DetailItem(label = "Deskripsi", value = victim.description)
-
-            // Evacuation Status
-            Column {
-                Text(
-                    text = "Status Evakuasi",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DisasterEvacuationStatusBadge(isEvacuated = true)
-                    DisasterEvacuationStatusBadge(isEvacuated = false)
-                }
-            }
         }
     }
 }
@@ -174,7 +231,10 @@ private fun DetailItem(label: String, value: String) {
 }
 
 @Composable
-private fun PhotoSection() {
+private fun PhotoSection(
+    pictures: List<VictimPicture>,
+    onImageClick: (String) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -187,52 +247,105 @@ private fun PhotoSection() {
             )
             Spacer(modifier = Modifier.padding(horizontal = 4.dp))
             Text(
-                text = "Foto Korban (1)",
+                text = "Foto Korban (${pictures.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
         }
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(3) { // Dummy items for photo placeholders
+            items(pictures) { picture ->
+                val fullImageUrl = "https://e-disaster.fathur.tech${picture.url}"
                 Card(
-                    modifier = Modifier.size(140.dp, 120.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .size(140.dp, 120.dp)
+                        .clickable { onImageClick(fullImageUrl) },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    // Placeholder for an actual image
-                    Column(
+                    AsyncImage(
+                        model = fullImageUrl,
+                        contentDescription = picture.caption ?: "Foto korban",
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.BrokenImage,
-                            contentDescription = "Placeholder Image",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = R.drawable.placeholder),
+                        error = painterResource(id = R.drawable.placeholder)
+                    )
                 }
             }
-        }
-        TextButton(
-            onClick = { /* TODO: Navigate to photo gallery screen */ },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("Tampilkan Semua", color = MaterialTheme.colorScheme.primary)
         }
     }
 }
 
+@Composable
+private fun VictimDetailContent(
+    victim: DisasterVictim,
+    onImageClick: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        VictimInfoCard(victim = victim)
+        victim.pictures?.takeIf { it.isNotEmpty() }?.let { pictures ->
+            PhotoSection(
+                pictures = pictures,
+                onImageClick = onImageClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun FullScreenImageViewer(imageUrl: String, onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.8f))
+                .clickable(onClick = onDismiss),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Gambar ukuran penuh",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentScale = ContentScale.Fit,
+                placeholder = painterResource(id = R.drawable.placeholder),
+                error = painterResource(id = R.drawable.placeholder)
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Tutup",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true, name = "Detail Victim Light")
 @Composable
 fun DisasterVictimDetailScreenLightPreview() {
     EDisasterTheme(darkTheme = false) {
-        DisasterVictimDetailScreen(navController = rememberNavController(), victimId = "1")
+        DisasterVictimDetailScreen(navController = rememberNavController(), disasterId = "1", victimId = "1")
     }
 }
 
@@ -240,6 +353,6 @@ fun DisasterVictimDetailScreenLightPreview() {
 @Composable
 fun DisasterVictimDetailScreenDarkPreview() {
     EDisasterTheme(darkTheme = true) {
-        DisasterVictimDetailScreen(navController = rememberNavController(), victimId = "1")
+        DisasterVictimDetailScreen(navController = rememberNavController(), disasterId = "1", victimId = "1")
     }
 }

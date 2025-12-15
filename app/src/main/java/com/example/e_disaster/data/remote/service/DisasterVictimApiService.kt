@@ -1,5 +1,6 @@
 package com.example.e_disaster.data.remote.service
 
+import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDetailResponse
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimListResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -10,4 +11,10 @@ interface DisasterVictimApiService {
     suspend fun getDisasterVictims(
         @Path("disasterId") disasterId: String
     ): DisasterVictimListResponse
+
+    @GET("disasters/{disasterId}/victims/{victimId}")
+    suspend fun getDisasterVictimDetail(
+        @Path("disasterId") disasterId: String,
+        @Path("victimId") victimId: String
+    ): DisasterVictimDetailResponse
 }
