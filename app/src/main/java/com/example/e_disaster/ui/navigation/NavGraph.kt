@@ -1,52 +1,38 @@
 package com.example.e_disaster.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.e_disaster.ui.features.Welcome
-import com.example.e_disaster.ui.features.disaster_aid.add.AddDisasterAidScreen
-import com.example.e_disaster.ui.features.disaster_report.AddDisasterReportScreen
-import com.example.e_disaster.ui.features.disaster.AddDisasterScreen
-import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimScreen
-import com.example.e_disaster.ui.features.disaster.detail.DisasterDetailScreen
-import com.example.e_disaster.ui.features.disaster.list.DisasterListScreen
-import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
-import com.example.e_disaster.ui.features.disaster_victim.DisasterVictimListScreen
-import com.example.e_disaster.ui.features.disaster_history.HistoryScreen
-import com.example.e_disaster.ui.features.home.HomeScreen
 import com.example.e_disaster.ui.features.auth.login.LoginScreen
-import com.example.e_disaster.ui.features.notification.NotificationScreen
 import com.example.e_disaster.ui.features.auth.profile.ProfileScreen
 import com.example.e_disaster.ui.features.auth.register.RegisterScreen
-import com.example.e_disaster.ui.features.disaster_aid.update.UpdateDisasterAidScreen
-import com.example.e_disaster.ui.features.disaster_report.UpdateDisasterReportScreen
+import com.example.e_disaster.ui.features.disaster.AddDisasterScreen
 import com.example.e_disaster.ui.features.disaster.UpdateDisasterScreen
+import com.example.e_disaster.ui.features.disaster.detail.DisasterDetailScreen
+import com.example.e_disaster.ui.features.disaster.list.DisasterListScreen
+import com.example.e_disaster.ui.features.disaster_aid.add.AddDisasterAidScreen
 import com.example.e_disaster.ui.features.disaster_aid.detail.DisasterAidDetailScreen
+import com.example.e_disaster.ui.features.disaster_aid.update.UpdateDisasterAidScreen
+import com.example.e_disaster.ui.features.disaster_history.HistoryScreen
+import com.example.e_disaster.ui.features.disaster_report.AddDisasterReportScreen
 import com.example.e_disaster.ui.features.disaster_report.DisasterReportDetailScreen
+import com.example.e_disaster.ui.features.disaster_report.UpdateDisasterReportScreen
+import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimScreen
+import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
 import com.example.e_disaster.ui.features.disaster_victim.update.UpdateDisasterVictimScreen
-import kotlinx.coroutines.delay
+import com.example.e_disaster.ui.features.home.HomeScreen
+import com.example.e_disaster.ui.features.notification.NotificationScreen
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "welcome"
+        startDestination = "login"
     ) {
-        composable("welcome") {
-            Welcome()
-            LaunchedEffect(Unit) {
-                delay(3000) // 3 seconds delay
-                navController.navigate("login") {
-                    popUpTo("welcome") { inclusive = true }
-                }
-            }
-        }
-
         composable("login") {
             LoginScreen(navController = navController)
         }
@@ -123,14 +109,6 @@ fun NavGraph() {
         ) { backStackEntry ->
             val reportId = backStackEntry.arguments?.getString("reportId")
             UpdateDisasterReportScreen(navController = navController, reportId = reportId)
-        }
-
-        composable(
-            route = "disaster-victim-list/{disasterId}",
-            arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val disasterId = backStackEntry.arguments?.getString("disasterId")
-            DisasterVictimListScreen(navController = navController, disasterId = disasterId)
         }
 
         composable(

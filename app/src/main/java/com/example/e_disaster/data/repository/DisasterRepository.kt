@@ -6,13 +6,12 @@ import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDto
 import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
 import com.example.e_disaster.data.remote.service.DisasterApiService
-import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DisasterRepository @Inject constructor(
-    private val apiService: DisasterApiService
+    private val apiService: DisasterApiService,
 ) {
     suspend fun getDisasters(): List<Disaster> {
         val response = apiService.getDisasters()
@@ -20,8 +19,8 @@ class DisasterRepository @Inject constructor(
     }
 
     suspend fun getDisasterById(disasterId: String): Disaster {
-        val response = apiService.getDisasterById(disasterId)
-        return mapDisasterDtoToDisaster(response)
+        val dto = apiService.getDisasterById(disasterId)
+        return mapDisasterDtoToDisaster(dto)
     }
 
     suspend fun getDisasterReports(disasterId: String): List<DisasterReport> {
@@ -50,12 +49,17 @@ class DisasterRepository @Inject constructor(
                 throw e
             }
         }
+    suspend fun joinDisaster(disasterId: String): String {
+        val response = apiService.joinDisaster(disasterId)
+        return response.message
     }
 
-    suspend fun joinDisaster(disasterId: String) {
-        apiService.joinDisaster(disasterId)
+    suspend fun isUserAssigned(disasterId: String): Boolean {
+        // This logic is now correct based on your backend. It stays.
+        return apiService.checkAssignment(disasterId).assigned
     }
 
+    // --- USING YOUR ROBUST MAPPING LOGIC ---
     private fun mapDisasterDtoToDisaster(dto: DisasterDto): Disaster {
         return Disaster(
             id = dto.id ?: "",
