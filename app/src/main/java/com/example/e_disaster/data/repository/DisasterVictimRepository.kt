@@ -15,7 +15,6 @@ class DisasterVictimRepository @Inject constructor(
         return response.data.map { mapVictimDtoToVictim(it) }
     }
 
-    // --- USING YOUR ROBUST MAPPING LOGIC ---
     private fun mapVictimDtoToVictim(dto: DisasterVictimDto): DisasterVictim {
         return DisasterVictim(
             id = dto.id ?: "",

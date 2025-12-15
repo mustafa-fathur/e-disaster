@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.EDisaster" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <!-- Splash Screen Theme -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <!-- Warna background akan otomatis berganti sesuai tema (light/dark) -->
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-
-        <!-- Ikon akan otomatis berganti sesuai tema (light/dark) -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
-
-        <!-- Theme yang akan diterapkan setelah splash screen selesai -->
         <item name="postSplashScreenTheme">@style/Theme.EDisaster</item>
     </style>
-
 </resources>

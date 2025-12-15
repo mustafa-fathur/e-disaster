@@ -16,7 +16,6 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Hilt knows this should be a singleton because we defined it in AppModule
 @Singleton
 class AuthRepository @Inject constructor(
     private val apiService: AuthApiService,
@@ -29,21 +28,13 @@ class AuthRepository @Inject constructor(
     suspend fun register(request: RegisterRequest): RegisterResponse {
         return apiService.register(request)
     }
-    
-    /**
-     * Performs the login operation.
-     * 1. Calls the API with the login request.
-     * 2. If successful, saves the received token to DataStore.
-     */
+
     suspend fun login(request: LoginRequest) {
         val response = apiService.login(request)
         // The API response includes the token, which we save
         userPreferences.saveAuthToken(response.token)
     }
 
-    /**
-     * Clears the authentication token from local storage.
-     */
     suspend fun logout() {
         userPreferences.clearAuthToken()
     }

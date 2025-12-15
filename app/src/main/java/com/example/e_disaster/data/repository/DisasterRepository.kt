@@ -26,11 +26,9 @@ class DisasterRepository @Inject constructor(
     }
 
     suspend fun isUserAssigned(disasterId: String): Boolean {
-        // This logic is now correct based on your backend. It stays.
         return apiService.checkAssignment(disasterId).assigned
     }
 
-    // --- USING YOUR ROBUST MAPPING LOGIC ---
     private fun mapDisasterDtoToDisaster(dto: DisasterDto): Disaster {
         return Disaster(
             id = dto.id ?: "",
