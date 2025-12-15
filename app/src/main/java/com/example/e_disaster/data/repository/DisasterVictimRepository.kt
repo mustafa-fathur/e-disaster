@@ -85,13 +85,9 @@ class DisasterVictimRepository @Inject constructor(
 
     private fun getFileFromUri(context: Context, uri: Uri): File? {
         val contentResolver = context.contentResolver
-        // --- AWAL PERUBAHAN ---
-        // Dapatkan tipe MIME untuk menentukan ekstensi
         val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
         val extension = mimeType.substringAfter('/')
-        // Buat nama file sementara DENGAN ekstensi
         val tempFile = File(context.cacheDir, "upload_temp_${System.currentTimeMillis()}.$extension")
-        // --- AKHIR PERUBAHAN ---
 
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -155,7 +151,6 @@ class DisasterVictimRepository @Inject constructor(
             val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
             val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
 
-            // Sekarang kita bisa langsung menggunakan file.name karena sudah memiliki ekstensi
             MultipartBody.Part.createFormData("images[]", file.name, requestBody)
         }
 

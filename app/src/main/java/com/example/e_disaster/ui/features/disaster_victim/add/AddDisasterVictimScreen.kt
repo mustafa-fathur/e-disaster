@@ -95,6 +95,9 @@ fun AddDisasterVictimScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             Toast.makeText(context, "Data korban berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("victim_updated", true)
             navController.popBackStack()
         }
     }
@@ -152,23 +155,19 @@ fun VictimForm(
     onEvent: (AddVictimFormEvent) -> Unit,
     onFormSubmit: () -> Unit
 ) {
-    // --- State & Launcher untuk Image Picker ---
     val context = LocalContext.current
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    // Launcher untuk mengambil gambar dari galeri
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris -> onEvent(AddVictimFormEvent.ImagesAdded(uris)) }
     )
 
-    // Launcher untuk mengambil gambar dari kamera
     var tempCameraImageUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                // Salin ke variabel lokal sebelum digunakan
                 val uri = tempCameraImageUri
                 if (uri != null) {
                     onEvent(AddVictimFormEvent.ImagesAdded(listOf(uri)))
@@ -177,7 +176,6 @@ fun VictimForm(
         }
     )
 
-    // Launcher untuk meminta izin kamera
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -193,7 +191,6 @@ fun VictimForm(
         }
     )
 
-    // State untuk Date Picker
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -248,7 +245,6 @@ fun VictimForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // --- Input Fields ---
         OutlinedTextField(
             value = uiState.name,
             onValueChange = { onEvent(AddVictimFormEvent.NameChanged(it)) },
@@ -347,7 +343,6 @@ fun VictimForm(
             }
         }
 
-        // --- Image Picker Section ---
         Text("Foto Korban", style = MaterialTheme.typography.titleMedium)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(uiState.images) { uri ->

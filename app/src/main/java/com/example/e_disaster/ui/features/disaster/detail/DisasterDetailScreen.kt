@@ -20,8 +20,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ import com.example.e_disaster.ui.features.disaster.detail.components.SpeedDialFa
 import com.example.e_disaster.ui.features.disaster.detail.contents.AssignedDisasterContent
 import com.example.e_disaster.ui.features.disaster.detail.contents.JoinConfirmationDialog
 import com.example.e_disaster.ui.features.disaster.detail.contents.UnassignedDisasterContent
+import kotlinx.coroutines.launch
 
 data class FabMenuItem(
     val icon: ImageVector? = null,
@@ -69,6 +72,24 @@ fun DisasterDetailScreen(
 
     var showJoinDialog by remember { mutableStateOf(false) }
     var isFabMenuExpanded by remember { mutableStateOf(false) }
+
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
+
+    val victimUpdateResult = navController.currentBackStackEntry
+        ?.savedStateHandle?.getLiveData<Boolean>("victim_updated")
+
+    LaunchedEffect(victimUpdateResult) {
+        victimUpdateResult?.observeForever { updated ->
+            if (updated) {
+                scope.launch {
+                    viewModel.refreshVictims()
+                    selectedTabIndex = 2
+                }
+                navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("victim_updated")
+            }
+        }
+    }
 
     LaunchedEffect(disasterId) {
         if (!disasterId.isNullOrEmpty()) {
@@ -110,7 +131,8 @@ fun DisasterDetailScreen(
                 actions = {
                     if (uiState.isAssigned && uiState.disaster != null) {
                         TextButton(
-                            onClick = { navController.navigate("update-disaster/${uiState.disaster!!.id}") },                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                            onClick = { navController.navigate("update-disaster/${uiState.disaster!!.id}") },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -160,7 +182,9 @@ fun DisasterDetailScreen(
                         AssignedDisasterContent(
                             navController = navController,
                             disaster = uiState.disaster!!,
-                            victims = uiState.victims
+                            victims = uiState.victims,
+                            initialTabIndex = selectedTabIndex,
+                            onTabSelected = { selectedTabIndex = it }
                         )
                     } else {
                         UnassignedDisasterContent(

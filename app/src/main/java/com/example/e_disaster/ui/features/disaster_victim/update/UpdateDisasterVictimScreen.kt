@@ -46,7 +46,6 @@ fun UpdateDisasterVictimScreen(navController: NavController, victimId: String?) 
                 .padding(16.dp)
         ) {
             if (victimToUpdate != null) {
-                // We reuse VictimForm from the 'add' screen
 //                VictimForm(
 //                    buttonText = "Simpan Perubahan", // Updated button text
 //                    initialName = victimToUpdate.name,
