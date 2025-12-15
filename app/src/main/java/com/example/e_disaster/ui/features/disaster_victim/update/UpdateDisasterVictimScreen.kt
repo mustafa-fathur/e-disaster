@@ -47,27 +47,27 @@ fun UpdateDisasterVictimScreen(navController: NavController, victimId: String?) 
         ) {
             if (victimToUpdate != null) {
                 // We reuse VictimForm from the 'add' screen
-                VictimForm(
-                    buttonText = "Simpan Perubahan", // Updated button text
-                    initialName = victimToUpdate.name,
-                    initialNik = "123131321321321321", // Dummy NIK
-                    initialDob = "15/05/1965", // Dummy DOB
-                    initialGender = "Perempuan", // Dummy Gender
-                    initialContact = "0821321321", // Dummy Contact
-                    initialDescription = victimToUpdate.description,
-                    initialStatus = when (victimToUpdate.status) { // Map status key to display text
-                        "minor_injury" -> "Luka Ringan"
-                        "serious_injuries" -> "Luka Berat"
-                        // Add other mappings as needed
-                        else -> "Lainnya"
-                    },
-                    initialIsEvacuated = victimToUpdate.isEvacuated,
-                    onFormSubmit = { name, nik, dob, gender, contact, description, status, photoUri, isEvacuated ->
-                        // TODO: Implement ViewModel logic to update the victim
-                        println("Updating Victim ID $victimId: Name=$name, NIK=$nik, DOB=$dob, Gender=$gender, Contact=$contact, Desc=$description, Status=$status, isEvacuated=$isEvacuated")
-                        navController.popBackStack()
-                    }
-                )
+//                VictimForm(
+//                    buttonText = "Simpan Perubahan", // Updated button text
+//                    initialName = victimToUpdate.name,
+//                    initialNik = "123131321321321321", // Dummy NIK
+//                    initialDob = "15/05/1965", // Dummy DOB
+//                    initialGender = "Perempuan", // Dummy Gender
+//                    initialContact = "0821321321", // Dummy Contact
+//                    initialDescription = victimToUpdate.description,
+//                    initialStatus = when (victimToUpdate.status) { // Map status key to display text
+//                        "minor_injury" -> "Luka Ringan"
+//                        "serious_injuries" -> "Luka Berat"
+//                        // Add other mappings as needed
+//                        else -> "Lainnya"
+//                    },
+//                    initialIsEvacuated = victimToUpdate.isEvacuated,
+//                    onFormSubmit = { name, nik, dob, gender, contact, description, status, photoUri, isEvacuated ->
+//                        // TODO: Implement ViewModel logic to update the victim
+//                        println("Updating Victim ID $victimId: Name=$name, NIK=$nik, DOB=$dob, Gender=$gender, Contact=$contact, Desc=$description, Status=$status, isEvacuated=$isEvacuated")
+//                        navController.popBackStack()
+//                    }
+//                )
             }
         }
     }

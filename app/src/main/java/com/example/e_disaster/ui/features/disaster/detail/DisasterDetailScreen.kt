@@ -92,7 +92,7 @@ fun DisasterDetailScreen(
         FabMenuItem(
             icon = Icons.Default.Person,
             label = "Tambah Data Korban",
-            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-victim/$it") } }
+            onClick = { if (!disasterId.isNullOrEmpty()) navController.navigate("add-disaster-victim/$disasterId") }
         ),
         FabMenuItem(
             iconPainter = painterResource(id = R.drawable.package_box),
