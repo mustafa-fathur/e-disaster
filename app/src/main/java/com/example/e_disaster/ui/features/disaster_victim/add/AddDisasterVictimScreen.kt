@@ -181,8 +181,12 @@ fun VictimForm(
         onResult = { isGranted ->
             if (isGranted) {
                 val newImageFile =
-                    File(context.filesDir, "temp_image_${System.currentTimeMillis()}.jpg")
-                val uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", newImageFile)
+                    File(context.cacheDir, "temp_camera_${System.currentTimeMillis()}.jpg")
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${BuildConfig.APPLICATION_ID}.provider",
+                    newImageFile
+                )
                 tempCameraImageUri = uri
                 cameraLauncher.launch(uri)
             } else {

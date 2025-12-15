@@ -102,7 +102,6 @@ class DisasterVictimRepository @Inject constructor(
         return tempFile
     }
 
-
     suspend fun addDisasterVictim(
         disasterId: String,
         uiState: AddVictimUiState,
