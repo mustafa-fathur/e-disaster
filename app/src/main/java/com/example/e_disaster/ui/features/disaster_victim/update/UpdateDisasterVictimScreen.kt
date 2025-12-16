@@ -42,7 +42,6 @@ fun UpdateDisasterVictimScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             Toast.makeText(context, "Data korban berhasil diperbarui", Toast.LENGTH_SHORT).show()
-            // Kirim pesan kembali agar layar detail me-refresh data
             navController.previousBackStackEntry
                 ?.savedStateHandle
                 ?.set("victim_updated", true)

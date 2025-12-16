@@ -26,20 +26,20 @@ import com.example.e_disaster.R
 
 @Composable
 fun FullScreenImageViewer(
-    imageUri: Uri, // Terima Uri agar fleksibel untuk online/offline
+    imageUri: Uri,
     onDismiss: () -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false // Ini penting agar dialog bisa fullscreen
+            usePlatformDefaultWidth = false
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.8f))
-                .clickable(onClick = onDismiss), // Tutup dialog jika area luar gambar diklik
+                .clickable(onClick = onDismiss),
             contentAlignment = Alignment.Center
         ) {
             AsyncImage(
@@ -52,7 +52,6 @@ fun FullScreenImageViewer(
                 placeholder = painterResource(id = R.drawable.app_logo),
                 error = painterResource(id = R.drawable.app_logo)
             )
-            // Tombol close di pojok kanan atas
             IconButton(
                 onClick = onDismiss,
                 modifier = Modifier

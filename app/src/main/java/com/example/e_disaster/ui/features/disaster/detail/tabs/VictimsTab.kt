@@ -59,7 +59,7 @@ fun VictimsTabContent(
                 "Luka Ringan" -> victim.status.equals("minor_injury", ignoreCase = true)
                 "Luka Berat" -> victim.status.equals("serious_injuries", ignoreCase = true)
                 "Meninggal" -> victim.status.equals("deceased", ignoreCase = true)
-                "Hilang" -> victim.status.equals("missing", ignoreCase = true)
+                "Hilang" -> victim.status.equals("lost", ignoreCase = true)
                 else -> true
             }
             matchesSearch && matchesFilter
