@@ -6,7 +6,9 @@ import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimList
 import com.example.e_disaster.data.remote.dto.disaster_victim.UpdateVictimRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -49,4 +51,10 @@ interface DisasterVictimApiService {
         @Path("victimId") victimId: String,
         @Body body: UpdateVictimRequest
     ): AddVictimResponse
+
+    @DELETE("disasters/{disasterId}/victims/{victimId}")
+    suspend fun deleteDisasterVictim(
+        @Path("disasterId") disasterId: String,
+        @Path("victimId") victimId: String
+    ): Response<Unit>
 }

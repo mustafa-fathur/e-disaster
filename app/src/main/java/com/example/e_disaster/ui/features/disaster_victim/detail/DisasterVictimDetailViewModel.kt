@@ -15,7 +15,9 @@ import javax.inject.Inject
 data class DisasterVictimDetailUiState(
     val victim: DisasterVictim? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isDeleting: Boolean = false,
+    val isDeleted: Boolean = false
 )
 
 @HiltViewModel
@@ -42,6 +44,24 @@ class DisasterVictimDetailViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         errorMessage = "Gagal memuat detail korban: ${e.message}"
+                    )
+                }
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteVictim(disasterId: String, victimId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true, errorMessage = null) }
+            try {
+                repository.deleteDisasterVictim(disasterId, victimId)
+                _uiState.update { it.copy(isDeleting = false, isDeleted = true) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        errorMessage = "Gagal menghapus data: ${e.message}"
                     )
                 }
                 e.printStackTrace()

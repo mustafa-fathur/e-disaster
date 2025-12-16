@@ -205,4 +205,8 @@ class DisasterVictimRepository @Inject constructor(
 
         return apiService.updateDisasterVictim(disasterId, victimId, requestBody)
     }
+
+    suspend fun deleteDisasterVictim(disasterId: String, victimId: String) {
+        apiService.deleteDisasterVictim(disasterId, victimId)
+    }
 }

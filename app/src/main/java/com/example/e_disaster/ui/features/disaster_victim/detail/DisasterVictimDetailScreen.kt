@@ -2,6 +2,7 @@ package com.example.e_disaster.ui.features.disaster_victim.detail
 
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,8 +23,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,16 +37,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -72,8 +80,28 @@ fun DisasterVictimDetailScreen(
     viewModel: DisasterVictimDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val updateResult = navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<Boolean>("detail_victim_updated")
+
+    LaunchedEffect(updateResult) {
+        updateResult?.observeForever { updated ->
+            if (updated && disasterId != null && victimId != null) {
+                viewModel.loadVictimDetail(disasterId, victimId)
+
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("victim_updated", true)
+
+                navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("detail_victim_updated")
+            }
+        }
+    }
 
     LaunchedEffect(disasterId, victimId) {
         Log.d("VictimDetailScreen", "LaunchedEffect triggered. DisasterID: '$disasterId', VictimID: '$victimId'")
@@ -82,6 +110,22 @@ fun DisasterVictimDetailScreen(
             viewModel.loadVictimDetail(disasterId, victimId)
         } else {
             Log.e("VictimDetailScreen", "Navigasi Gagal: Satu atau kedua ID null atau kosong.")
+        }
+    }
+
+    LaunchedEffect(uiState.isDeleted) {
+        if (uiState.isDeleted) {
+            Toast.makeText(context, "Data korban berhasil dihapus", Toast.LENGTH_SHORT).show()
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("victim_updated", true)
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -97,6 +141,13 @@ fun DisasterVictimDetailScreen(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Ubah",
                             tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Hapus Data",
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -132,11 +183,45 @@ fun DisasterVictimDetailScreen(
                     )
                 }
             }
+            if (uiState.isDeleting) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            }
         }
+
         if (selectedImageUrl != null) {
             FullScreenImageViewer(
                 imageUrl = selectedImageUrl!!,
                 onDismiss = { selectedImageUrl = null }
+            )
+        }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Konfirmasi Hapus") },
+                text = { Text("Apakah Anda yakin ingin menghapus data korban ini? Tindakan ini tidak dapat dibatalkan.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (disasterId != null && victimId != null) {
+                                viewModel.deleteVictim(disasterId, victimId)
+                            }
+                            showDeleteDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Ya, Hapus")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Batal")
+                    }
+                }
             )
         }
     }
