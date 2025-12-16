@@ -39,12 +39,17 @@ object NetworkModule {
 
             android.util.Log.d("AuthInterceptor", "Token: Bearer $token")
 
-            val request = chain.request().newBuilder()
-            request.addHeader("Accept", "application/json")
+            val requestBuilder = chain.request().newBuilder()
+            requestBuilder.addHeader("Accept", "application/json")
+
             token?.let {
-                request.addHeader("Authorization", "Bearer $it")
+                if (it.isNotBlank()) {
+                    android.util.Log.d("AuthInterceptor", "Attaching Token: Bearer $it")
+                    requestBuilder.addHeader("Authorization", "Bearer $it")
+                }
             }
-            chain.proceed(request.build())
+
+            chain.proceed(requestBuilder.build())
         }
     }
 

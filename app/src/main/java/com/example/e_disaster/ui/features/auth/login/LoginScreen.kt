@@ -5,27 +5,37 @@ package com.example.e_disaster.ui.features.auth.login
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,17 +48,14 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = hiltViewModel() // Use Hilt to get the ViewModel
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
-    // Collect the UI state from the ViewModel
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // This effect runs when the uiState changes to Success or Error
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is LoginUiState.Success -> {
-                // Navigate to home and clear the back stack so the user can't go back to login
                 navController.navigate("home") {
                     popUpTo(0)
                 }
@@ -56,7 +63,7 @@ fun LoginScreen(
             is LoginUiState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
-            else -> {} // Do nothing for Idle or Loading states
+            else -> {}
         }
     }
 
@@ -68,13 +75,13 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = viewModel.healthCheckMessage,
-                color = if (viewModel.healthCheckMessage.contains("API Error")) Color.Red else Color.Gray,
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold
-            )
+//            Text(
+//                text = viewModel.healthCheckMessage,
+//                color = if (viewModel.healthCheckMessage.contains("API Error")) Color.Red else Color.Gray,
+//                style = MaterialTheme.typography.bodySmall,
+//                textAlign = TextAlign.Center,
+//                fontWeight = FontWeight.Bold
+//            )
             Spacer(modifier = Modifier.height(8.dp))
             Image(
                 painter = painterResource(
@@ -97,7 +104,6 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Email Text Field - Now connected to the ViewModel
             OutlinedTextField(
                 value = viewModel.email,
                 onValueChange = { viewModel.onEmailChange(it) },
@@ -110,12 +116,11 @@ fun LoginScreen(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 },
-                isError = uiState is LoginUiState.Error // Highlight field on error
+                isError = uiState is LoginUiState.Error
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Password Text Field - Now connected to the ViewModel
             OutlinedTextField(
                 value = viewModel.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
@@ -129,18 +134,17 @@ fun LoginScreen(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 },
-                isError = uiState is LoginUiState.Error // Highlight field on error
+                isError = uiState is LoginUiState.Error
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login Button - Now connected to the ViewModel
             Button(
                 onClick = { viewModel.loginUser() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                enabled = uiState !is LoginUiState.Loading // Disable button while loading
+                enabled = uiState !is LoginUiState.Loading
             ) {
                 if (uiState is LoginUiState.Loading) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
@@ -155,7 +159,6 @@ fun LoginScreen(
     }
 }
 
-// RegisterLink and Previews remain the same
 @Composable
 private fun RegisterLink(navController: NavController) {
     val annotatedText = buildAnnotatedString {
