@@ -9,6 +9,7 @@ import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDeta
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDto
 import com.example.e_disaster.data.remote.dto.disaster_victim.UpdateVictimRequest
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
+import com.example.e_disaster.data.remote.service.PictureApiService
 import com.example.e_disaster.ui.features.disaster_victim.add.AddVictimUiState
 import com.example.e_disaster.ui.features.disaster_victim.update.UpdateVictimUiState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -25,7 +26,8 @@ import javax.inject.Singleton
 
 @Singleton
 class DisasterVictimRepository @Inject constructor(
-    private val apiService: DisasterVictimApiService
+    private val apiService: DisasterVictimApiService,
+    private val pictureApiService: PictureApiService
 ) {
     suspend fun getDisasterVictims(disasterId: String): List<DisasterVictim> {
         val response = apiService.getDisasterVictims(disasterId)
@@ -208,5 +210,27 @@ class DisasterVictimRepository @Inject constructor(
 
     suspend fun deleteDisasterVictim(disasterId: String, victimId: String) {
         apiService.deleteDisasterVictim(disasterId, victimId)
+    }
+
+    suspend fun addVictimPicture(victimId: String, imageUri: Uri, context: Context) {
+        val file = getFileFromUri(context, imageUri) ?: throw Exception("Gagal memproses file")
+        val mimeType = context.contentResolver.getType(imageUri) ?: "image/jpeg"
+        val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
+
+        val imagePart = MultipartBody.Part.createFormData("image", file.name, requestBody)
+
+        pictureApiService.uploadPicture(
+            modelType = "disaster_victim",
+            modelId = victimId,
+            image = imagePart
+        )
+    }
+
+    suspend fun deleteVictimPicture(victimId: String, pictureId: String) {
+        pictureApiService.deletePicture(
+            modelType = "disaster_victim",
+            modelId = victimId,
+            pictureId = pictureId
+        )
     }
 }
