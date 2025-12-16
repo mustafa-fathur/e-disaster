@@ -70,13 +70,11 @@ fun RegisterScreen(
 ) {
     val context = LocalContext.current
 
-    // Listener untuk event dari ViewModel
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is RegisterUiState.Success -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
-                    // Kembali ke layar login setelah berhasil
                     navController.popBackStack()
                 }
                 else -> { /* Handle other one-time events if needed */ }
@@ -84,7 +82,6 @@ fun RegisterScreen(
         }
     }
 
-    // State untuk DatePicker
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -172,7 +169,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- Gender Selection dihubungkan ke ViewModel ---
                 Text("Jenis Kelamin", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth())
                 Row(Modifier.fillMaxWidth()) {
                     listOf("Laki-laki", "Perempuan").forEach { text ->
@@ -194,7 +190,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // --- Tanggal Lahir dihubungkan ke ViewModel ---
                 OutlinedTextField(
                     value = viewModel.birthDate,
                     onValueChange = {},
@@ -231,7 +226,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Tampilkan pesan error jika ada
                 val currentState = viewModel.uiState
                 if (currentState is RegisterUiState.Error) {
                     Text(

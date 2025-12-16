@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 
-// Definisikan UI State untuk Registrasi
 sealed class RegisterUiState {
     object Idle : RegisterUiState()
     object Loading : RegisterUiState()
@@ -29,23 +28,20 @@ class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // State untuk form fields
     var name by mutableStateOf("")
     var email by mutableStateOf("")
     var nik by mutableStateOf("")
     var phone by mutableStateOf("")
     var address by mutableStateOf("")
     var selectedGender by mutableStateOf("Laki-laki")
-    var birthDate by mutableStateOf("") // Tampilan: "dd/MM/yyyy"
+    var birthDate by mutableStateOf("")
     var reasonToJoin by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
 
-    // State untuk UI
     var uiState by mutableStateOf<RegisterUiState>(RegisterUiState.Idle)
         private set
 
-    // SharedFlow untuk event sekali jalan (seperti navigasi atau toast)
     private val _eventFlow = MutableSharedFlow<RegisterUiState>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -73,18 +69,15 @@ class RegisterViewModel @Inject constructor(
                 )
 
                 val response = authRepository.register(request)
-                // Kirim event sukses ke UI untuk ditampilkan
                 _eventFlow.emit(RegisterUiState.Success(response.message))
 
             } catch (e: HttpException) {
-                // Tangani error validasi dari API atau error server lainnya
                 val errorBody = e.response()?.errorBody()?.string()
                 val errorMessage = "Registrasi gagal: ${e.message()} - ${errorBody ?: "No details"}"
                 uiState = RegisterUiState.Error(errorMessage)
             } catch (e: Exception) {
                 uiState = RegisterUiState.Error("Terjadi kesalahan: ${e.message}")
             } finally {
-                // Setelah selesai, kembalikan state ke Idle jika tidak error permanen
                 if(uiState !is RegisterUiState.Error){
                     uiState = RegisterUiState.Idle
                 }
@@ -92,7 +85,6 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    // Helper untuk mengubah format tanggal dari "dd/MM/yyyy" ke "yyyy-MM-dd"
     private fun formatDateForApi(dateStr: String): String {
         if (dateStr.isBlank()) return ""
         return try {
@@ -100,7 +92,7 @@ class RegisterViewModel @Inject constructor(
             val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             formatter.format(parser.parse(dateStr)!!)
         } catch (e: Exception) {
-            "" // Kembalikan string kosong jika format salah
+            ""
         }
     }
 }

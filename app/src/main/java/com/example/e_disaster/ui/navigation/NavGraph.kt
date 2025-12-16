@@ -25,14 +25,19 @@ import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimD
 import com.example.e_disaster.ui.features.disaster_victim.update.UpdateDisasterVictimScreen
 import com.example.e_disaster.ui.features.home.HomeScreen
 import com.example.e_disaster.ui.features.notification.NotificationScreen
+import com.example.e_disaster.ui.features.splash.SplashScreen
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "splash"
     ) {
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
+
         composable("login") {
             LoginScreen(navController = navController)
         }

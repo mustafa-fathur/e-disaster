@@ -1,7 +1,5 @@
 package com.example.e_disaster.data.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.model.User
 import com.example.e_disaster.data.remote.dto.auth.LoginRequest
@@ -31,7 +29,6 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(request: LoginRequest) {
         val response = apiService.login(request)
-        // The API response includes the token, which we save
         userPreferences.saveAuthToken(response.token)
     }
 
@@ -39,14 +36,12 @@ class AuthRepository @Inject constructor(
         userPreferences.clearAuthToken()
     }
     
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getProfile(): User {
         val response = apiService.getProfile()
 
         return mapUserDtoToUser(response.user)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun mapUserDtoToUser(dto: UserDto): User {
         val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
