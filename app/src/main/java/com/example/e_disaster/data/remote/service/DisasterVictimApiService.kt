@@ -3,11 +3,14 @@ package com.example.e_disaster.data.remote.service
 import com.example.e_disaster.data.remote.dto.disaster_victim.AddVictimResponse
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDetailResponse
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimListResponse
+import com.example.e_disaster.data.remote.dto.disaster_victim.UpdateVictimRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Url
@@ -38,5 +41,12 @@ interface DisasterVictimApiService {
         @Part("contact_info") contactInfo: RequestBody?,
         @Part("description") description: RequestBody?,
         @Part images: List<MultipartBody.Part>?
+    ): AddVictimResponse
+
+    @PUT("disasters/{disasterId}/victims/{victimId}")
+    suspend fun updateDisasterVictim(
+        @Path("disasterId") disasterId: String,
+        @Path("victimId") victimId: String,
+        @Body body: UpdateVictimRequest
     ): AddVictimResponse
 }

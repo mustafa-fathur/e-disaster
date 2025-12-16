@@ -7,8 +7,10 @@ import com.example.e_disaster.data.model.VictimPicture
 import com.example.e_disaster.data.remote.dto.disaster_victim.AddVictimResponse
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDetailDto
 import com.example.e_disaster.data.remote.dto.disaster_victim.DisasterVictimDto
+import com.example.e_disaster.data.remote.dto.disaster_victim.UpdateVictimRequest
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
 import com.example.e_disaster.ui.features.disaster_victim.add.AddVictimUiState
+import com.example.e_disaster.ui.features.disaster_victim.update.UpdateVictimUiState
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -169,4 +171,38 @@ class DisasterVictimRepository @Inject constructor(
         )
     }
 
+    suspend fun updateDisasterVictim(
+        disasterId: String,
+        victimId: String,
+        uiState: UpdateVictimUiState
+    ): AddVictimResponse {
+        val formattedDate = try {
+            val inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            LocalDate.parse(uiState.dob, inputFormatter).format(outputFormatter)
+        } catch (e: Exception) {
+            uiState.dob
+        }
+
+        val statusApiValue = when (uiState.victimStatus) {
+            "Luka Ringan" -> "minor_injury"
+            "Luka Berat" -> "serious_injuries"
+            "Meninggal" -> "deceased"
+            "Hilang" -> "lost"
+            else -> uiState.victimStatus
+        }
+
+        val requestBody = UpdateVictimRequest(
+            nik = uiState.nik,
+            name = uiState.name,
+            dateOfBirth = formattedDate,
+            gender = uiState.gender == "Perempuan",
+            status = statusApiValue,
+            isEvacuated = uiState.isEvacuated,
+            contactInfo = uiState.contact.ifBlank { null },
+            description = uiState.description.ifBlank { null }
+        )
+
+        return apiService.updateDisasterVictim(disasterId, victimId, requestBody)
+    }
 }

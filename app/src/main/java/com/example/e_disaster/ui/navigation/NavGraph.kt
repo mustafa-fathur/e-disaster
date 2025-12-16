@@ -140,7 +140,7 @@ fun NavGraph() {
             val victimId = backStackEntry.arguments?.getString("victimId")
             UpdateDisasterVictimScreen(
                 navController = navController,
-//                disasterId = disasterId,
+                disasterId = disasterId,
                 victimId = victimId
             )
         }

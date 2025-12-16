@@ -68,7 +68,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -138,7 +138,9 @@ fun AddDisasterVictimScreen(
                     } else {
                         Toast.makeText(context, "ID Bencana tidak valid.", Toast.LENGTH_SHORT).show()
                     }
-                }
+                },
+                buttonText = "Simpan",
+                showImagePicker = true
             )
 
             if (uiState.isLoading) {
@@ -153,10 +155,15 @@ fun AddDisasterVictimScreen(
 fun VictimForm(
     uiState: AddVictimUiState,
     onEvent: (AddVictimFormEvent) -> Unit,
-    onFormSubmit: () -> Unit
+    onFormSubmit: () -> Unit,
+    buttonText: String = "Simpan",
+    showImagePicker: Boolean = true
 ) {
     val context = LocalContext.current
+
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var isStatusExpanded by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
@@ -196,12 +203,9 @@ fun VictimForm(
     )
 
     val datePickerState = rememberDatePickerState()
-    var showDatePicker by remember { mutableStateOf(false) }
-
     fun onDateSelected(dateMillis: Long?) {
         dateMillis?.let {
-            val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy",
-                Locale.getDefault())
+            val simpleDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             onEvent(AddVictimFormEvent.DobChanged(simpleDateFormat.format(Date(it))))
         }
     }
@@ -222,6 +226,7 @@ fun VictimForm(
             onDismissRequest = { showImageSourceDialog = false },
             title = { Text("Pilih Sumber Gambar") },
             text = { Text("Pilih gambar dari galeri atau ambil foto baru menggunakan kamera.") },
+            containerColor = MaterialTheme.colorScheme.surface,
             confirmButton = {
                 TextButton(onClick = {
                     showImageSourceDialog = false
@@ -241,7 +246,6 @@ fun VictimForm(
         )
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -249,6 +253,7 @@ fun VictimForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Nama
         OutlinedTextField(
             value = uiState.name,
             onValueChange = { onEvent(AddVictimFormEvent.NameChanged(it)) },
@@ -260,6 +265,7 @@ fun VictimForm(
             isError = uiState.validationError != null && uiState.name.isBlank()
         )
 
+        // NIK
         OutlinedTextField(
             value = uiState.nik,
             onValueChange = { onEvent(AddVictimFormEvent.NikChanged(it)) },
@@ -271,16 +277,17 @@ fun VictimForm(
             isError = uiState.validationError != null && uiState.nik.isBlank()
         )
 
+        // Tanggal Lahir
         OutlinedTextField(
             value = uiState.dob,
-            onValueChange = { /* Dikelola oleh Date Picker */ },
+            onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
             label = { Text("Tanggal Lahir*") },
             leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Tanggal Lahir") },
             readOnly = true,
-            enabled = false,
+            enabled = false, // `enabled = false` lebih baik untuk field yang tidak bisa di-edit
             colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = if (uiState.validationError != null && uiState.dob.isBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
@@ -289,11 +296,13 @@ fun VictimForm(
             )
         )
 
+        // Jenis Kelamin
         GenderSelector(
             selectedGender = uiState.gender,
             onGenderSelected = { onEvent(AddVictimFormEvent.GenderChanged(it)) }
         )
 
+        // Kontak
         OutlinedTextField(
             value = uiState.contact,
             onValueChange = { onEvent(AddVictimFormEvent.ContactChanged(it)) },
@@ -304,6 +313,7 @@ fun VictimForm(
             singleLine = true
         )
 
+        // Deskripsi
         OutlinedTextField(
             value = uiState.description,
             onValueChange = { onEvent(AddVictimFormEvent.DescriptionChanged(it)) },
@@ -314,7 +324,7 @@ fun VictimForm(
             minLines = 3
         )
 
-        var isStatusExpanded by remember { mutableStateOf(false) }
+        // Status Korban Dropdown
         ExposedDropdownMenuBox(
             expanded = isStatusExpanded,
             onExpandedChange = { isStatusExpanded = it }
@@ -332,6 +342,7 @@ fun VictimForm(
                 isError = uiState.validationError != null && uiState.victimStatus.isBlank()
             )
             ExposedDropdownMenu(
+                containerColor = MaterialTheme.colorScheme.surface,
                 expanded = isStatusExpanded,
                 onDismissRequest = { isStatusExpanded = false }
             ) {
@@ -347,19 +358,23 @@ fun VictimForm(
             }
         }
 
-        Text("Foto Korban", style = MaterialTheme.typography.titleMedium)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(uiState.images) { uri ->
-                ImagePreviewItem(
-                    uri = uri,
-                    onRemoveClick = { onEvent(AddVictimFormEvent.ImageRemoved(uri)) }
-                )
-            }
-            item {
-                AddImageButton(onClick = { showImageSourceDialog = true })
+        // Foto Korban
+        if (showImagePicker) {
+            Text("Foto Korban", style = MaterialTheme.typography.titleMedium)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(uiState.images) { uri ->
+                    ImagePreviewItem(
+                        uri = uri,
+                        onRemoveClick = { onEvent(AddVictimFormEvent.ImageRemoved(uri)) }
+                    )
+                }
+                item {
+                    AddImageButton(onClick = { showImageSourceDialog = true })
+                }
             }
         }
 
+        // Checkbox Evakuasi
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onEvent(AddVictimFormEvent.IsEvacuatedChanged(!uiState.isEvacuated)) }
@@ -380,7 +395,7 @@ fun VictimForm(
                 .height(56.dp),
             enabled = !uiState.isLoading
         ) {
-            Text(text = "Simpan", style = MaterialTheme.typography.titleMedium)
+            Text(text = buttonText, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -414,12 +429,12 @@ fun AddImageButton(onClick: () -> Unit) {
         modifier = Modifier
             .size(100.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.outline,
-                androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                RoundedCornerShape(12.dp)
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -436,7 +451,7 @@ fun ImagePreviewItem(uri: Uri, onRemoveClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(100.dp)
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
     ) {
         AsyncImage(
             model = uri,
