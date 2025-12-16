@@ -6,10 +6,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.e_disaster.data.model.Disaster
@@ -25,9 +22,11 @@ import com.example.e_disaster.ui.features.disaster.detail.tabs.VictimsTabContent
 fun AssignedDisasterContent(
     navController: NavController,
     disaster: Disaster,
-    victims: List<DisasterVictim>
+    victims: List<DisasterVictim>,
+    initialTabIndex: Int,
+    onTabSelected: (Int) -> Unit
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
     val tabs = listOf("Identitas", "Laporan", "Korban", "Bantuan")
 
     val dummyReports = remember {
@@ -44,24 +43,26 @@ fun AssignedDisasterContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+        PrimaryTabRow(selectedTabIndex = initialTabIndex) {
             tabs.forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
+                    selected = initialTabIndex == index,
+                    onClick = { onTabSelected(index) },
                     text = { Text(title) }
                 )
             }
         }
 
         disaster.id?.let { disasterId ->
-            when (selectedTabIndex) {
+            when (initialTabIndex) {
                 0 -> IdentityTabContent(disaster = disaster)
                 1 -> ReportsTabContent(navController, dummyReports)
                 2 -> VictimsTabContent(
                     navController = navController,
+                    disasterId = disasterId,
                     victims = victims
                 )
+
                 3 -> AidsTabContent(navController, dummyAids)
             }
         }

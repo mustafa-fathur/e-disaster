@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -59,11 +60,15 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.core.splashscreen)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("androidx.compose.runtime:runtime-livedata")
+
 
     // Hilt for Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.core.telecom)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.core.i18n)
     kapt(libs.hilt.compiler)
 
     // Hilt and Jetpack Compose Integration

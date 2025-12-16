@@ -5,6 +5,7 @@ import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.remote.service.AuthApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
+import com.example.e_disaster.data.remote.service.PictureApiService
 import com.example.e_disaster.data.repository.AuthRepository
 import com.example.e_disaster.data.repository.DisasterRepository
 import com.example.e_disaster.data.repository.DisasterVictimRepository
@@ -44,7 +45,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideVictimRepository(apiService: DisasterVictimApiService): DisasterVictimRepository {
-        return DisasterVictimRepository(apiService)
+    fun provideVictimRepository(apiService: DisasterVictimApiService, pictureApiService: PictureApiService): DisasterVictimRepository {
+        return DisasterVictimRepository(apiService, pictureApiService)
     }
 }
