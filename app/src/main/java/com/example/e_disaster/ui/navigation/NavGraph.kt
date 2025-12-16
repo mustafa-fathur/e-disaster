@@ -1,6 +1,9 @@
 package com.example.e_disaster.ui.navigation
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,8 +31,13 @@ import com.example.e_disaster.ui.features.notification.NotificationScreen
 import com.example.e_disaster.ui.features.splash.SplashScreen
 
 @Composable
-fun NavGraph() {
+fun NavGraph(intent: Intent) {
     val navController = rememberNavController()
+
+    LaunchedEffect(key1 = intent) {
+        handleNotificationIntent(intent, navController)
+    }
+
     NavHost(
         navController = navController,
         startDestination = "splash"
@@ -175,4 +183,20 @@ fun NavGraph() {
         }
 
     }
+}
+
+private fun handleNotificationIntent(intent: Intent, navController: NavHostController) {
+    if (intent.extras == null) return
+
+    val notificationType = intent.getStringExtra("type")
+    if (notificationType == "new_disaster_victim_report") {
+        val disasterId = intent.getStringExtra("disaster_id")
+        val victimId = intent.getStringExtra("victim_id")
+
+        if (disasterId != null && victimId != null) {
+            val route = "disaster-victim-detail/$disasterId/$victimId"
+            navController.navigate(route)
+        }
+    }
+    intent.removeExtra("type")
 }
