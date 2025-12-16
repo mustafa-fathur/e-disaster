@@ -30,9 +30,10 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(
         apiService: AuthApiService,
-        userPreferences: UserPreferences
+        userPreferences: UserPreferences,
+        @ApplicationContext context: Context
     ): AuthRepository {
-        return AuthRepository(apiService, userPreferences)
+        return AuthRepository(apiService, userPreferences, context)
     }
 
     @Provides

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.kapt)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -89,6 +90,12 @@ dependencies {
 
     // Jetpack DataStore for storing the auth token
     implementation(libs.androidx.datastore.preferences)
+
+    // FCM
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+
 
 // Don't need for now
 //    implementation(libs.volley)

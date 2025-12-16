@@ -18,10 +18,17 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class UserPreferences @Inject constructor(@ApplicationContext private val context: Context) {
 
     private val authTokenKey = stringPreferencesKey("auth_token")
+    private val fcmTokenKey = stringPreferencesKey("fcm_token")
 
     val authToken: Flow<String?> = context.dataStore.data
         .map { preferences ->
             preferences[authTokenKey]
+        }
+
+
+    val fcmToken: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[fcmTokenKey]
         }
 
     suspend fun saveAuthToken(token: String) {
@@ -30,9 +37,21 @@ class UserPreferences @Inject constructor(@ApplicationContext private val contex
         }
     }
 
+    suspend fun saveFcmToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[fcmTokenKey] = token
+        }
+    }
+
     suspend fun clearAuthToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(authTokenKey)
+        }
+    }
+
+    suspend fun clearAll() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
         }
     }
 }
