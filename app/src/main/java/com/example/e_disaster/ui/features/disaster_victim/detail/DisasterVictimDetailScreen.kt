@@ -1,9 +1,7 @@
 package com.example.e_disaster.ui.features.disaster_victim.detail
 
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -68,6 +67,7 @@ import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
 import com.example.e_disaster.ui.components.form.ImagePickerSection
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import com.example.e_disaster.utils.Constants.BASE_URL
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -129,10 +129,10 @@ fun DisasterVictimDetailScreen(
                     onNavigateUp = { navController.navigateUp() },
                     actions = {
                         IconButton(onClick = { navController.navigate("update-disaster-victim/$disasterId/$victimId") }) {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Ubah")
+                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Ubah", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = { showDeleteVictimDialog = true }) {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Hapus Data", tint = MaterialTheme.colorScheme.error)
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Hapus Data", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 )
@@ -229,10 +229,10 @@ private fun VictimDetailContent(
         VictimInfoCard(victim = victim)
 
         ImagePickerSection(
-            uris = victim.pictures?.map { Uri.parse("https://e-disaster.fathur.tech${it.url}") } ?: emptyList(),
+            uris = victim.pictures?.map { "$BASE_URL${it.url}".toUri() } ?: emptyList(),
             onImagesAdded = onAddPictures,
             onImageRemoved = { uri ->
-                val picture = victim.pictures?.find { "https://e-disaster.fathur.tech${it.url}" == uri.toString() }
+                val picture = victim.pictures?.find { "$BASE_URL${it.url}" == uri.toString() }
                 picture?.let(onDeletePictureClick)
             }
         )
@@ -241,7 +241,6 @@ private fun VictimDetailContent(
 
 @Composable
 private fun VictimInfoCard(victim: DisasterVictim) {
-    @RequiresApi(Build.VERSION_CODES.O)
     fun formatDate(dateString: String): String {
         return try {
             val localDate = try {
@@ -376,7 +375,7 @@ fun DeleteConfirmationDialog(title: String, text: String, onConfirm: () -> Unit,
         title = { Text(title) },
         text = { Text(text) },
         containerColor = MaterialTheme.colorScheme.surface,
-        confirmButton = { Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text("Ya, Hapus") } },
+        confirmButton = { Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) { Text("Ya, Hapus") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Batal") } }
     )
 }

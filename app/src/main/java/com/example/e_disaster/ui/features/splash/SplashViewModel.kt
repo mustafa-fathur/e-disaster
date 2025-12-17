@@ -3,6 +3,7 @@ package com.example.e_disaster.ui.features.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.local.UserPreferences
+import com.example.e_disaster.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +19,8 @@ enum class AuthState {
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow(AuthState.LOADING)
@@ -31,10 +33,18 @@ class SplashViewModel @Inject constructor(
     private fun checkUserLoginState() {
         viewModelScope.launch {
             val token = userPreferences.authToken.first()
-            if (!token.isNullOrBlank()) {
-                _authState.value = AuthState.AUTHENTICATED
-            } else {
+
+            if (token.isNullOrBlank()) {
                 _authState.value = AuthState.UNAUTHENTICATED
+            } else {
+                val profileResult = authRepository.getProfile()
+
+                profileResult.onSuccess {
+                    _authState.value = AuthState.AUTHENTICATED
+                }.onFailure {
+                    userPreferences.clearAll()
+                    _authState.value = AuthState.UNAUTHENTICATED
+                }
             }
         }
     }

@@ -1,11 +1,13 @@
 package com.example.e_disaster.di
 
 import com.example.e_disaster.data.local.UserPreferences
+import com.example.e_disaster.data.remote.UnauthorizedHandler
 import com.example.e_disaster.data.remote.service.AuthApiService
 import com.example.e_disaster.data.remote.service.DisasterAidApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
 import com.example.e_disaster.data.remote.service.PictureApiService
+import com.example.e_disaster.utils.Constants.API_BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -22,8 +25,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "https://e-disaster.fathur.tech/api/v1/"
 
     @Provides
     @Singleton
@@ -33,7 +34,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthInterceptor(userPreferences: UserPreferences): Interceptor {
+    fun provideAuthInterceptor(
+        userPreferences: UserPreferences,
+        unauthorizedHandler: UnauthorizedHandler
+    ): Interceptor {
         return Interceptor { chain ->
             val token = runBlocking { userPreferences.authToken.first() }
 
@@ -49,7 +53,14 @@ object NetworkModule {
                 }
             }
 
-            chain.proceed(requestBuilder.build())
+            try {
+                chain.proceed(requestBuilder.build())
+            } catch (e: Exception) {
+                if (e is HttpException && e.code() == 401) {
+                    unauthorizedHandler.trigger()
+                }
+                throw e
+            }
         }
     }
 
@@ -69,7 +80,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
