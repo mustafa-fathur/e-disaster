@@ -1,5 +1,6 @@
 package com.example.e_disaster.ui.features.disaster.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.model.Disaster
@@ -42,16 +43,36 @@ class DisasterDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val disasterDetailsDeferred = async { disasterRepository.getDisasterById(disasterId) }
-                val assignmentStatusDeferred = async { disasterRepository.isUserAssigned(disasterId) }
+                // Get disaster details - this might throw if not in local DB and offline
+                val disasterDetails = try {
+                    disasterRepository.getDisasterById(disasterId)
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Bencana tidak ditemukan di database lokal. Harap sambungkan ke internet untuk memuat detail bencana."
+                        )
+                    }
+                    return@launch
+                }
+                
+                // Check assignment status - handle gracefully if fails
+                val assignmentStatus = try {
+                    disasterRepository.isUserAssigned(disasterId)
+                } catch (e: Exception) {
+                    Log.w("DisasterDetailVM", "Failed to check assignment status: ${e.message}")
+                    // If offline and check fails, try to load victims anyway (might have local data)
+                    // This allows viewing victims that were previously loaded
+                    false // Default to not assigned for UI (hides FAB), but still try to load victims
+                }
 
-                val disasterDetails = disasterDetailsDeferred.await()
-                val assignmentStatus = assignmentStatusDeferred.await()
-
-                val victims = if (assignmentStatus) {
+                // Get victims - try to load from local DB even if assignment status unknown
+                // This allows offline access to previously loaded victims
+                val victims = try {
                     victimRepository.getDisasterVictims(disasterId)
-                } else {
-                    emptyList()
+                } catch (e: Exception) {
+                    Log.w("DisasterDetailVM", "Failed to load victims: ${e.message}")
+                    emptyList() // Return empty list if fails
                 }
 
                 _uiState.update {
@@ -97,17 +118,33 @@ class DisasterDetailViewModel @Inject constructor(
     fun refreshVictims() {
         viewModelScope.launch {
             currentDisasterId?.let { id ->
-                _uiState.update { it.copy(isLoading = true) }
+                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
                 try {
+                    // Force refresh from API if online
+                    try {
+                        victimRepository.refreshDisasterVictims(id)
+                        Log.d("DisasterDetailVM", "Force refreshed victims from API for disaster: $id")
+                    } catch (e: Exception) {
+                        Log.w("DisasterDetailVM", "Failed to force refresh from API, using local data: ${e.message}")
+                    }
+                    // Get from repository (will return local data, which is now updated)
                     val victims = victimRepository.getDisasterVictims(id)
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            victims = victims
+                            victims = victims,
+                            errorMessage = null
                         )
                     }
+                    Log.d("DisasterDetailVM", "Refreshed ${victims.size} victims for disaster: $id")
                 } catch (e: Exception) {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal refresh data korban.") }
+                    Log.e("DisasterDetailVM", "Failed to refresh victims: ${e.message}", e)
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            errorMessage = "Gagal refresh data korban: ${e.message}"
+                        ) 
+                    }
                 }
             }
         }

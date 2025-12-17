@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +56,7 @@ fun DisasterListScreen(
     val filterOptions = listOf("Semua", "Gempa Bumi", "Banjir", "BMKG", "Manual")
     var selectedFilter by remember { mutableStateOf(filterOptions.first()) }
 
-    val disasters = disasterListViewModel.disasters
+    val disasters by disasterListViewModel.disasters.collectAsStateWithLifecycle()
     val isLoading = disasterListViewModel.isLoading
     val errorMessage = disasterListViewModel.errorMessage
 

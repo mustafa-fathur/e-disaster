@@ -24,7 +24,8 @@ fun AssignedDisasterContent(
     disaster: Disaster,
     victims: List<DisasterVictim>,
     initialTabIndex: Int,
-    onTabSelected: (Int) -> Unit
+    onTabSelected: (Int) -> Unit,
+    onRefreshVictims: (() -> Unit)? = null
 ) {
 
     val tabs = listOf("Identitas", "Laporan", "Korban", "Bantuan")
@@ -60,7 +61,8 @@ fun AssignedDisasterContent(
                 2 -> VictimsTabContent(
                     navController = navController,
                     disasterId = disasterId,
-                    victims = victims
+                    victims = victims,
+                    onRefresh = onRefreshVictims
                 )
 
                 3 -> AidsTabContent(navController, dummyAids)

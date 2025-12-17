@@ -45,7 +45,8 @@ import java.time.format.DateTimeFormatter
 fun VictimsTabContent(
     navController: NavController,
     disasterId: String,
-    victims: List<DisasterVictim>
+    victims: List<DisasterVictim>,
+    onRefresh: (() -> Unit)? = null
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Semua") }
@@ -68,11 +69,12 @@ fun VictimsTabContent(
 
     val filterOptions = listOf("Semua", "Luka Ringan", "Luka Berat", "Meninggal", "Hilang")
 
-    Column {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             AppSearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
@@ -118,6 +120,7 @@ fun VictimsTabContent(
                 }
             }
         }
+        }
     }
 }
 
@@ -127,8 +130,44 @@ private fun VictimCardContent(victim: DisasterVictim) {
         fun formatDate(dateString: String?): String {
             if (dateString.isNullOrEmpty()) return "Tanggal tidak valid"
             return try {
-                val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                // Try to parse as timestamp (Long as string)
+                val timestamp = dateString.toLongOrNull()
+                if (timestamp != null) {
+                    val date = java.util.Date(timestamp)
+                    val formatter = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID"))
+                    return formatter.format(date)
+                }
+                
+                // Try to parse as ISO date string
+                try {
+                    val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                    return localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID")))
+                } catch (e: Exception) {
+                    // Try other ISO formats
+                    try {
+                        val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE)
+                        return localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID")))
+                    } catch (e2: Exception) {
+                        // Try standard date formats
+                        val formats = listOf(
+                            "yyyy-MM-dd'T'HH:mm:ss",
+                            "yyyy-MM-dd HH:mm:ss",
+                            "yyyy-MM-dd"
+                        )
+                        for (format in formats) {
+                            try {
+                                val parsedDate = java.text.SimpleDateFormat(format, java.util.Locale.getDefault()).parse(dateString)
+                                if (parsedDate != null) {
+                                    val formatter = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID"))
+                                    return formatter.format(parsedDate)
+                                }
+                            } catch (e3: Exception) {
+                                continue
+                            }
+                        }
+                        "Tanggal tidak valid"
+                    }
+                }
             } catch (e: Exception) {
                 "Tanggal tidak valid"
             }

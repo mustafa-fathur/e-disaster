@@ -22,6 +22,7 @@ data class DisasterVictim(
 data class VictimPicture(
     val id: String,
     val url: String,
+    val localPath: String? = null, // Local file path for offline access
     val caption: String?,
     val mimeType: String
 )

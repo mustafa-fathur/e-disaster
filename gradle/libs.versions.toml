@@ -5,7 +5,7 @@ coreSplashscreen = "1.2.0"
 datastorePreferences = "1.2.0"
 firebaseBom = "34.7.0"
 hiltNavigationCompose = "1.3.0"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -23,9 +23,10 @@ volley = "1.2.1"
 coreTelecom = "1.0.1"
 media3Exoplayer = "1.8.0"
 hilt = "2.57.2"
-kotlinPlugin = "2.2.21"
+kotlinPlugin = "2.3.0"
 foundationLayout = "1.10.0"
 coreI18n = "1.0.0"
+room = "2.8.4"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
@@ -64,6 +65,9 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-core-i18n = { group = "androidx.core", name = "core-i18n", version.ref = "coreI18n" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

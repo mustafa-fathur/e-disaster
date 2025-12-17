@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -128,8 +129,19 @@ fun DisasterVictimDetailScreen(
                     canNavigateBack = true,
                     onNavigateUp = { navController.navigateUp() },
                     actions = {
+                        IconButton(onClick = {
+                            if (!disasterId.isNullOrEmpty() && !victimId.isNullOrEmpty()) {
+                                viewModel.refreshVictimDetail(disasterId, victimId)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         IconButton(onClick = { navController.navigate("update-disaster-victim/$disasterId/$victimId") }) {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Ubah")
+                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Ubah", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = { showDeleteVictimDialog = true }) {
                             Icon(imageVector = Icons.Default.Delete, contentDescription = "Hapus Data", tint = MaterialTheme.colorScheme.error)
@@ -145,9 +157,6 @@ fun DisasterVictimDetailScreen(
                     .fillMaxSize()
             ) {
                 when {
-                    uiState.isLoading && uiState.victim == null -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    }
                     uiState.errorMessage != null && uiState.victim == null -> {
                         Text(text = uiState.errorMessage!!, modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center)
                     }
@@ -162,11 +171,15 @@ fun DisasterVictimDetailScreen(
                                         viewModel.addPicture(victimId, uri, context)
                                     }
                                 }
+                            },
+                            onRefresh = {
+                                if (!disasterId.isNullOrEmpty() && !victimId.isNullOrEmpty()) {
+                                    viewModel.refreshVictimDetail(disasterId, victimId)
+                                }
                             }
                         )
                     }
                 }
-
             }
 
             if (selectedImageUrl != null) {
@@ -220,19 +233,52 @@ private fun VictimDetailContent(
     victim: DisasterVictim,
     onImageClick: (String) -> Unit,
     onDeletePictureClick: (VictimPicture) -> Unit,
-    onAddPictures: (List<Uri>) -> Unit
+    onAddPictures: (List<Uri>) -> Unit,
+    onRefresh: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+    
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         VictimInfoCard(victim = victim)
 
         ImagePickerSection(
-            uris = victim.pictures?.map { Uri.parse("https://e-disaster.fathur.tech${it.url}") } ?: emptyList(),
+            uris = victim.pictures?.mapNotNull { picture ->
+                // Use localPath if available (offline), otherwise use server URL
+                when {
+                    !picture.localPath.isNullOrEmpty() -> {
+                        val file = java.io.File(picture.localPath)
+                        if (file.exists()) {
+                            Uri.fromFile(file)
+                        } else {
+                            // Local file doesn't exist, try server URL
+                            if (!picture.url.isNullOrEmpty()) {
+                                Uri.parse("https://e-disaster.fathur.tech${picture.url}")
+                            } else null
+                        }
+                    }
+                    !picture.url.isNullOrEmpty() -> Uri.parse("https://e-disaster.fathur.tech${picture.url}")
+                    else -> null
+                }
+            } ?: emptyList(),
             onImagesAdded = onAddPictures,
             onImageRemoved = { uri ->
-                val picture = victim.pictures?.find { "https://e-disaster.fathur.tech${it.url}" == uri.toString() }
+                val picture = victim.pictures?.find { pic ->
+                    val picUri = when {
+                        !pic.localPath.isNullOrEmpty() -> {
+                            val file = java.io.File(pic.localPath)
+                            if (file.exists()) Uri.fromFile(file) else null
+                        }
+                        !pic.url.isNullOrEmpty() -> Uri.parse("https://e-disaster.fathur.tech${pic.url}")
+                        else -> null
+                    }
+                    picUri?.toString() == uri.toString()
+                }
                 picture?.let(onDeletePictureClick)
             }
         )
@@ -243,15 +289,49 @@ private fun VictimDetailContent(
 private fun VictimInfoCard(victim: DisasterVictim) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun formatDate(dateString: String): String {
+        if (dateString.isEmpty()) return "Tanggal tidak valid"
         return try {
-            val localDate = try {
-                LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            } catch (e: Exception) {
-                LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            // Try to parse as timestamp (Long as string)
+            val timestamp = dateString.toLongOrNull()
+            if (timestamp != null) {
+                val date = java.util.Date(timestamp)
+                val formatter = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID"))
+                return formatter.format(date)
             }
-            localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+            
+            // Try to parse as ISO date string
+            try {
+                val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                return localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID")))
+            } catch (e: Exception) {
+                // Try other ISO formats
+                try {
+                    val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE)
+                    return localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID")))
+                } catch (e2: Exception) {
+                    // Try standard date formats
+                    val formats = listOf(
+                        "yyyy-MM-dd'T'HH:mm:ss",
+                        "yyyy-MM-dd HH:mm:ss",
+                        "yyyy-MM-dd"
+                    )
+                    for (format in formats) {
+                        try {
+                            val parsedDate = java.text.SimpleDateFormat(format, java.util.Locale.getDefault()).parse(dateString)
+                            if (parsedDate != null) {
+                                val formatter = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.forLanguageTag("id-ID"))
+                                return formatter.format(parsedDate)
+                            }
+                        } catch (e3: Exception) {
+                            continue
+                        }
+                    }
+                    // If all parsing fails, return original string or "Tanggal tidak valid"
+                    if (dateString.length > 20) "Tanggal tidak valid" else dateString
+                }
+            }
         } catch (e: Exception) {
-            dateString
+            "Tanggal tidak valid"
         }
     }
 

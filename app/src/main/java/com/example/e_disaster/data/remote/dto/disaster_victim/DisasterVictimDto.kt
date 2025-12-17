@@ -6,6 +6,10 @@ import com.google.gson.annotations.SerializedName
 data class DisasterVictimDto(
     @SerializedName("id")
     val id: String?,
+    @SerializedName("disaster_id")
+    val disasterId: String?,
+    @SerializedName("reported_by")
+    val reportedBy: String?,
     @SerializedName("nik")
     val nik: String?,
     @SerializedName("name")

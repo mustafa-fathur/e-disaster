@@ -59,6 +59,7 @@ class DisasterVictimDetailViewModel @Inject constructor(
             try {
                 repository.deleteDisasterVictim(disasterId, victimId)
                 _uiState.update { it.copy(isDeleting = false, isDeleted = true) }
+                // Note: The screen will navigate back and trigger refresh via savedStateHandle
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -76,10 +77,18 @@ class DisasterVictimDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 repository.addVictimPicture(victimId, imageUri, context)
+                // Reload victim detail to show the new picture
                 val disasterId = _uiState.value.victim?.disasterId ?: return@launch
                 loadVictimDetail(disasterId, victimId)
+                // Clear loading state
+                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal mengunggah gambar: ${e.message}") }
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        errorMessage = "Gagal menambahkan gambar: ${e.message}"
+                    ) 
+                }
                 e.printStackTrace()
             }
         }
@@ -93,13 +102,24 @@ class DisasterVictimDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 repository.deleteVictimPicture(victimId, pictureId)
-                val victim = _uiState.value.victim ?: return@launch
+                // Reload victim detail to reflect the deletion
                 val disasterId = victim.disasterId ?: return@launch
-                loadVictimDetail(disasterId, victim.id)
+                loadVictimDetail(disasterId, victimId)
+                // Clear loading state
+                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal menghapus gambar: ${e.message}") }
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        errorMessage = "Gagal menghapus gambar: ${e.message}"
+                    ) 
+                }
                 e.printStackTrace()
             }
         }
+    }
+
+    fun refreshVictimDetail(disasterId: String, victimId: String) {
+        loadVictimDetail(disasterId, victimId)
     }
 }

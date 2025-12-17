@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -76,24 +78,31 @@ fun DisasterDetailScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
 
-    val victimUpdateResult = navController.currentBackStackEntry
-        ?.savedStateHandle?.getLiveData<Boolean>("victim_updated")
-
-    LaunchedEffect(victimUpdateResult) {
-        victimUpdateResult?.observeForever { updated ->
-            if (updated) {
-                scope.launch {
-                    viewModel.refreshVictims()
-                    selectedTabIndex = 2
+    // Listen for victim updates (add/delete/update)
+    LaunchedEffect(Unit) {
+        // Observe savedStateHandle for victim updates
+        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("victim_updated")
+            ?.observeForever { updated ->
+                if (updated) {
+                    scope.launch {
+                        // Refresh victims list immediately
+                        viewModel.refreshVictims()
+                        // Switch to victims tab to show the update
+                        selectedTabIndex = 2
+                    }
+                    // Clear the flag
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("victim_updated")
                 }
-                navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("victim_updated")
             }
-        }
     }
-
+    
+    // Load disaster details and refresh victims when disasterId changes
     LaunchedEffect(disasterId) {
         if (!disasterId.isNullOrEmpty()) {
             viewModel.getDisasterDetails(disasterId)
+            // Small delay to ensure data is loaded, then refresh victims
+            kotlinx.coroutines.delay(200)
+            viewModel.refreshVictims()
         }
     }
 
@@ -130,6 +139,15 @@ fun DisasterDetailScreen(
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
                     if (uiState.isAssigned && uiState.disaster != null) {
+                        IconButton(onClick = {
+                            uiState.disaster?.id?.let { viewModel.refreshVictims() }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         TextButton(
                             onClick = { navController.navigate("update-disaster/${uiState.disaster!!.id}") },
                             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
@@ -184,7 +202,10 @@ fun DisasterDetailScreen(
                             disaster = uiState.disaster!!,
                             victims = uiState.victims,
                             initialTabIndex = selectedTabIndex,
-                            onTabSelected = { selectedTabIndex = it }
+                            onTabSelected = { selectedTabIndex = it },
+                            onRefreshVictims = {
+                                uiState.disaster?.id?.let { viewModel.refreshVictims() }
+                            }
                         )
                     } else {
                         UnassignedDisasterContent(

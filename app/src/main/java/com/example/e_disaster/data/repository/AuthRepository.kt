@@ -3,6 +3,8 @@ package com.example.e_disaster.data.repository
 import android.content.Context
 import android.util.Log
 import com.example.e_disaster.data.local.UserPreferences
+import com.example.e_disaster.data.local.database.dao.UserDao
+import com.example.e_disaster.data.mapper.UserMapper
 import com.example.e_disaster.data.model.User
 import com.example.e_disaster.data.remote.dto.auth.LoginRequest
 import com.example.e_disaster.data.remote.dto.auth.LogoutRequest
@@ -16,9 +18,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import okhttp3.ResponseBody
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,6 +25,7 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val apiService: AuthApiService,
     private val userPreferences: UserPreferences,
+    private val userDao: UserDao,
     @ApplicationContext private val context: Context
 ) {
     suspend fun checkHealth(): ResponseBody {
@@ -54,6 +54,11 @@ class AuthRepository @Inject constructor(
         val response = apiService.login(fullRequest)
         userPreferences.saveAuthToken(response.token)
         fcmToken?.let { userPreferences.saveFcmToken(it) }
+        
+        // Save user data to local database
+        val userEntity = with(UserMapper) { response.user.toEntity() }
+        userDao.insertUser(userEntity)
+        Log.d("AuthRepo", "User data saved to local database: ${userEntity.id}")
     }
 
     suspend fun logout() {
@@ -68,6 +73,23 @@ class AuthRepository @Inject constructor(
             }
         }
         userPreferences.clearAll()
+        
+        // Clear local user data
+        try {
+            val countBefore = userDao.getCurrentUser()?.let { 1 } ?: 0
+            Log.d("AuthRepo", "Users in database before logout: $countBefore")
+            userDao.deleteAll()
+            val countAfter = userDao.getCurrentUser()?.let { 1 } ?: 0
+            Log.d("AuthRepo", "Users in database after logout: $countAfter")
+            if (countAfter == 0) {
+                Log.d("AuthRepo", "Local user data cleared successfully")
+            } else {
+                Log.w("AuthRepo", "Warning: User data still exists after deleteAll()")
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Failed to clear local user data", e)
+            e.printStackTrace()
+        }
     }
 
     private suspend fun getFcmToken(): String? {
@@ -81,38 +103,18 @@ class AuthRepository @Inject constructor(
     
     suspend fun getProfile(): User {
         val response = apiService.getProfile()
+        
+        // Save user data to local database
+        val userEntity = with(UserMapper) { response.user.toEntity() }
+        userDao.insertUser(userEntity)
+        Log.d("AuthRepo", "User profile saved to local database: ${userEntity.id}")
 
-        return mapUserDtoToUser(response.user)
+        return with(UserMapper) { response.user.toModel() }
     }
-
-    private fun mapUserDtoToUser(dto: UserDto): User {
-        val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-        val outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
-
-        val formattedDate = try {
-            val date = LocalDate.parse(dto.dateOfBirth, inputFormatter)
-            date.format(outputFormatter)
-        } catch (e: Exception) {
-            "Tidak ada data"
-        }
-        return User(
-            id = dto.id,
-            name = dto.name,
-            email = dto.email,
-            userType = dto.type,
-            status = dto.status,
-            nik = dto.nik ?: "Tidak ada data",
-            phone = dto.phone ?: "Tidak ada data",
-            address = dto.address ?: "Tidak ada data",
-            dateOfBirth = formattedDate,
-            gender = if (dto.gender == false) "Laki-laki" else "Perempuan",
-            profilePicture = if (dto.profilePicture != null) {
-                "https://e-disaster.fathur.tech" + dto.profilePicture.url
-            } else {
-                "Tidak ada data"
-            }
-        )
+    
+    suspend fun getLocalUser(): User? {
+        val userEntity = userDao.getCurrentUser()
+        return userEntity?.let { with(UserMapper) { it.toModel() } }
     }
 }
     

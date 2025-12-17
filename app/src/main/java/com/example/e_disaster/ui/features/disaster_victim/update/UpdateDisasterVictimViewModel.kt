@@ -111,12 +111,26 @@ class UpdateDisasterVictimViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isUpdating = true, errorMessage = null) }
             try {
-                repository.updateDisasterVictim(
+                val response = repository.updateDisasterVictim(
                     disasterId = disasterId,
                     victimId = victimId,
                     uiState = _uiState.value
                 )
-                _uiState.update { it.copy(isUpdating = false, isSuccess = true) }
+                // Check if it's a local save (offline) or server sync
+                val isOfflineSave = response.message?.contains("lokal", ignoreCase = true) == true
+                if (isOfflineSave) {
+                    // Show success but indicate it's saved locally
+                    _uiState.update { 
+                        it.copy(
+                            isUpdating = false, 
+                            isSuccess = true,
+                            errorMessage = null // Clear any previous errors
+                        ) 
+                    }
+                } else {
+                    // Fully synced with server
+                    _uiState.update { it.copy(isUpdating = false, isSuccess = true) }
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
