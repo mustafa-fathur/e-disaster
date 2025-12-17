@@ -7,7 +7,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.e_disaster.ui.features.auth.login.LoginScreen
 import com.example.e_disaster.ui.features.auth.profile.ProfileScreen
@@ -31,8 +30,10 @@ import com.example.e_disaster.ui.features.notification.NotificationScreen
 import com.example.e_disaster.ui.features.splash.SplashScreen
 
 @Composable
-fun NavGraph(intent: Intent) {
-    val navController = rememberNavController()
+fun NavGraph(
+    navController: NavHostController,
+    intent: Intent
+) {
 
     LaunchedEffect(key1 = intent) {
         handleNotificationIntent(intent, navController)

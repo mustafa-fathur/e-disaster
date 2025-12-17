@@ -10,6 +10,7 @@ import com.example.e_disaster.data.remote.dto.auth.RegisterRequest
 import com.example.e_disaster.data.remote.dto.auth.RegisterResponse
 import com.example.e_disaster.data.remote.dto.auth.UserDto
 import com.example.e_disaster.data.remote.service.AuthApiService
+import com.example.e_disaster.utils.Constants.BASE_URL
 import com.example.e_disaster.utils.DeviceUtils
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -78,11 +79,16 @@ class AuthRepository @Inject constructor(
             null
         }
     }
-    
-    suspend fun getProfile(): User {
-        val response = apiService.getProfile()
 
-        return mapUserDtoToUser(response.user)
+    suspend fun getProfile(): Result<User> {
+        return try {
+            val response = apiService.getProfile()
+            val user = mapUserDtoToUser(response.user)
+            Result.success(user)
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "getProfile failed", e)
+            Result.failure(e)
+        }
     }
 
     private fun mapUserDtoToUser(dto: UserDto): User {
@@ -108,7 +114,7 @@ class AuthRepository @Inject constructor(
             dateOfBirth = formattedDate,
             gender = if (dto.gender == false) "Laki-laki" else "Perempuan",
             profilePicture = if (dto.profilePicture != null) {
-                "https://e-disaster.fathur.tech" + dto.profilePicture.url
+                BASE_URL + dto.profilePicture.url
             } else {
                 "Tidak ada data"
             }

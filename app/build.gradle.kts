@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -34,8 +36,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
     }
     buildFeatures {
         compose = true
@@ -61,8 +65,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.core.splashscreen)
-    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    implementation("androidx.compose.runtime:runtime-livedata")
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.compose.runtime.livedata)
 
 
     // Hilt for Dependency Injection
@@ -94,13 +98,7 @@ dependencies {
     // FCM
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
-
-
-// Don't need for now
-//    implementation(libs.volley)
-//    implementation(libs.androidx.core.telecom)
-//    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

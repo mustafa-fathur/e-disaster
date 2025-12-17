@@ -9,9 +9,8 @@ import com.example.e_disaster.data.model.User
 import com.example.e_disaster.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import java.io.IOException
 import retrofit2.HttpException
+import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -32,18 +31,21 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun fetchUserProfile() {
-        isLoading = true
-        errorMessage = null
         viewModelScope.launch {
-            try {
-                user = authRepository.getProfile()
-            } catch (e: HttpException) {
-                errorMessage = "API Error: ${e.code()} - ${e.message()}"
-            } catch (e: IOException) {
-                errorMessage = "Network Error: ${e.message}"
-            } catch (e: Exception) {
-                errorMessage = "An Error Occurred: ${e.message}"
-            } finally {
+            isLoading = true
+            errorMessage = null
+
+            val profileResult = authRepository.getProfile()
+
+            profileResult.onSuccess { fetchedUser ->
+                user = fetchedUser
+                isLoading = false
+            }.onFailure { exception ->
+                errorMessage = when (exception) {
+                    is HttpException -> "API Error: ${exception.code()} - Unauthorized"
+                    else -> "An unexpected error occurred: ${exception.message}"
+                }
+                user = null
                 isLoading = false
             }
         }
@@ -52,6 +54,7 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
+            user = null
         }
     }
 }
