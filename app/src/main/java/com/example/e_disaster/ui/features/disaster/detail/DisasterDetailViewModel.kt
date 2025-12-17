@@ -93,4 +93,23 @@ class DisasterDetailViewModel @Inject constructor(
     fun clearJoinStatusMessage() {
         _uiState.update { it.copy(joinStatusMessage = null) }
     }
+
+    fun refreshVictims() {
+        viewModelScope.launch {
+            currentDisasterId?.let { id ->
+                _uiState.update { it.copy(isLoading = true) }
+                try {
+                    val victims = victimRepository.getDisasterVictims(id)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            victims = victims
+                        )
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal refresh data korban.") }
+                }
+            }
+        }
+    }
 }

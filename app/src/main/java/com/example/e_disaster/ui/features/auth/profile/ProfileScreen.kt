@@ -145,7 +145,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // A standard red color
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,

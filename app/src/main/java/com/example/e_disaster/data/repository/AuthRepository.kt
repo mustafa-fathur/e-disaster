@@ -1,14 +1,21 @@
 package com.example.e_disaster.data.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.content.Context
+import android.util.Log
 import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.model.User
 import com.example.e_disaster.data.remote.dto.auth.LoginRequest
+import com.example.e_disaster.data.remote.dto.auth.LogoutRequest
 import com.example.e_disaster.data.remote.dto.auth.RegisterRequest
 import com.example.e_disaster.data.remote.dto.auth.RegisterResponse
 import com.example.e_disaster.data.remote.dto.auth.UserDto
 import com.example.e_disaster.data.remote.service.AuthApiService
+import com.example.e_disaster.utils.Constants.BASE_URL
+import com.example.e_disaster.utils.DeviceUtils
+import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.tasks.await
 import okhttp3.ResponseBody
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -16,11 +23,11 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Hilt knows this should be a singleton because we defined it in AppModule
 @Singleton
 class AuthRepository @Inject constructor(
     private val apiService: AuthApiService,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    @ApplicationContext private val context: Context
 ) {
     suspend fun checkHealth(): ResponseBody {
         return apiService.healthCheck()
@@ -29,33 +36,61 @@ class AuthRepository @Inject constructor(
     suspend fun register(request: RegisterRequest): RegisterResponse {
         return apiService.register(request)
     }
-    
-    /**
-     * Performs the login operation.
-     * 1. Calls the API with the login request.
-     * 2. If successful, saves the received token to DataStore.
-     */
+
     suspend fun login(request: LoginRequest) {
-        val response = apiService.login(request)
-        // The API response includes the token, which we save
+        val fcmToken = getFcmToken()
+        val deviceId = DeviceUtils.getDeviceId(context)
+        val deviceName = DeviceUtils.getDeviceName()
+        val appVersion = DeviceUtils.getAppVersion()
+
+        val fullRequest = request.copy(
+            fcmToken = fcmToken,
+            deviceId = deviceId,
+            deviceName = deviceName,
+            appVersion = appVersion
+        )
+
+        Log.d("AuthRepo", "Login request: $fullRequest")
+
+        val response = apiService.login(fullRequest)
         userPreferences.saveAuthToken(response.token)
+        fcmToken?.let { userPreferences.saveFcmToken(it) }
     }
 
-    /**
-     * Clears the authentication token from local storage.
-     */
     suspend fun logout() {
-        userPreferences.clearAuthToken()
+        val fcmToken = userPreferences.fcmToken.first()
+        if (fcmToken != null) {
+            try {
+                val logoutRequest = LogoutRequest(fcmToken = fcmToken)
+                apiService.logout(logoutRequest)
+                Log.d("AuthRepo", "Successfully unregistered FCM token on server.")
+            } catch (e: Exception) {
+                Log.e("AuthRepo", "Failed to unregister FCM token on server.", e)
+            }
+        }
+        userPreferences.clearAll()
     }
-    
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getProfile(): User {
-        val response = apiService.getProfile()
 
-        return mapUserDtoToUser(response.user)
+    private suspend fun getFcmToken(): String? {
+        return try {
+            FirebaseMessaging.getInstance().token.await()
+        } catch (e: Exception) {
+            Log.e("FCM_TOKEN", "Failed to get FCM token", e)
+            null
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getProfile(): Result<User> {
+        return try {
+            val response = apiService.getProfile()
+            val user = mapUserDtoToUser(response.user)
+            Result.success(user)
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "getProfile failed", e)
+            Result.failure(e)
+        }
+    }
+
     private fun mapUserDtoToUser(dto: UserDto): User {
         val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -79,7 +114,7 @@ class AuthRepository @Inject constructor(
             dateOfBirth = formattedDate,
             gender = if (dto.gender == false) "Laki-laki" else "Perempuan",
             profilePicture = if (dto.profilePicture != null) {
-                "https://e-disaster.fathur.tech" + dto.profilePicture.url
+                BASE_URL + dto.profilePicture.url
             } else {
                 "Tidak ada data"
             }

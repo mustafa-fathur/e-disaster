@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class DisasterReportListResponse(
     @SerializedName("data")
-    val data: List<DisasterReportDto>
+    val data: List<Any>
 )
