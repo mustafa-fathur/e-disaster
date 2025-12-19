@@ -116,11 +116,19 @@ fun NavGraph(
         }
 
         composable(
-            route = "update-disaster-report/{reportId}",
-            arguments = listOf(navArgument("reportId") { type = NavType.StringType })
+            route = "update-disaster-report/{disasterId}/{reportId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("reportId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val reportId = backStackEntry.arguments?.getString("reportId")
-            UpdateDisasterReportScreen(navController = navController, reportId = reportId)
+            UpdateDisasterReportScreen(
+                navController = navController,
+                disasterId = disasterId,
+                reportId = reportId
+            )
         }
 
         composable(
