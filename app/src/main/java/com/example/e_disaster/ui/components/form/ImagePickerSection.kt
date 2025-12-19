@@ -8,7 +8,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -16,9 +21,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,12 +42,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
-import com.example.e_disaster.BuildConfig
 import com.example.e_disaster.ui.components.dialogs.FullScreenImageViewer
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
+
+private fun createTempImageUri(context: android.content.Context): Uri {
+    val newImageFile = File(context.cacheDir, "temp_camera_${System.currentTimeMillis()}.jpg")
+    val authority = "${context.packageName}.provider"
+    return FileProvider.getUriForFile(context, authority, newImageFile)
+}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -49,7 +66,7 @@ fun ImagePickerSection(
     val context = LocalContext.current
     var showImageSourceDialog by remember { mutableStateOf(false) }
     var selectedImageForPreview by remember { mutableStateOf<Uri?>(null) }
-
+    var tempCameraImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
@@ -57,7 +74,7 @@ fun ImagePickerSection(
             onImagesAdded(newUris)
         }
     )
-    var tempCameraImageUri by remember { mutableStateOf<Uri?>(null) }
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
@@ -66,15 +83,15 @@ fun ImagePickerSection(
             }
         }
     )
+
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
-                val newImageFile = File(context.cacheDir, "temp_camera_${System.currentTimeMillis()}.jpg")
-                val uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", newImageFile)
-                tempCameraImageUri = uri
-                cameraLauncher.launch(uri)
+                val newUri = createTempImageUri(context)
+                tempCameraImageUri = newUri
+                cameraLauncher.launch(newUri)
             } else {
                 Toast.makeText(context, "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
             }
@@ -87,10 +104,9 @@ fun ImagePickerSection(
             onCameraClick = {
                 showImageSourceDialog = false
                 if (cameraPermissionState.status.isGranted) {
-                    val newImageFile = File(context.cacheDir, "temp_camera_${System.currentTimeMillis()}.jpg")
-                    val uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", newImageFile)
-                    tempCameraImageUri = uri
-                    cameraLauncher.launch(uri)
+                    val newUri = createTempImageUri(context)
+                    tempCameraImageUri = newUri
+                    cameraLauncher.launch(newUri)
                 } else {
                     cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
@@ -189,7 +205,6 @@ private fun ImagePreviewItem(
     }
 }
 
-
 @Composable
 private fun ImageSourceDialog(onDismiss: () -> Unit, onCameraClick: () -> Unit, onGalleryClick: () -> Unit) {
     AlertDialog(
@@ -201,3 +216,4 @@ private fun ImageSourceDialog(onDismiss: () -> Unit, onCameraClick: () -> Unit, 
         dismissButton = { TextButton(onClick = onGalleryClick) { Text("Galeri") } }
     )
 }
+
