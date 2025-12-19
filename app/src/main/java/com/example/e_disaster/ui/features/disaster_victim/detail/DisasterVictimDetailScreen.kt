@@ -69,7 +69,10 @@ import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
 import com.example.e_disaster.utils.Constants.BASE_URL
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Locale
 
 @Composable
 fun DisasterVictimDetailScreen(
@@ -220,7 +223,10 @@ private fun VictimDetailContent(
     onAddPictures: (List<Uri>) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         VictimInfoCard(victim = victim)
@@ -238,16 +244,28 @@ private fun VictimDetailContent(
 
 @Composable
 private fun VictimInfoCard(victim: DisasterVictim) {
+    val indonesianLocale = Locale("in", "ID")
+
     fun formatDate(dateString: String): String {
         return try {
             val localDate = try {
                 LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            } catch (e: Exception) {
+            } catch (e: DateTimeParseException) {
                 LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             }
-            localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+            localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", indonesianLocale))
         } catch (e: Exception) {
             dateString
+        }
+    }
+
+    fun formatDateTime(dateTimeString: String): String {
+        return try {
+            val offsetDateTime = OffsetDateTime.parse(dateTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm", indonesianLocale)
+            offsetDateTime.format(formatter)
+        } catch (e: Exception) {
+            dateTimeString
         }
     }
 
@@ -261,18 +279,30 @@ private fun VictimInfoCard(victim: DisasterVictim) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                victim.disasterTitle?.let { title ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    victim.disasterTitle?.let { title ->
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = victim.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                Text(
-                    text = victim.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_person_24),
+                    contentDescription = "Aid Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
@@ -296,7 +326,7 @@ private fun VictimInfoCard(victim: DisasterVictim) {
                     Spacer(modifier = Modifier.height(16.dp))
                     DetailItem(
                         label = "Tanggal Laporan",
-                        value = formatDate(victim.createdAt)
+                        value = formatDateTime(victim.createdAt)
                     )
                 }
             }

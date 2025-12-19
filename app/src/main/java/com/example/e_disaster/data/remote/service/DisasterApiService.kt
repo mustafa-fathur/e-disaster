@@ -8,9 +8,11 @@ import com.example.e_disaster.data.remote.dto.general.MessageResponse
 import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportListResponse
 import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDetailResponse
 import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
+import com.example.e_disaster.data.remote.dto.disaster_report.UpdateDisasterReportRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface DisasterApiService {
@@ -53,5 +55,12 @@ interface DisasterApiService {
     suspend fun createDisasterReport(
         @Path("disasterId") disasterId: String,
         @Body request: CreateDisasterReportRequest
+    ): DisasterReportDetailResponse
+
+    @PUT("disasters/{disasterId}/reports/{reportId}")
+    suspend fun updateDisasterReport(
+        @Path("disasterId") disasterId: String,
+        @Path("reportId") reportId: String,
+        @Body request: UpdateDisasterReportRequest
     ): DisasterReportDetailResponse
 }

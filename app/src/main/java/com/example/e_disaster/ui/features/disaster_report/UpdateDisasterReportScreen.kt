@@ -1,6 +1,6 @@
 package com.example.e_disaster.ui.features.disaster_report
 
-import androidx.compose.foundation.background
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,54 +10,68 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
-import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
-import com.example.e_disaster.utils.DummyData
-import com.example.e_disaster.data.model.History
-import java.util.UUID
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateDisasterReportScreen(navController: NavController, reportId: String?) {
-    // Prefill from dummy data if available
-    val existing = DummyData.getHistoryById(reportId)
+fun UpdateDisasterReportScreen(
+    navController: NavController,
+    disasterId: String?,
+    reportId: String?,
+    viewModel: UpdateDisasterReportViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
-    var title by remember { mutableStateOf(existing?.disasterName ?: "") }
-    var description by remember { mutableStateOf(existing?.description ?: "") }
-    var isFinal by remember { mutableStateOf(existing?.status.equals("completed", ignoreCase = true)) }
+    LaunchedEffect(disasterId, reportId) {
+        if (!disasterId.isNullOrEmpty() && !reportId.isNullOrEmpty()) {
+            viewModel.loadInitialData(disasterId, reportId)
+        }
+    }
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            Toast.makeText(context, "Laporan berhasil diperbarui", Toast.LENGTH_SHORT).show()
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("report_updated", true)
+            navController.popBackStack()
+        }
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -74,47 +88,45 @@ fun UpdateDisasterReportScreen(navController: NavController, reportId: String?) 
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            UpdateDisasterReportContent(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .align(Alignment.TopCenter),
-                title = title,
-                onTitleChange = { title = it },
-                description = description,
-                onDescriptionChange = { description = it },
-                isFinal = isFinal,
-                onIsFinalChange = { isFinal = it },
-                onSave = { newTitle, newDescription, imagePath, isFinalFlag ->
-                    // Persist to DummyData for preview/testing
-                    if (existing != null) {
-                        val updated = existing.copy(
-                            disasterName = newTitle,
-                            description = newDescription,
-                            imageUrl = imagePath ?: existing.imageUrl,
-                            status = if (isFinalFlag) "completed" else existing.status
-                        )
-                        DummyData.updateHistory(updated)
-                    } else {
-                        val newHistory = History(
-                            id = reportId ?: UUID.randomUUID().toString(),
-                            disasterName = newTitle,
-                            location = "",
-                            date = "",
-                            description = newDescription,
-                            imageUrl = imagePath ?: "",
-                            status = if (isFinalFlag) "completed" else "in_progress",
-                            participants = emptyList()
-                        )
-                        DummyData.addHistory(newHistory)
-                    }
-                    navController.navigateUp()
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-            )
+                uiState.errorMessage != null && uiState.title.isBlank() -> {
+                    Text(
+                        text = uiState.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                    )
+                }
+                else -> {
+                    UpdateDisasterReportContent(
+                        modifier = Modifier.padding(16.dp),
+                        title = uiState.title,
+                        onTitleChange = viewModel::onTitleChange,
+                        description = uiState.description,
+                        onDescriptionChange = viewModel::onDescriptionChange,
+                        isFinal = uiState.isFinalStage,
+                        onIsFinalChange = viewModel::onIsFinalChange,
+                        onSave = {
+                            if (disasterId != null && reportId != null) {
+                                viewModel.submitUpdate(disasterId, reportId)
+                            }
+                        }
+                    )
+                }
+            }
+
+            if (uiState.isUpdating) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateDisasterReportContent(
     modifier: Modifier = Modifier,
@@ -124,26 +136,19 @@ fun UpdateDisasterReportContent(
     onDescriptionChange: (String) -> Unit,
     isFinal: Boolean,
     onIsFinalChange: (Boolean) -> Unit,
-    onSave: (title: String, description: String, imagePath: String?, isFinal: Boolean) -> Unit = { _, _, _, _ -> }
+    onSave: () -> Unit
 ) {
 
     Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Title
         OutlinedTextField(
             value = title,
             onValueChange = onTitleChange,
             label = { Text(text = "Judul Laporan") },
-            leadingIcon = {
-                Text(
-                    text = "Tt",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
@@ -155,22 +160,13 @@ fun UpdateDisasterReportContent(
             }
         )
 
-        // Description
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text(text = "Deskripsi") },
-            leadingIcon = {
-                Text(
-                    text = "Tt",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .height(150.dp),
             trailingIcon = {
                 if (description.isNotEmpty()) {
                     IconButton(onClick = { onDescriptionChange("") }) {
@@ -180,44 +176,26 @@ fun UpdateDisasterReportContent(
             }
         )
 
-        // Photo upload (placeholder)
-        Text(text = "Foto Bencana", style = MaterialTheme.typography.labelLarge)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(84.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF0F0F0)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Foto", fontSize = 12.sp, color = Color.Gray)
-            }
-
-            TextButton(onClick = { /* TODO: open image picker */ }) {
-                Icon(imageVector = Icons.Default.AddAPhoto, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Upload Foto")
-            }
-        }
-
-        // Final checkbox
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Checkbox(checked = isFinal, onCheckedChange = onIsFinalChange)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Ini adalah laporan tahap akhir")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { onSave(title, description, null, isFinal) },
+            onClick = onSave,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text(text = "Simpan", color = MaterialTheme.colorScheme.onPrimary)
+            Text(text = "Simpan Perubahan", color = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
@@ -234,7 +212,7 @@ fun UpdateDisasterReportPreview() {
             onDescriptionChange = {},
             isFinal = false,
             onIsFinalChange = {},
-            onSave = { _, _, _, _ -> }
+            onSave = {}
         )
     }
 }

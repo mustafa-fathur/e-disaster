@@ -39,6 +39,7 @@ import com.example.e_disaster.ui.components.badges.DisasterVictimStatusBadge
 import com.example.e_disaster.ui.features.disaster.detail.components.ListItemCard
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @Composable
@@ -76,7 +77,7 @@ fun VictimsTabContent(
             AppSearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
-                placeholderText = "Cari nama atau NIK..."
+                placeholderText = "Cari nama korban..."
             )
             FilterChipGroup(
                 filterOptions = filterOptions,
@@ -128,7 +129,8 @@ private fun VictimCardContent(victim: DisasterVictim) {
             if (dateString.isNullOrEmpty()) return "Tanggal tidak valid"
             return try {
                 val localDate = LocalDate.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("in", "ID")
+                ))
             } catch (e: Exception) {
                 "Tanggal tidak valid"
             }

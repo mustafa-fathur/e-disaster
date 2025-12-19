@@ -5,6 +5,7 @@ import com.example.e_disaster.data.model.DisasterReport
 import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
 import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDto
+import com.example.e_disaster.data.remote.dto.disaster_report.UpdateDisasterReportRequest
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -57,6 +58,22 @@ class DisasterRepository @Inject constructor(
         request: CreateDisasterReportRequest
     ): DisasterReport {
         val response = apiService.createDisasterReport(disasterId, request)
+        return mapDisasterReportDtoToModel(response.data)
+    }
+
+    suspend fun updateDisasterReport(
+        disasterId: String,
+        reportId: String,
+        title: String,
+        description: String,
+        isFinalStage: Boolean
+    ): DisasterReport {
+        val request = UpdateDisasterReportRequest(
+            title = title,
+            description = description,
+            isFinalStage = isFinalStage
+        )
+        val response = apiService.updateDisasterReport(disasterId, reportId, request)
         return mapDisasterReportDtoToModel(response.data)
     }
 
