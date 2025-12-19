@@ -145,9 +145,6 @@ fun DisasterVictimDetailScreen(
                     .fillMaxSize()
             ) {
                 when {
-                    uiState.isLoading && uiState.victim == null -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    }
                     uiState.errorMessage != null && uiState.victim == null -> {
                         Text(text = uiState.errorMessage!!, modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center)
                     }

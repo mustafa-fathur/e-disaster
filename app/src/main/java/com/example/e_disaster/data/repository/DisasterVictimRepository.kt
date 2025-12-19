@@ -2,6 +2,7 @@ package com.example.e_disaster.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import com.example.e_disaster.data.model.DisasterVictim
 import com.example.e_disaster.data.model.VictimPicture
 import com.example.e_disaster.data.remote.dto.disaster_victim.AddVictimResponse
@@ -89,9 +90,13 @@ class DisasterVictimRepository @Inject constructor(
 
     private fun getFileFromUri(context: Context, uri: Uri): File? {
         val contentResolver = context.contentResolver
+        if (uri.scheme == "content" && uri.authority == "${context.packageName}.provider") {
+            return uri.path?.let { File(context.cacheDir, it.substringAfter("my_cache/")) }
+        }
+
         val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
-        val extension = mimeType.substringAfter('/')
-        val tempFile = File(context.cacheDir, "upload_temp_${System.currentTimeMillis()}.$extension")
+        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "jpg"
+        val tempFile = File(context.cacheDir, "upload_gallery_${System.currentTimeMillis()}.$extension")
 
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -149,12 +154,13 @@ class DisasterVictimRepository @Inject constructor(
         val descriptionPart =
             uiState.description.ifBlank { null }?.toRequestBody("text/plain".toMediaTypeOrNull())
 
-        val imageParts = uiState.images.mapNotNull { uri ->
-            val file = getFileFromUri(context, uri) ?: return@mapNotNull null
+        val imageParts = uiState.images.mapIndexedNotNull { index, uri ->
+            val file = getFileFromUri(context, uri) ?: return@mapIndexedNotNull null
             val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
             val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
 
-            MultipartBody.Part.createFormData("images[]", file.name, requestBody)
+            val fileName = "image_${System.currentTimeMillis()}_$index.${file.extension}"
+            MultipartBody.Part.createFormData("images[]", fileName, requestBody)
         }
 
         val url = "disasters/$disasterId/victims"

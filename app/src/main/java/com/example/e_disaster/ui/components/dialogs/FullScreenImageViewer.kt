@@ -49,8 +49,8 @@ fun FullScreenImageViewer(
                     .fillMaxWidth()
                     .padding(16.dp),
                 contentScale = ContentScale.Fit,
-                placeholder = painterResource(id = R.drawable.app_logo),
-                error = painterResource(id = R.drawable.app_logo)
+                placeholder = painterResource(id = R.drawable.placeholder),
+                error = painterResource(id = R.drawable.placeholder)
             )
             IconButton(
                 onClick = onDismiss,
