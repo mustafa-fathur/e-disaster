@@ -5,6 +5,7 @@ import com.example.e_disaster.data.remote.UnauthorizedHandler
 import com.example.e_disaster.data.remote.service.AuthApiService
 import com.example.e_disaster.data.remote.service.DisasterAidApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
+import com.example.e_disaster.data.remote.service.DisasterReportApiService
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
 import com.example.e_disaster.data.remote.service.PictureApiService
 import com.example.e_disaster.utils.Constants.API_BASE_URL
@@ -20,6 +21,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -73,6 +75,9 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
     }
 
@@ -96,6 +101,12 @@ object NetworkModule {
     @Singleton
     fun provideDisasterApiService(retrofit: Retrofit): DisasterApiService {
         return retrofit.create(DisasterApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDisasterReportApiService(retrofit: Retrofit): DisasterReportApiService {
+        return retrofit.create(DisasterReportApiService::class.java)
     }
 
     @Provides

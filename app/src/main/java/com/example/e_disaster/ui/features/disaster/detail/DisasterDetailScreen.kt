@@ -20,10 +20,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +42,6 @@ import com.example.e_disaster.ui.features.disaster.detail.components.SpeedDialFa
 import com.example.e_disaster.ui.features.disaster.detail.contents.AssignedDisasterContent
 import com.example.e_disaster.ui.features.disaster.detail.contents.JoinConfirmationDialog
 import com.example.e_disaster.ui.features.disaster.detail.contents.UnassignedDisasterContent
-import kotlinx.coroutines.launch
 
 data class FabMenuItem(
     val icon: ImageVector? = null,
@@ -73,27 +72,26 @@ fun DisasterDetailScreen(
     var showJoinDialog by remember { mutableStateOf(false) }
     var isFabMenuExpanded by remember { mutableStateOf(false) }
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val scope = rememberCoroutineScope()
+    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
-    val victimUpdateResult = navController.currentBackStackEntry
-        ?.savedStateHandle?.getLiveData<Boolean>("victim_updated")
+    // Listen for the result from AddDisasterReportScreen
+    val reportAdded = navController.currentBackStackEntry
+        ?.savedStateHandle?.getLiveData<Boolean>("report_added")?.observeAsState()
 
-    LaunchedEffect(victimUpdateResult) {
-        victimUpdateResult?.observeForever { updated ->
-            if (updated) {
-                scope.launch {
-                    viewModel.refreshVictims()
-                    selectedTabIndex = 2
-                }
-                navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("victim_updated")
-            }
+    LaunchedEffect(reportAdded?.value) {
+        if (reportAdded?.value == true) {
+            viewModel.getDisasterDetails(disasterId!!)
+            selectedTabIndex = 1 // Switch to the "Perkembangan" tab
+            navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("report_added")
         }
     }
 
     LaunchedEffect(disasterId) {
         if (!disasterId.isNullOrEmpty()) {
             viewModel.getDisasterDetails(disasterId)
+        } else {
+            Toast.makeText(context, "ID Bencana tidak valid.", Toast.LENGTH_LONG).show()
+            navController.popBackStack()
         }
     }
 
@@ -108,17 +106,17 @@ fun DisasterDetailScreen(
         FabMenuItem(
             iconPainter = painterResource(id = R.drawable.id_card),
             label = "Tambah Laporan",
-            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-report/$it") } }
+            onClick = { disasterId?.let { navController.navigate("add-disaster-report/$it") } }
         ),
         FabMenuItem(
             icon = Icons.Default.Person,
             label = "Tambah Data Korban",
-            onClick = { if (!disasterId.isNullOrEmpty()) navController.navigate("add-disaster-victim/$disasterId") }
+            onClick = { disasterId?.let { navController.navigate("add-disaster-victim/$it") } }
         ),
         FabMenuItem(
             iconPainter = painterResource(id = R.drawable.package_box),
             label = "Tambah Data Bantuan",
-            onClick = { uiState.disaster?.id?.let { navController.navigate("add-disaster-aid/$it") } }
+            onClick = { disasterId?.let { navController.navigate("add-disaster-aid/$it") } }
         )
     )
 
@@ -131,7 +129,7 @@ fun DisasterDetailScreen(
                 actions = {
                     if (uiState.isAssigned && uiState.disaster != null) {
                         TextButton(
-                            onClick = { navController.navigate("update-disaster/${uiState.disaster!!.id}") },
+                            onClick = { disasterId?.let { navController.navigate("update-disaster/$it") } },
                             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(

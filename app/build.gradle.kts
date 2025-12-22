@@ -101,6 +101,14 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.kotlinx.coroutines.play.services)
 
+    // CameraX
+    val cameraxVersion = "1.3.3"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+    implementation("androidx.camera:camera-extensions:$cameraxVersion")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

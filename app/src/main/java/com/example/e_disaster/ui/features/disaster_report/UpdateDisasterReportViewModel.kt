@@ -2,7 +2,7 @@ package com.example.e_disaster.ui.features.disaster_report
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.e_disaster.data.repository.DisasterRepository
+import com.example.e_disaster.data.repository.DisasterReportRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +23,7 @@ data class UpdateReportUiState(
 
 @HiltViewModel
 class UpdateDisasterReportViewModel @Inject constructor(
-    private val repository: DisasterRepository
+    private val disasterReportRepository: DisasterReportRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UpdateReportUiState())
@@ -33,7 +33,7 @@ class UpdateDisasterReportViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val report = repository.getDisasterReport(disasterId, reportId)
+                val report = disasterReportRepository.getDisasterReport(disasterId, reportId)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -69,7 +69,7 @@ class UpdateDisasterReportViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isUpdating = true, errorMessage = null) }
             try {
-                repository.updateDisasterReport(
+                disasterReportRepository.updateDisasterReport(
                     disasterId = disasterId,
                     reportId = reportId,
                     title = _uiState.value.title,

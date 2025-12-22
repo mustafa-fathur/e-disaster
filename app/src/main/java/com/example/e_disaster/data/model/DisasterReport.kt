@@ -10,6 +10,14 @@ data class DisasterReport(
     val reportedBy: String,
     val reporterName: String,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    // Added: pictures associated with the report (url path returned by API)
+    val pictures: List<ReportPicture>? = null
 )
 
+data class ReportPicture(
+    val id: String,
+    val url: String,
+    val caption: String?,
+    val mimeType: String
+)

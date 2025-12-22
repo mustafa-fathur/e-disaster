@@ -16,5 +16,13 @@ data class Disaster(
     val magnitude: Double?,
     val depth: Double?,
     val createdAt: String?,
-    val updatedAt: String?
+    val updatedAt: String?,
+    val pictures: List<DisasterPicture>? = null
+)
+
+data class DisasterPicture(
+    val id: String,
+    val url: String,
+    val caption: String?,
+    val mimeType: String?
 )
