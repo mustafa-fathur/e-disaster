@@ -53,6 +53,7 @@ import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import com.example.e_disaster.utils.DisasterImageProvider
 
 @Composable
 fun HomeScreen(
@@ -295,7 +296,7 @@ fun DisasterItem(disaster: RecentDisaster) {
         Column {
             Box {
                 AsyncImage(
-                    model = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop",
+                    model = DisasterImageProvider.getImageUrlFromString(disaster.imageUrl),
                     contentDescription = disaster.title,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -364,6 +365,33 @@ fun DisasterItem(disaster: RecentDisaster) {
         }
     }
 }
+
+object DummyDisasters {
+    val list = listOf(
+        Disaster(
+            imageUrl = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            type = "Gempa Bumi",
+            title = "Gempa Bumi Cianjur",
+            location = "Cianjur, Jawa Barat",
+            date = "2024-10-28 • 13:21 WIB"
+        ),
+        Disaster(
+            imageUrl = "https://images.unsplash.com/photo-1567697879034-b5a26d4b358b?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            type = "Banjir",
+            title = "Banjir Bandang",
+            location = "Jakarta Selatan",
+            date = "2024-10-28 • 13:21 WIB"
+        )
+    )
+}
+
+data class Disaster(
+    val imageUrl: String,
+    val type: String,
+    val title: String,
+    val location: String,
+    val date: String
+)
 
 
 @Preview(showBackground = true)

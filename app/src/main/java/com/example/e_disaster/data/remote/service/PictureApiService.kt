@@ -3,6 +3,7 @@ package com.example.e_disaster.data.remote.service
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.DELETE
+import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -24,4 +25,10 @@ interface PictureApiService {
         @Path("modelId") modelId: String,
         @Path("pictureId") pictureId: String
     ): Response<Unit>
+
+    @GET("pictures/{modelType}/{modelId}")
+    suspend fun getPictures(
+        @Path("modelType") modelType: String,
+        @Path("modelId") modelId: String
+    ): com.example.e_disaster.data.remote.dto.picture.PictureListResponse
 }

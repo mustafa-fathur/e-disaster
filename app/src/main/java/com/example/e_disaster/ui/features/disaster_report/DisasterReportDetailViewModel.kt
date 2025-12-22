@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.model.DisasterReport
-import com.example.e_disaster.data.repository.DisasterRepository
+import com.example.e_disaster.data.repository.DisasterReportRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +20,7 @@ data class DisasterReportDetailUiState(
 
 @HiltViewModel
 class DisasterReportDetailViewModel @Inject constructor(
-    private val disasterRepository: DisasterRepository,
+    private val disasterReportRepository: DisasterReportRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -45,7 +45,7 @@ class DisasterReportDetailViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
             try {
-                val report = disasterRepository.getDisasterReport(dId, rId)
+                val report = disasterReportRepository.getDisasterReport(dId, rId)
                 uiState = uiState.copy(isLoading = false, report = report)
             } catch (e: Exception) {
                 uiState = uiState.copy(isLoading = false, errorMessage = "Gagal memuat laporan: ${e.message}")

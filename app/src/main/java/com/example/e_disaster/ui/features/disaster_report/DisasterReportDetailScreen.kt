@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -37,11 +36,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import com.example.e_disaster.utils.Constants.BASE_URL
+import com.example.e_disaster.data.model.ReportPicture
 
 @Composable
 fun DisasterReportDetailScreen(navController: NavController, disasterId: String?, reportId: String?) {
@@ -76,14 +78,9 @@ fun DisasterReportDetailScreen(navController: NavController, disasterId: String?
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
-                uiState.errorMessage != null -> {
-                    Text(text = uiState.errorMessage ?: "", color = MaterialTheme.colorScheme.error)
-                }
-                uiState.report != null -> {
-                    val r = uiState.report!!
+                uiState.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                uiState.errorMessage != null -> Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
+                uiState.report != null -> uiState.report.let { r ->
                     ReportInfoCard(
                         title = r.title,
                         description = r.description,
@@ -91,7 +88,7 @@ fun DisasterReportDetailScreen(navController: NavController, disasterId: String?
                         time = r.createdAt,
                         location = r.disasterTitle
                     )
-                    PhotoSection(pictures = emptyList()) // currently r doesn't have pictures parsed; placeholder
+                    PhotoSection(pictures = r.pictures ?: emptyList())
                 }
             }
         }
@@ -182,7 +179,7 @@ private fun DetailItemWithIcon(icon: ImageVector, label: String, value: String) 
 }
 
 @Composable
-private fun PhotoSection(pictures: List<String>) {
+private fun PhotoSection(pictures: List<ReportPicture>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -205,23 +202,19 @@ private fun PhotoSection(pictures: List<String>) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             items(pictures.size) { idx ->
+                val pic = pictures[idx]
                 Card(
                     modifier = Modifier.size(140.dp, 120.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Column(
+                    AsyncImage(
+                        model = "${BASE_URL}${pic.url}",
+                        contentDescription = pic.caption ?: "Foto Laporan",
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.BrokenImage,
-                            contentDescription = "Placeholder Image",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
+                        placeholder = null,
+                        error = null
+                    )
                 }
             }
         }

@@ -39,6 +39,7 @@ import com.example.e_disaster.ui.components.badges.DisasterTypeBadge
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
+import com.example.e_disaster.utils.DisasterImageProvider
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -263,7 +264,7 @@ fun DisasterListItem(disaster: Disaster, navController: NavHostController) {
             }
 
             AsyncImage(
-                model = "https://images.unsplash.com/photo-1543418575-84e1b93302a8?q=80&w=2070&auto=format&fit=crop",
+                model = DisasterImageProvider.getImageUrl(disaster),
                 contentDescription = disaster.title,
                 modifier = Modifier
                     .fillMaxWidth()

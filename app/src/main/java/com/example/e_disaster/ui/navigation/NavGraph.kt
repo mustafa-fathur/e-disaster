@@ -1,6 +1,7 @@
 package com.example.e_disaster.ui.navigation
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
@@ -20,6 +21,7 @@ import com.example.e_disaster.ui.features.disaster_aid.detail.DisasterAidDetailS
 import com.example.e_disaster.ui.features.disaster_aid.update.UpdateDisasterAidScreen
 import com.example.e_disaster.ui.features.disaster_history.HistoryScreen
 import com.example.e_disaster.ui.features.disaster_report.AddDisasterReportScreen
+import com.example.e_disaster.ui.features.disaster_report.CameraScreen
 import com.example.e_disaster.ui.features.disaster_report.DisasterReportDetailScreen
 import com.example.e_disaster.ui.features.disaster_report.UpdateDisasterReportScreen
 import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimScreen
@@ -28,6 +30,7 @@ import com.example.e_disaster.ui.features.disaster_victim.update.UpdateDisasterV
 import com.example.e_disaster.ui.features.home.HomeScreen
 import com.example.e_disaster.ui.features.notification.NotificationScreen
 import com.example.e_disaster.ui.features.splash.SplashScreen
+import java.util.ArrayList
 
 @Composable
 fun NavGraph(
@@ -100,7 +103,10 @@ fun NavGraph(
             arguments = listOf(navArgument("disasterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val disasterId = backStackEntry.arguments?.getString("disasterId")
-            AddDisasterReportScreen(navController = navController, disasterId = disasterId)
+            AddDisasterReportScreen(
+                navController = navController,
+                disasterId = disasterId
+            )
         }
 
         composable(
@@ -195,6 +201,9 @@ fun NavGraph(
             UpdateDisasterAidScreen(navController = navController, aidId = aidId)
         }
 
+        composable("camera") {
+            CameraScreen(navController = navController)
+        }
     }
 }
 

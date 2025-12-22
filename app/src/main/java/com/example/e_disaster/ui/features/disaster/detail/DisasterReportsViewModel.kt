@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.model.DisasterReport
-import com.example.e_disaster.data.repository.DisasterRepository
+import com.example.e_disaster.data.repository.DisasterReportRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +20,7 @@ data class DisasterReportsUiState(
 
 @HiltViewModel
 class DisasterReportsViewModel @Inject constructor(
-    private val disasterRepository: DisasterRepository,
+    private val disasterReportRepository: DisasterReportRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -34,17 +34,17 @@ class DisasterReportsViewModel @Inject constructor(
     }
 
     fun loadReports() {
-        val id = disasterId ?: return
-        viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, errorMessage = null)
-            try {
-                val reports = disasterRepository.getDisasterReports(id)
-                uiState = uiState.copy(isLoading = false, reports = reports)
-            } catch (e: Exception) {
-                uiState = uiState.copy(isLoading = false, errorMessage = "Gagal memuat laporan: ${e.message}")
-                e.printStackTrace()
+        disasterId?.let {
+            viewModelScope.launch {
+                uiState = uiState.copy(isLoading = true, errorMessage = null)
+                try {
+                    val reports = disasterReportRepository.getDisasterReports(it)
+                    uiState = uiState.copy(isLoading = false, reports = reports)
+                } catch (e: Exception) {
+                    uiState = uiState.copy(isLoading = false, errorMessage = "Gagal memuat laporan: ${e.message}")
+                    e.printStackTrace()
+                }
             }
         }
     }
 }
-
