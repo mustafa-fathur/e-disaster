@@ -1,8 +1,16 @@
 package com.example.e_disaster.data.repository
 
 import com.example.e_disaster.data.model.Disaster
-import com.example.e_disaster.data.model.DisasterPicture
+import com.example.e_disaster.data.model.DisasterReport
+import com.example.e_disaster.data.remote.dto.dashboard.DashboardResponse
+import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterRequest
+import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
+import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterRequest
+import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterResponse
+import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
+import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDto
+import com.example.e_disaster.data.remote.dto.disaster_report.UpdateDisasterReportRequest
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,6 +20,10 @@ class DisasterRepository @Inject constructor(
     private val apiService: DisasterApiService
 ) {
 
+    suspend fun getDashboard(): DashboardResponse {
+        return apiService.getDashboard()
+    }
+
     suspend fun getDisasters(): List<Disaster> {
         val response = apiService.getDisasters()
         return response.data.map { mapDisasterDtoToDisaster(it) }
@@ -20,6 +32,14 @@ class DisasterRepository @Inject constructor(
     suspend fun getDisasterById(disasterId: String): Disaster {
         val response = apiService.getDisasterById(disasterId)
         return mapDisasterDtoToDisaster(response.data)
+    }
+
+    suspend fun createDisaster(request: CreateDisasterRequest): CreateDisasterResponse {
+        return apiService.createDisaster(request)
+    }
+
+    suspend fun updateDisaster(disasterId: String, request: UpdateDisasterRequest): UpdateDisasterResponse {
+        return apiService.updateDisaster(disasterId, request)
     }
 
     suspend fun joinDisaster(disasterId: String): String {
@@ -63,3 +83,4 @@ class DisasterRepository @Inject constructor(
         )
     }
 }
+
