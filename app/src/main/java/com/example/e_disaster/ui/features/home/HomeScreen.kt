@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -37,15 +38,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.e_disaster.R
+import com.example.e_disaster.data.remote.dto.dashboard.RecentDisaster
 import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
@@ -54,9 +57,14 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 @Composable
 fun HomeScreen(
     navController: NavController,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val user = mainViewModel.user
+    val stats = homeViewModel.stats
+    val recentDisasters = homeViewModel.recentDisasters
+    val isLoading = homeViewModel.isLoading
+    val errorMessage = homeViewModel.errorMessage
 
     Scaffold(
         topBar = {
@@ -86,45 +94,69 @@ fun HomeScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        DashboardCard(
-                            title = "Total Bencana Terjadi",
-                            count = 2,
-                            icon = Icons.Default.Warning,
-                            backgroundColor = MaterialTheme.colorScheme.errorContainer,
-                            iconColor = MaterialTheme.colorScheme.error
-                        )
-                        DashboardCard(
-                            title = "Total Bencana Berlangsung",
-                            count = 2,
-                            icon = Icons.Default.Warning,
-                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                            iconColor = MaterialTheme.colorScheme.primary
-                        )
+
+                    when {
+                        isLoading -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                        errorMessage != null -> {
+                            Text(
+                                text = errorMessage,
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        else -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                DashboardCard(
+                                    title = "Total Bencana Terjadi",
+                                    count = stats?.totalDisasters ?: 0,
+                                    icon = Icons.Default.Warning,
+                                    backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                                    iconColor = MaterialTheme.colorScheme.error
+                                )
+                                DashboardCard(
+                                    title = "Total Bencana Berlangsung",
+                                    count = stats?.ongoingDisasters ?: 0,
+                                    icon = Icons.Default.Warning,
+                                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    iconColor = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                DashboardCard(
+                                    title = "Total Bencana Ditangani",
+                                    count = stats?.assignedDisasters ?: 0,
+                                    icon = Icons.Default.Warning,
+                                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    iconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                DashboardCard(
+                                    title = "Total Bencana Diselesaikan",
+                                    count = stats?.completedDisasters ?: 0,
+                                    icon = Icons.Default.CheckCircle,
+                                    backgroundColor = Color(0xFFE8F5E9),
+                                    iconColor = Color(0xFF4CAF50)
+                                )
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        DashboardCard(
-                            title = "Total Bencana Ditangani",
-                            count = 2,
-                            icon = Icons.Default.Warning,
-                            backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            iconColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        DashboardCard(
-                            title = "Total Bencana Diselesaikan",
-                            count = 2,
-                            icon = Icons.Default.CheckCircle,
-                            backgroundColor = Color(0xFFE8F5E9),
-                            iconColor = Color(0xFF4CAF50)
-                        )
-                    }
+                    
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -146,12 +178,29 @@ fun HomeScreen(
                 }
             }
             item {
-                LazyRow(
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    items(DummyDisasters.list) { disaster ->
-                        DisasterItem(disaster = disaster)
-                        Spacer(modifier = Modifier.width(16.dp))
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (recentDisasters.isEmpty()) {
+                    Text(
+                        text = "Tidak ada bencana aktif",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    LazyRow(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        items(recentDisasters) { disaster ->
+                            DisasterItem(disaster = disaster)
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
                     }
                 }
             }
@@ -211,7 +260,31 @@ fun DashboardCard(
 }
 
 @Composable
-fun DisasterItem(disaster: Disaster) {
+fun DisasterItem(disaster: RecentDisaster) {
+    fun formatDisasterType(type: String?): String {
+        return when (type?.lowercase()) {
+            "earthquake" -> "Gempa Bumi"
+            "tsunami" -> "Tsunami"
+            "volcanic_eruption" -> "Gunung Meletus"
+            "flood" -> "Banjir"
+            "drought" -> "Kekeringan"
+            "tornado" -> "Angin Topan"
+            "landslide" -> "Tanah Longsor"
+            "non_natural_disaster" -> "Bencana Non Alam"
+            "social_disaster" -> "Bencana Sosial"
+            else -> "Lainnya"
+        }
+    }
+
+    fun formatStatus(status: String?): String {
+        return when (status?.lowercase()) {
+            "ongoing" -> "Berlangsung"
+            "completed" -> "Selesai"
+            "cancelled" -> "Dibatalkan"
+            else -> "Tidak Diketahui"
+        }
+    }
+
     Card(
         modifier = Modifier
             .width(280.dp),
@@ -222,7 +295,7 @@ fun DisasterItem(disaster: Disaster) {
         Column {
             Box {
                 AsyncImage(
-                    model = disaster.imageUrl,
+                    model = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop",
                     contentDescription = disaster.title,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -240,7 +313,7 @@ fun DisasterItem(disaster: Disaster) {
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Berlangsung",
+                        text = formatStatus(disaster.status),
                         color = Color.White,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -248,13 +321,13 @@ fun DisasterItem(disaster: Disaster) {
             }
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = disaster.type,
+                    text = formatDisasterType(disaster.type),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = disaster.title,
+                    text = disaster.title ?: "Tanpa Judul",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -267,7 +340,7 @@ fun DisasterItem(disaster: Disaster) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = disaster.location,
+                        text = disaster.location ?: "Lokasi tidak diketahui",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
@@ -282,7 +355,7 @@ fun DisasterItem(disaster: Disaster) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = disaster.date,
+                        text = "${disaster.date ?: ""} • ${disaster.time?.take(5) ?: ""} WIB",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
@@ -291,34 +364,6 @@ fun DisasterItem(disaster: Disaster) {
         }
     }
 }
-
-
-object DummyDisasters {
-    val list = listOf(
-        Disaster(
-            imageUrl = "https://images.unsplash.com/photo-1534224039824-c7a01e09b154?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            type = "Gempa Bumi",
-            title = "Gempa Bumi Cianjur",
-            location = "Cianjur, Jawa Barat",
-            date = "2024-10-28 • 13:21 WIB"
-        ),
-        Disaster(
-            imageUrl = "https://images.unsplash.com/photo-1567697879034-b5a26d4b358b?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            type = "Banjir",
-            title = "Banjir Bandang",
-            location = "Jakarta Selatan",
-            date = "2024-10-28 • 13:21 WIB"
-        )
-    )
-}
-
-data class Disaster(
-    val imageUrl: String,
-    val type: String,
-    val title: String,
-    val location: String,
-    val date: String
-)
 
 
 @Preview(showBackground = true)
