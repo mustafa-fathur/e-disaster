@@ -22,18 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.e_disaster.R
-import com.example.e_disaster.ui.features.disaster.detail.components.ImageSlider
+import com.example.e_disaster.ui.features.disaster.detail.components.ImageSliderUrls
+import com.example.e_disaster.utils.DisasterImageProvider
 
 @Composable
 fun UnassignedDisasterContent(
     disaster: Disaster,
     onJoinClick: () -> Unit
 ) {
-    val images = listOf(R.drawable.placeholder, R.drawable.placeholder, R.drawable.placeholder)
+    val images = DisasterImageProvider.getImageUrls(disaster)
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ImageSlider(images = images)
+        ImageSliderUrls(urls = images)
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(

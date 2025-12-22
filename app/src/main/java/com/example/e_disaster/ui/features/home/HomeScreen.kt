@@ -50,6 +50,7 @@ import com.example.e_disaster.ui.components.partials.AppBottomNavBar
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
 import com.example.e_disaster.ui.components.partials.MainViewModel
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import com.example.e_disaster.utils.DisasterImageProvider
 
 @Composable
 fun HomeScreen(
@@ -222,7 +223,7 @@ fun DisasterItem(disaster: Disaster) {
         Column {
             Box {
                 AsyncImage(
-                    model = disaster.imageUrl,
+                    model = DisasterImageProvider.getImageUrlFromString(disaster.imageUrl),
                     contentDescription = disaster.title,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -291,7 +292,6 @@ fun DisasterItem(disaster: Disaster) {
         }
     }
 }
-
 
 object DummyDisasters {
     val list = listOf(

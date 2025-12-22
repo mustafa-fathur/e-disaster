@@ -55,6 +55,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.e_disaster.ui.features.disaster.list.DisasterListViewModel
 import com.example.e_disaster.data.model.Disaster
+import com.example.e_disaster.utils.DisasterImageProvider
 
 @Composable
 fun HistoryScreen(
@@ -80,7 +81,7 @@ fun HistoryScreen(
                 location = disaster.location ?: "Lokasi tidak diketahui",
                 date = disaster.createdAt ?: disaster.date ?: "",
                 description = disaster.description ?: "",
-                imageUrl = "", // API Disaster model doesn't include image; keep empty or provide placeholder
+                imageUrl = DisasterImageProvider.getImageUrl(disaster),
                 status = disaster.status ?: "completed",
                 participants = emptyList()
             )

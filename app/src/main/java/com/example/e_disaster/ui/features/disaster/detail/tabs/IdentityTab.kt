@@ -7,15 +7,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.e_disaster.R
 import com.example.e_disaster.data.model.Disaster
-import com.example.e_disaster.ui.features.disaster.detail.components.ImageSlider
+import com.example.e_disaster.ui.features.disaster.detail.components.ImageSliderUrls
+import com.example.e_disaster.utils.DisasterImageProvider
 
 @Composable
 fun IdentityTabContent(disaster: Disaster) {
-    val images = listOf(R.drawable.placeholder, R.drawable.placeholder, R.drawable.placeholder)
+    val images = DisasterImageProvider.getImageUrls(disaster)
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        ImageSlider(images = images)
+        ImageSliderUrls(urls = images)
         Column(modifier = Modifier.padding(16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(modifier = Modifier.fillMaxWidth()) {
