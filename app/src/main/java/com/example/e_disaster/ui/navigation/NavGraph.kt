@@ -236,5 +236,14 @@ private fun handleNotificationIntent(intent: Intent, navController: NavHostContr
             navController.navigate(route)
         }
     }
+    if (notificationType == "new_disaster_aid_report") {
+        val disasterId = intent.getStringExtra("disaster_id")
+        val aidId = intent.getStringExtra("aid_id")
+
+        if (disasterId != null && aidId != null) {
+            val route = "disaster-aid-detail/$disasterId/$aidId"
+            navController.navigate(route)
+        }
+    }
     intent.removeExtra("type")
 }
