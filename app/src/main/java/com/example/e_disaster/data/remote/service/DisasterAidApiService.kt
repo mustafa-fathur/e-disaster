@@ -1,5 +1,7 @@
 package com.example.e_disaster.data.remote.service
 
+import android.content.Intent
+import androidx.navigation.NavHostController
 import com.example.e_disaster.data.remote.dto.disaster_aid.CreateAidResponse
 import com.example.e_disaster.data.remote.dto.disaster_aid.DisasterAidDetailResponse
 import com.example.e_disaster.data.remote.dto.disaster_aid.DisasterAidListResponse
@@ -62,3 +64,4 @@ interface DisasterAidApiService {
         @Path("aidId") aidId: String
     ): Response<Unit>
 }
+
