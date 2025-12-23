@@ -7,6 +7,7 @@ import com.example.e_disaster.data.remote.service.DisasterAidApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import com.example.e_disaster.data.remote.service.DisasterReportApiService
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
+import com.example.e_disaster.data.remote.service.NotificationApiService
 import com.example.e_disaster.data.remote.service.PictureApiService
 import com.example.e_disaster.utils.Constants.API_BASE_URL
 import dagger.Module
@@ -125,5 +126,11 @@ object NetworkModule {
     @Singleton
     fun providePictureApiService(retrofit: Retrofit): PictureApiService {
         return retrofit.create(PictureApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationApiService(retrofit: Retrofit): NotificationApiService {
+        return retrofit.create(NotificationApiService::class.java)
     }
 }

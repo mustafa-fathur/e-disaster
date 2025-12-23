@@ -87,6 +87,14 @@ fun AddDisasterAidScreen(
         }
     }
 
+    // Map Indonesian category to English enum
+    val categoryMap = mapOf(
+        "Makanan" to "food",
+        "Pakaian" to "clothing",
+        "Fasilitas" to "housing",
+        "Obat-obatan" to "medicine"
+    )
+
     Scaffold(
         topBar = {
             AppTopAppBar(
@@ -113,16 +121,20 @@ fun AddDisasterAidScreen(
             AidForm(
                 buttonText = "Simpan",
                 isLoading = uiState is AddAidUiState.Loading,
-                onFormSubmit = { title, description, category, quantity, unit, donator, location, date, imageUri ->
-                    val quantityInt = quantity.toIntOrNull()
-                    if (title.isBlank() || description.isBlank() || category.isBlank() || quantityInt == null || unit.isBlank()) {
-                        Toast.makeText(context, "Lengkapi semua field dengan benar", Toast.LENGTH_LONG).show()
-                        return@AidForm
-                    }
-
-                    // Panggil ViewModel untuk submit data
-                    // viewModel.submit(...)
-                    println("Submitting: $title, $description, $category, $quantityInt, $unit, $donator, $location, $date")
+                onFormSubmit = { title, description, category, quantity, unit, donator, location, _, _ ->
+                    // Update ViewModel with form data before submit
+                    val apiCategory = categoryMap[category] ?: "food"
+                    
+                    viewModel.onEvent(AddAidFormEvent.TitleChanged(title))
+                    viewModel.onEvent(AddAidFormEvent.CategoryChanged(apiCategory))
+                    viewModel.onEvent(AddAidFormEvent.QuantityChanged(quantity))
+                    viewModel.onEvent(AddAidFormEvent.UnitChanged(unit))
+                    viewModel.onEvent(AddAidFormEvent.DescriptionChanged(description))
+                    viewModel.onEvent(AddAidFormEvent.DonatorChanged(donator))
+                    viewModel.onEvent(AddAidFormEvent.LocationChanged(location))
+                    
+                    // Submit form
+                    viewModel.submitForm(disasterId, context)
                 }
             )
         }
@@ -271,39 +283,10 @@ fun AidForm(
             singleLine = true
         )
 
-        OutlinedTextField(
-            value = distributionDate, onValueChange = {},
-            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
-            label = { Text("Tanggal Penyaluran") },
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Tanggal") },
-            readOnly = true,
-            enabled = false,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        )
-
-        OutlinedTextField(
-            value = imageUri?.lastPathSegment ?: "", onValueChange = {}, readOnly = true,
-            modifier = Modifier.fillMaxWidth().clickable { pickImageLauncher.launch("image/*") },
-            label = { Text("Foto Bantuan") },
-            placeholder = { Text("Upload Foto") },
-            leadingIcon = { Icon(Icons.Default.Photo, contentDescription = "Foto") },
-            trailingIcon = {
-                IconButton(onClick = { pickImageLauncher.launch("image/*") }) {
-                    Icon(Icons.Default.Upload, contentDescription = "Upload")
-                }
-            }
-        )
-
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { onFormSubmit(title, description, category, quantity, unit, donator, location, distributionDate, imageUri) },
+            onClick = { onFormSubmit(title, description, category, quantity, unit, donator, location, distributionDate, null) },
             enabled = !isLoading,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = MaterialTheme.shapes.medium

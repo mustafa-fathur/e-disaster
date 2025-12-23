@@ -14,7 +14,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.e_disaster.data.model.Disaster
 import com.example.e_disaster.data.model.DisasterVictim
-import com.example.e_disaster.ui.features.disaster.detail.AidItem
 import com.example.e_disaster.ui.features.disaster.detail.DisasterReportsViewModel
 import com.example.e_disaster.ui.features.disaster.detail.tabs.AidsTabContent
 import com.example.e_disaster.ui.features.disaster.detail.tabs.IdentityTabContent
@@ -34,13 +33,6 @@ fun AssignedDisasterContent(
 
     val reportsViewModel: DisasterReportsViewModel = hiltViewModel()
     val reportsUiState = reportsViewModel.uiState
-
-    val dummyAids = remember {
-        listOf(
-            AidItem("1", "Beras 1 Ton", "1000 Kg", "Bantuan dari gudang pusat.", "food"),
-            AidItem("2", "Selimut", "500 Pcs", "Selimut tebal untuk pengungsi.", "clothing")
-        )
-    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PrimaryTabRow(
@@ -85,7 +77,10 @@ fun AssignedDisasterContent(
                 victims = victims
             )
 
-            3 -> AidsTabContent(navController, dummyAids)
+            3 -> AidsTabContent(
+                navController = navController,
+                disasterId = disaster.id ?: ""
+            )
         }
     }
 }

@@ -295,12 +295,15 @@ fun DisasterItem(disaster: RecentDisaster) {
     ) {
         Column {
             Box {
+                // Since RecentDisaster doesn't have imageUrl, use a placeholder or check if pictures property exists (it does not in RecentDisaster)
+                // Assuming we might need to fetch image or use a default one for now as imageUrl is not in RecentDisaster DTO
                 AsyncImage(
-                    model = DisasterImageProvider.getImageUrlFromString(disaster.imageUrl),
+                    model = null, // Temporary fix as imageUrl is not available in RecentDisaster
                     contentDescription = disaster.title,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(140.dp),
+                        .height(140.dp)
+                        .background(Color.Gray), // Fallback background
                     contentScale = ContentScale.Crop
                 )
                 Box(

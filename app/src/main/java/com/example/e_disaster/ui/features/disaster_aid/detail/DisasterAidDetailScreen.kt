@@ -1,6 +1,8 @@
 package com.example.e_disaster.ui.features.disaster_aid.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,19 +10,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,33 +31,53 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.e_disaster.R
+import com.example.e_disaster.data.model.DisasterAid
+import com.example.e_disaster.data.model.VictimPicture
 import com.example.e_disaster.ui.components.badges.DisasterAidCategoryBadge
+import com.example.e_disaster.ui.components.form.ImagePickerSection
 import com.example.e_disaster.ui.components.partials.AppTopAppBar
-import com.example.e_disaster.ui.features.disaster.detail.AidItem
 import com.example.e_disaster.ui.theme.EDisasterTheme
+import com.example.e_disaster.utils.Constants.BASE_URL
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun DisasterAidDetailScreen(navController: NavController, aidId: String?) {
-    // Dummy data source mimicking the one from DisasterDetailScreen.kt
-    val dummyAids = listOf(
-        AidItem("a1", "Paket Sembako", "150 Paket", "Beras 10kg, mie instan, minyak goreng, gula", "food"),
-        AidItem("a2", "Pakaian Layak Pakai", "200 set", "Pakaian bekas layak pakai untuk dewasa dan anak-anak", "clothing")
-    )
+fun DisasterAidDetailScreen(
+    navController: NavController,
+    disasterId: String?,
+    aidId: String?,
+    viewModel: DisasterAidDetailViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    // Find the aid by ID, or use the first one as a fallback for preview
-    val aid = remember(aidId) {
-        dummyAids.find { it.id == aidId } ?: dummyAids.first()
+    LaunchedEffect(disasterId, aidId) {
+        if (!disasterId.isNullOrEmpty() && !aidId.isNullOrEmpty()) {
+            viewModel.loadAidDetail(disasterId, aidId)
+        } else {
+            Toast.makeText(context, "ID tidak valid", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+        }
     }
 
     Scaffold(
@@ -64,34 +87,90 @@ fun DisasterAidDetailScreen(navController: NavController, aidId: String?) {
                 canNavigateBack = true,
                 onNavigateUp = { navController.navigateUp() },
                 actions = {
-                    IconButton(onClick = { navController.navigate("update-disaster-aid/$aidId") }) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Ubah",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (uiState is DisasterAidDetailUiState.Success) {
+                        IconButton(onClick = { 
+                            navController.navigate("update-disaster-aid/$disasterId/$aidId")
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Ubah",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             )
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            AidInfoCard(aid = aid)
-            PhotoSection()
+            when (val state = uiState) {
+                is DisasterAidDetailUiState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                is DisasterAidDetailUiState.Success -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        AidInfoCard(aid = state.aid)
+                        
+                        // Use ImagePickerSection component with camera + gallery support
+                        ImagePickerSection(
+                            uris = state.aid.pictures?.map { "$BASE_URL${it.url}".toUri() } ?: emptyList(),
+                            onImagesAdded = { uris ->
+                                uris.forEach { uri ->
+                                    if (disasterId != null && aidId != null) {
+                                        viewModel.addPicture(disasterId, aidId, uri, context)
+                                    }
+                                }
+                            },
+                            onImageRemoved = { uri ->
+                                val picture = state.aid.pictures?.find { 
+                                    "$BASE_URL${it.url}" == uri.toString() 
+                                }
+                                if (picture != null && disasterId != null && aidId != null) {
+                                    viewModel.deletePicture(disasterId, aidId, picture.id)
+                                }
+                            }
+                        )
+                    }
+                }
+                is DisasterAidDetailUiState.Error -> {
+                    Text(
+                        text = state.message,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                    )
+                }
+                else -> {}
+            }
         }
     }
 }
 
 @Composable
-private fun AidInfoCard(aid: AidItem) {
+private fun AidInfoCard(aid: DisasterAid) {
+    val formattedDate = try {
+        val zonedDateTime = ZonedDateTime.parse(aid.createdAt)
+        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+        zonedDateTime.format(formatter)
+    } catch (e: Exception) {
+        aid.createdAt
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -134,7 +213,7 @@ private fun AidInfoCard(aid: AidItem) {
             // Details Grid
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    DetailItem(label = "Jumlah", value = aid.amount)
+                    DetailItem(label = "Jumlah", value = "${aid.quantity} ${aid.unit}")
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     DetailItem(label = "Kategori", value = aid.category.replaceFirstChar { it.uppercase() })
@@ -142,9 +221,28 @@ private fun AidInfoCard(aid: AidItem) {
             }
 
             // Detail List
-            DetailItemWithIcon(icon = Icons.Default.CalendarMonth, label = "Tanggal Distribusi", value = "29 Oktober 2025")
-            DetailItemWithIcon(icon = Icons.Default.Star, label = "Donatur", value = "Kemensos RI")
-            DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Lokasi Distribusi", value = "Posko Utama Cianjur")
+            DetailItemWithIcon(
+                icon = Icons.Default.CalendarMonth, 
+                label = "Tanggal", 
+                value = formattedDate
+            )
+            DetailItemWithIcon(
+                icon = Icons.Default.Star, 
+                label = "Donatur", 
+                value = aid.donator.ifEmpty { "Tidak diketahui" }
+            )
+            DetailItemWithIcon(
+                icon = Icons.Default.LocationOn, 
+                label = "Lokasi", 
+                value = aid.location.ifEmpty { "Tidak diketahui" }
+            )
+            if (!aid.reporterName.isNullOrEmpty()) {
+                DetailItemWithIcon(
+                    icon = Icons.Default.Person, 
+                    label = "Dilaporkan oleh", 
+                    value = aid.reporterName
+                )
+            }
         }
     }
 }
@@ -182,65 +280,17 @@ private fun DetailItemWithIcon(icon: ImageVector, label: String, value: String) 
     }
 }
 
-@Composable
-private fun PhotoSection() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Image,
-                contentDescription = "Foto Bantuan",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-            Text(
-                text = "Foto Bantuan (2)",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items(3) {
-                Card(
-                    modifier = Modifier.size(140.dp, 120.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.BrokenImage,
-                            contentDescription = "Placeholder Image",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                }
-            }
-        }
-        TextButton(
-            onClick = { /* TODO: Navigate to photo gallery screen */ },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("Tampilkan Semua", color = MaterialTheme.colorScheme.primary)
-        }
-    }
-}
 
 
 @Preview(showBackground = true, name = "Detail Aid Light")
 @Composable
 fun DisasterAidDetailScreenLightPreview() {
     EDisasterTheme(darkTheme = false) {
-        DisasterAidDetailScreen(navController = rememberNavController(), aidId = "a1")
+        DisasterAidDetailScreen(
+            navController = rememberNavController(), 
+            disasterId = "123",
+            aidId = "a1"
+        )
     }
 }
 
@@ -248,7 +298,11 @@ fun DisasterAidDetailScreenLightPreview() {
 @Composable
 fun DisasterAidDetailScreenDarkPreview() {
     EDisasterTheme(darkTheme = true) {
-        DisasterAidDetailScreen(navController = rememberNavController(), aidId = "a1")
+        DisasterAidDetailScreen(
+            navController = rememberNavController(), 
+            disasterId = "123",
+            aidId = "a1"
+        )
     }
 }
 
