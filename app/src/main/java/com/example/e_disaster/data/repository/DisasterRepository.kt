@@ -1,6 +1,7 @@
 package com.example.e_disaster.data.repository
 
 import com.example.e_disaster.data.model.Disaster
+import com.example.e_disaster.data.model.DisasterPicture
 import com.example.e_disaster.data.model.DisasterReport
 import com.example.e_disaster.data.remote.dto.dashboard.DashboardResponse
 import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterRequest

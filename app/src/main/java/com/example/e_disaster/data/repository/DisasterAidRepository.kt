@@ -1,225 +1,196 @@
-//package com.example.e_disaster.data.repository
-//
-//import com.example.e_disaster.data.model.CreateDisasterAidRequest
-//import com.example.e_disaster.data.model.DisasterAid
-//import com.example.e_disaster.data.model.UpdateDisasterAidRequest
-//import com.example.e_disaster.utils.Resource
-//import kotlinx.coroutines.flow.Flow
-//import kotlinx.coroutines.flow.flow
-//import retrofit2.HttpException
-//import java.io.IOException
-//
-//class DisasterAidRepository {
-//
-//    private val api = ApiClient.disasterAidApi
-//
-//    /**
-//     * Mendapatkan daftar bantuan untuk bencana tertentu
-//     */
-//    fun getDisasterAids(
-//        disasterId: String,
-//        userLatitude: Double? = null,
-//        userLongitude: Double? = null,
-//        radius: Double? = null,
-//        status: String? = null,
-//        type: String? = null
-//    ): Flow<Resource<List<DisasterAid>>> = flow {
-//        try {
-//            emit(Resource.Loading())
-//
-//            val response = api.getDisasterAids(
-//                disasterId = disasterId,
-//                latitude = userLatitude,
-//                longitude = userLongitude,
-//                radius = radius,
-//                status = status,
-//                type = type
-//            )
-//
-//            if (response.isSuccessful) {
-//                val aids = response.body() ?: emptyList()
-//
-//                // Hitung jarak jika koordinat pengguna tersedia
-//                val aidsWithDistance = if (userLatitude != null && userLongitude != null) {
-//                    aids.map { aid ->
-//                        aid.copy(
-//                            distance = calculateDistance(
-//                                userLatitude, userLongitude,
-//                                aid.latitude ?: 0.0, aid.longitude ?: 0.0
-//                            )
-//                        )
-//                    }
-//                } else {
-//                    aids
-//                }
-//
-//                emit(Resource.Success(aidsWithDistance))
-//            } else {
-//                emit(Resource.Error("Gagal memuat data bantuan: ${response.message()}"))
-//            }
-//        } catch (e: HttpException) {
-//            emit(Resource.Error("Kesalahan server: ${e.localizedMessage}"))
-//        } catch (e: IOException) {
-//            emit(Resource.Error("Kesalahan koneksi: ${e.localizedMessage}"))
-//        } catch (e: Exception) {
-//            emit(Resource.Error("Kesalahan tidak dikenal: ${e.localizedMessage}"))
-//        }
-//    }
-//
-//    /**
-//     * Mendapatkan daftar bantuan di sekitar lokasi pengguna
-//     */
-//    fun getNearbyAids(
-//        latitude: Double,
-//        longitude: Double,
-//        radius: Double = 10.0,
-//        status: String? = null,
-//        type: String? = null
-//    ): Flow<Resource<List<DisasterAid>>> = flow {
-//        try {
-//            emit(Resource.Loading())
-//
-//            val response = api.getNearbyAids(
-//                latitude = latitude,
-//                longitude = longitude,
-//                radius = radius,
-//                status = status,
-//                type = type
-//            )
-//
-//            if (response.isSuccessful) {
-//                val aids = response.body() ?: emptyList()
-//
-//                // Hitung jarak dari lokasi pengguna
-//                val aidsWithDistance = aids.map { aid ->
-//                    aid.copy(
-//                        distance = calculateDistance(
-//                            latitude, longitude,
-//                            aid.latitude ?: 0.0, aid.longitude ?: 0.0
-//                        )
-//                    )
-//                }
-//
-//                emit(Resource.Success(aidsWithDistance))
-//            } else {
-//                emit(Resource.Error("Gagal memuat data bantuan sekitar: ${response.message()}"))
-//            }
-//        } catch (e: HttpException) {
-//            emit(Resource.Error("Kesalahan server: ${e.localizedMessage}"))
-//        } catch (e: IOException) {
-//            emit(Resource.Error("Kesalahan koneksi: ${e.localizedMessage}"))
-//        } catch (e: Exception) {
-//            emit(Resource.Error("Kesalahan tidak dikenal: ${e.localizedMessage}"))
-//        }
-//    }
-//
-//    /**
-//     * Membuat bantuan baru
-//     */
-//    fun createDisasterAid(
-//        disasterId: String,
-//        aidRequest: CreateDisasterAidRequest
-//    ): Flow<Resource<DisasterAid>> = flow {
-//        try {
-//            emit(Resource.Loading())
-//
-//            val response = api.createDisasterAid(disasterId, aidRequest)
-//
-//            if (response.isSuccessful) {
-//                val aid = response.body()
-//                if (aid != null) {
-//                    emit(Resource.Success(aid))
-//                } else {
-//                    emit(Resource.Error("Gagal membuat bantuan: Response kosong"))
-//                }
-//            } else {
-//                emit(Resource.Error("Gagal membuat bantuan: ${response.message()}"))
-//            }
-//        } catch (e: HttpException) {
-//            emit(Resource.Error("Kesalahan server: ${e.localizedMessage}"))
-//        } catch (e: IOException) {
-//            emit(Resource.Error("Kesalahan koneksi: ${e.localizedMessage}"))
-//        } catch (e: Exception) {
-//            emit(Resource.Error("Kesalahan tidak dikenal: ${e.localizedMessage}"))
-//        }
-//    }
-//
-//    /**
-//     * Update bantuan
-//     */
-//    fun updateDisasterAid(
-//        disasterId: String,
-//        aidId: String,
-//        aidRequest: UpdateDisasterAidRequest
-//    ): Flow<Resource<DisasterAid>> = flow {
-//        try {
-//            emit(Resource.Loading())
-//
-//            val response = api.updateDisasterAid(disasterId, aidId, aidRequest)
-//
-//            if (response.isSuccessful) {
-//                val aid = response.body()
-//                if (aid != null) {
-//                    emit(Resource.Success(aid))
-//                } else {
-//                    emit(Resource.Error("Gagal update bantuan: Response kosong"))
-//                }
-//            } else {
-//                emit(Resource.Error("Gagal update bantuan: ${response.message()}"))
-//            }
-//        } catch (e: HttpException) {
-//            emit(Resource.Error("Kesalahan server: ${e.localizedMessage}"))
-//        } catch (e: IOException) {
-//            emit(Resource.Error("Kesalahan koneksi: ${e.localizedMessage}"))
-//        } catch (e: Exception) {
-//            emit(Resource.Error("Kesalahan tidak dikenal: ${e.localizedMessage}"))
-//        }
-//    }
-//
-//    /**
-//     * Hapus bantuan
-//     */
-//    fun deleteDisasterAid(
-//        disasterId: String,
-//        aidId: String
-//    ): Flow<Resource<Unit>> = flow {
-//        try {
-//            emit(Resource.Loading())
-//
-//            val response = api.deleteDisasterAid(disasterId, aidId)
-//
-//            if (response.isSuccessful) {
-//                emit(Resource.Success(Unit))
-//            } else {
-//                emit(Resource.Error("Gagal hapus bantuan: ${response.message()}"))
-//            }
-//        } catch (e: HttpException) {
-//            emit(Resource.Error("Kesalahan server: ${e.localizedMessage}"))
-//        } catch (e: IOException) {
-//            emit(Resource.Error("Kesalahan koneksi: ${e.localizedMessage}"))
-//        } catch (e: Exception) {
-//            emit(Resource.Error("Kesalahan tidak dikenal: ${e.localizedMessage}"))
-//        }
-//    }
-//
-//    /**
-//     * Menghitung jarak antara dua titik koordinat menggunakan formula Haversine
-//     */
-//    private fun calculateDistance(
-//        lat1: Double, lon1: Double,
-//        lat2: Double, lon2: Double
-//    ): Double {
-//        val earthRadius = 6371.0 // Radius bumi dalam km
-//
-//        val dLat = Math.toRadians(lat2 - lat1)
-//        val dLon = Math.toRadians(lon2 - lon1)
-//
-//        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-//                Math.sin(dLon / 2) * Math.sin(dLon / 2)
-//
-//        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-//
-//        return earthRadius * c
-//    }
-//}
+package com.example.e_disaster.data.repository
+
+import android.content.Context
+import android.net.Uri
+import android.webkit.MimeTypeMap
+import com.example.e_disaster.data.model.DisasterAid
+import com.example.e_disaster.data.model.VictimPicture
+import com.example.e_disaster.data.remote.dto.disaster_aid.CreateAidResponse
+import com.example.e_disaster.data.remote.dto.disaster_aid.DisasterAidDetailResponse
+import com.example.e_disaster.data.remote.dto.disaster_aid.DisasterAidDto
+import com.example.e_disaster.data.remote.dto.disaster_aid.DisasterAidListResponse
+import com.example.e_disaster.data.remote.dto.disaster_aid.UpdateAidRequest
+import com.example.e_disaster.data.remote.service.DisasterAidApiService
+import com.example.e_disaster.data.remote.service.PictureApiService
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+import java.io.FileOutputStream
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class DisasterAidRepository @Inject constructor(
+    private val apiService: DisasterAidApiService,
+    private val pictureApiService: PictureApiService
+) {
+
+    suspend fun getDisasterAids(
+        disasterId: String,
+        page: Int? = null,
+        perPage: Int? = null,
+        search: String? = null,
+        category: String? = null
+    ): DisasterAidListResponse {
+        return apiService.getDisasterAids(
+            disasterId = disasterId,
+            page = page,
+            perPage = perPage,
+            search = search,
+            category = category
+        )
+    }
+
+    suspend fun getDisasterAidById(
+        disasterId: String,
+        aidId: String
+    ): DisasterAidDetailResponse {
+        return apiService.getDisasterAidById(disasterId, aidId)
+    }
+
+    private fun getFileFromUri(context: Context, uri: Uri): File? {
+        val contentResolver = context.contentResolver
+        if (uri.scheme == "content" && uri.authority == "${context.packageName}.provider") {
+            return uri.path?.let { File(context.cacheDir, it.substringAfter("my_cache/")) }
+        }
+
+        val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+        val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "jpg"
+        val tempFile = File(context.cacheDir, "upload_aid_${System.currentTimeMillis()}.$extension")
+
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(tempFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: return null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+        return tempFile
+    }
+
+    suspend fun createDisasterAid(
+        disasterId: String,
+        title: String,
+        category: String,
+        quantity: Int,
+        unit: String,
+        description: String,
+        donator: String,
+        location: String,
+        images: List<Uri>,
+        context: Context
+    ): CreateAidResponse {
+        val titlePart = title.toRequestBody("text/plain".toMediaTypeOrNull())
+        val categoryPart = category.toRequestBody("text/plain".toMediaTypeOrNull())
+        val quantityPart = quantity.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+        val unitPart = unit.toRequestBody("text/plain".toMediaTypeOrNull())
+        val descriptionPart = description.toRequestBody("text/plain".toMediaTypeOrNull())
+        val donatorPart = donator.toRequestBody("text/plain".toMediaTypeOrNull())
+        val locationPart = location.toRequestBody("text/plain".toMediaTypeOrNull())
+
+        val imageParts = images.mapIndexedNotNull { index, uri ->
+            val file = getFileFromUri(context, uri) ?: return@mapIndexedNotNull null
+            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+            val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
+            val fileName = "image_${System.currentTimeMillis()}_$index.${file.extension}"
+            MultipartBody.Part.createFormData("images[]", fileName, requestBody)
+        }
+
+        val url = "disasters/$disasterId/aids"
+
+        return apiService.createAid(
+            url = url,
+            title = titlePart,
+            category = categoryPart,
+            quantity = quantityPart,
+            unit = unitPart,
+            description = descriptionPart,
+            donator = donatorPart,
+            location = locationPart,
+            images = imageParts.ifEmpty { null }
+        )
+    }
+
+    suspend fun updateDisasterAid(
+        disasterId: String,
+        aidId: String,
+        title: String,
+        category: String,
+        quantity: Int,
+        unit: String,
+        description: String,
+        donator: String,
+        location: String
+    ): CreateAidResponse {
+        val requestBody = UpdateAidRequest(
+            title = title,
+            category = category,
+            quantity = quantity,
+            unit = unit,
+            description = description,
+            donator = donator,
+            location = location
+        )
+
+        return apiService.updateAid(disasterId, aidId, requestBody)
+    }
+
+    suspend fun deleteDisasterAid(disasterId: String, aidId: String) {
+        apiService.deleteAid(disasterId, aidId)
+    }
+
+    suspend fun addAidPicture(aidId: String, imageUri: Uri, context: Context) {
+        val file = getFileFromUri(context, imageUri) ?: throw Exception("Gagal memproses file")
+        val mimeType = context.contentResolver.getType(imageUri) ?: "image/jpeg"
+        val requestBody = file.asRequestBody(mimeType.toMediaTypeOrNull())
+
+        val imagePart = MultipartBody.Part.createFormData("image", file.name, requestBody)
+
+        pictureApiService.uploadPicture(
+            modelType = "disaster_aid",
+            modelId = aidId,
+            image = imagePart
+        )
+    }
+
+    suspend fun deleteAidPicture(aidId: String, pictureId: String) {
+        pictureApiService.deletePicture(
+            modelType = "disaster_aid",
+            modelId = aidId,
+            pictureId = pictureId
+        )
+    }
+
+    fun mapDisasterAidDtoToModel(dto: DisasterAidDto): DisasterAid {
+        return DisasterAid(
+            id = dto.id ?: "",
+            disasterId = dto.disasterId ?: "",
+            reportedBy = dto.reportedBy ?: "",
+            donator = dto.donator ?: "",
+            location = dto.location ?: "",
+            title = dto.title ?: "",
+            description = dto.description ?: "",
+            category = dto.category ?: "",
+            quantity = dto.quantity ?: 0,
+            unit = dto.unit ?: "",
+            createdAt = dto.createdAt ?: "",
+            updatedAt = dto.updatedAt ?: "",
+            disasterTitle = dto.disaster?.title,
+            disasterLocation = dto.disaster?.location,
+            reporterName = dto.reporter?.user?.name,
+            pictures = dto.pictures?.map { pictureDto ->
+                VictimPicture(
+                    id = pictureDto.id ?: "",
+                    url = pictureDto.url ?: "",
+                    caption = pictureDto.caption,
+                    mimeType = pictureDto.mimeType ?: "image/jpeg"
+                )
+            }
+        )
+    }
+}

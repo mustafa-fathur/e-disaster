@@ -1,10 +1,10 @@
-package com.example.e_disaster.data.remote.dto.notification
+package com.example.e_disaster.data.remote.dto.disaster_aid
 
 import com.google.gson.annotations.SerializedName
 
-data class NotificationListResponse(
+data class DisasterAidListResponse(
     @SerializedName("data")
-    val data: List<NotificationDto>?,
+    val data: List<DisasterAidDto>?,
 
     @SerializedName("pagination")
     val pagination: PaginationDto?

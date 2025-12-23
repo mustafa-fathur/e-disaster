@@ -11,8 +11,10 @@ import com.example.e_disaster.data.remote.dto.disaster.DisasterVolunteerListResp
 import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterRequest
 import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterResponse
 import com.example.e_disaster.data.remote.dto.general.MessageResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 

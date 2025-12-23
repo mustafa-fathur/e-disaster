@@ -1,18 +1,33 @@
 package com.example.e_disaster.ui.features.disaster_aid.add
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.e_disaster.data.remote.dto.disaster_aid.CreateAidRequest
-import com.example.e_disaster.data.remote.service.DisasterAidApiService
-import com.example.e_disaster.data.remote.service.DisasterApiService
+import com.example.e_disaster.data.repository.DisasterAidRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import retrofit2.HttpException
-import java.io.IOException
+
+data class AddAidFormState(
+    val title: String = "",
+    val category: String = "food",
+    val quantity: String = "",
+    val unit: String = "",
+    val description: String = "",
+    val donator: String = "",
+    val location: String = "",
+    val images: List<Uri> = emptyList(),
+    
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isSuccess: Boolean = false,
+    val validationError: String? = null
+)
 
 sealed class AddAidUiState {
     object Idle : AddAidUiState()
@@ -23,79 +38,96 @@ sealed class AddAidUiState {
 
 @HiltViewModel
 class AddDisasterAidViewModel @Inject constructor(
-    private val disasterAidApiService: DisasterAidApiService,
-    private val disasterApiService: DisasterApiService
+    private val repository: DisasterAidRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AddAidUiState>(AddAidUiState.Idle)
     val uiState: StateFlow<AddAidUiState> = _uiState.asStateFlow()
 
-    private val _lat = MutableStateFlow<Double?>(null)
-    val lat: StateFlow<Double?> = _lat.asStateFlow()
+    private val _formState = MutableStateFlow(AddAidFormState())
+    val formState: StateFlow<AddAidFormState> = _formState.asStateFlow()
 
-    private val _long = MutableStateFlow<Double?>(null)
-    val long: StateFlow<Double?> = _long.asStateFlow()
-
-    private val _locationLoading = MutableStateFlow(false)
-    val locationLoading: StateFlow<Boolean> = _locationLoading.asStateFlow()
-
-    private val _locationError = MutableStateFlow<String?>(null)
-    val locationError: StateFlow<String?> = _locationError.asStateFlow()
-
-    fun loadDisasterLocation(disasterId: String) {
-        viewModelScope.launch {
-            _locationLoading.value = true
-            _locationError.value = null
-            try {
-//                val disaster = disasterApiService.getDisaster(disasterId)
-//                _lat.value = disaster.lat
-//                _long.value = disaster.long
-            } catch (e: HttpException) {
-                _locationError.value = "API Error: ${e.code()} - ${e.message()}"
-            } catch (e: IOException) {
-                _locationError.value = "Network Error: ${e.message}"
-            } catch (e: Exception) {
-                _locationError.value = e.message ?: "Unexpected error"
-            } finally {
-                _locationLoading.value = false
-            }
+    fun onEvent(event: AddAidFormEvent) {
+        when (event) {
+            is AddAidFormEvent.TitleChanged -> 
+                _formState.update { it.copy(title = event.title) }
+            is AddAidFormEvent.CategoryChanged -> 
+                _formState.update { it.copy(category = event.category) }
+            is AddAidFormEvent.QuantityChanged -> 
+                _formState.update { it.copy(quantity = event.quantity) }
+            is AddAidFormEvent.UnitChanged -> 
+                _formState.update { it.copy(unit = event.unit) }
+            is AddAidFormEvent.DescriptionChanged -> 
+                _formState.update { it.copy(description = event.description) }
+            is AddAidFormEvent.DonatorChanged -> 
+                _formState.update { it.copy(donator = event.donator) }
+            is AddAidFormEvent.LocationChanged -> 
+                _formState.update { it.copy(location = event.location) }
+            is AddAidFormEvent.ImagesAdded -> 
+                _formState.update { it.copy(images = _formState.value.images + event.uris) }
+            is AddAidFormEvent.ImageRemoved -> 
+                _formState.update { it.copy(images = _formState.value.images - event.uri) }
         }
     }
 
-    fun submit(
-        disasterId: String,
-        name: String,
-        category: String,
-        quantity: Int,
-        description: String,
-        location: String
-    ) {
-        if (_uiState.value == AddAidUiState.Loading) return
+    private fun validateForm(): Boolean {
+        val state = _formState.value
+        if (state.title.isBlank() || state.quantity.isBlank() || state.unit.isBlank()) {
+            _formState.update { 
+                it.copy(validationError = "Judul, Jumlah, dan Satuan tidak boleh kosong.") 
+            }
+            return false
+        }
+        _formState.update { it.copy(validationError = null) }
+        return true
+    }
 
-        val latValue = _lat.value
-        val longValue = _long.value
+    fun submitForm(disasterId: String, context: Context) {
+        if (!validateForm()) return
 
+        val currentState = _formState.value
+        
         viewModelScope.launch {
             _uiState.value = AddAidUiState.Loading
+            _formState.update { it.copy(isLoading = true, errorMessage = null) }
+            
             try {
-                val request = CreateAidRequest(
-                    name = name,
-                    category = category,
-                    quantity = quantity,
-                    description = description,
-                    location = location,
-                    lat = latValue,
-                    long = longValue
+                repository.createDisasterAid(
+                    disasterId = disasterId,
+                    title = currentState.title,
+                    category = currentState.category,
+                    quantity = currentState.quantity.toIntOrNull() ?: 0,
+                    unit = currentState.unit,
+                    description = currentState.description,
+                    donator = currentState.donator,
+                    location = currentState.location,
+                    images = currentState.images,
+                    context = context
                 )
-                disasterAidApiService.createAid(disasterId, request)
                 _uiState.value = AddAidUiState.Success
-            } catch (e: HttpException) {
-                _uiState.value = AddAidUiState.Error("API Error: ${e.code()} - ${e.message()}")
-            } catch (e: IOException) {
-                _uiState.value = AddAidUiState.Error("Network Error: ${e.message}")
+                _formState.update { it.copy(isLoading = false, isSuccess = true) }
             } catch (e: Exception) {
-                _uiState.value = AddAidUiState.Error(e.message ?: "Unexpected error")
+                _uiState.value = AddAidUiState.Error(e.message ?: "Gagal membuat bantuan")
+                _formState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        errorMessage = "Gagal menambahkan data: ${e.message}"
+                    ) 
+                }
+                e.printStackTrace()
             }
         }
     }
+}
+
+sealed interface AddAidFormEvent {
+    data class TitleChanged(val title: String) : AddAidFormEvent
+    data class CategoryChanged(val category: String) : AddAidFormEvent
+    data class QuantityChanged(val quantity: String) : AddAidFormEvent
+    data class UnitChanged(val unit: String) : AddAidFormEvent
+    data class DescriptionChanged(val description: String) : AddAidFormEvent
+    data class DonatorChanged(val donator: String) : AddAidFormEvent
+    data class LocationChanged(val location: String) : AddAidFormEvent
+    data class ImagesAdded(val uris: List<Uri>) : AddAidFormEvent
+    data class ImageRemoved(val uri: Uri) : AddAidFormEvent
 }
