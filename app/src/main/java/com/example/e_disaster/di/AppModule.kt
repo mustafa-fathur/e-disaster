@@ -45,9 +45,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDisasterRepository(
-        apiService: DisasterApiService
+        apiService: DisasterApiService,
+        pictureApiService: PictureApiService
     ): DisasterRepository {
-        return DisasterRepository(apiService)
+        return DisasterRepository(apiService, pictureApiService)
     }
 
     @Provides
@@ -64,6 +65,7 @@ object AppModule {
     fun provideVictimRepository(apiService: DisasterVictimApiService, pictureApiService: PictureApiService): DisasterVictimRepository {
         return DisasterVictimRepository(apiService, pictureApiService)
     }
+
 
     @Provides
     @Singleton

@@ -6,4 +6,3 @@ data class DisasterDetailResponse(
     @SerializedName("data")
     val data: DisasterDto
 )
-

@@ -1,5 +1,6 @@
 package com.example.e_disaster.ui.features.disaster
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,9 +10,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterRequest
 import com.example.e_disaster.data.repository.DisasterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 data class UpdateDisasterUiState(
@@ -42,7 +49,8 @@ sealed class UpdateDisasterEvent {
 
 @HiltViewModel
 class UpdateDisasterViewModel @Inject constructor(
-    private val disasterRepository: DisasterRepository
+    private val disasterRepository: DisasterRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     var uiState by mutableStateOf(UpdateDisasterUiState())
@@ -186,6 +194,20 @@ class UpdateDisasterViewModel @Inject constructor(
 
                 val response = disasterRepository.updateDisaster(uiState.disasterId, request)
                 
+                // Upload gambar baru jika ada
+                if (uiState.images.isNotEmpty()) {
+                    try {
+                        uiState.images.forEach { uri ->
+                            val part = prepareImagePart(uri)
+                            if (part != null) {
+                                disasterRepository.uploadDisasterImage(uiState.disasterId, part)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                
                 _events.emit(UpdateDisasterEvent.Success(
                     message = response.message ?: "Bencana berhasil diperbarui"
                 ))
@@ -194,6 +216,27 @@ class UpdateDisasterViewModel @Inject constructor(
             } finally {
                 uiState = uiState.copy(isLoading = false)
             }
+        }
+    }
+
+    private fun prepareImagePart(uri: Uri): MultipartBody.Part? {
+        return try {
+            val contentResolver = context.contentResolver
+            val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            
+            // Buat file temporary
+            val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+
+            val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("image", file.name, requestFile)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

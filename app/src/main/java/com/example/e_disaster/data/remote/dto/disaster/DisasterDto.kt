@@ -1,7 +1,6 @@
 package com.example.e_disaster.data.remote.dto.disaster
 
 import com.google.gson.annotations.SerializedName
-import com.example.e_disaster.data.remote.dto.picture.PictureDto
 
 data class DisasterDto(
     @SerializedName("id")
@@ -12,7 +11,9 @@ data class DisasterDto(
 
     @SerializedName("source")
     val source: String?,
-    @SerializedName("types")
+    
+    // PERBAIKAN: Mengubah "types" menjadi "type" sesuai respons API
+    @SerializedName("type")
     val types: String?,
 
     @SerializedName("status")
@@ -55,7 +56,6 @@ data class DisasterDto(
     val updatedAt: String?
 )
 
-// Local DTO alias matching the picture keys returned by the disaster controller
 data class PhotoDto(
     @SerializedName("id") val id: String?,
     @SerializedName("caption") val caption: String?,

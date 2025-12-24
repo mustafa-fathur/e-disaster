@@ -5,9 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.e_disaster.data.remote.dto.dashboard.DashboardResponse
-import com.example.e_disaster.data.remote.dto.dashboard.DashboardStats
-import com.example.e_disaster.data.remote.dto.dashboard.RecentDisaster
+import com.example.e_disaster.data.remote.dto.dashboard.DashboardStatsDto
+import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.repository.DisasterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -18,10 +17,10 @@ class HomeViewModel @Inject constructor(
     private val disasterRepository: DisasterRepository
 ) : ViewModel() {
 
-    var stats by mutableStateOf<DashboardStats?>(null)
+    var stats by mutableStateOf<DashboardStatsDto?>(null)
         private set
 
-    var recentDisasters by mutableStateOf<List<RecentDisaster>>(emptyList())
+    var recentDisasters by mutableStateOf<List<DisasterDto>>(emptyList())
         private set
 
     var isLoading by mutableStateOf(true)
@@ -41,7 +40,11 @@ class HomeViewModel @Inject constructor(
             try {
                 val response = disasterRepository.getDashboard()
                 stats = response.stats
-                recentDisasters = response.recentDisasters ?: emptyList()
+                
+                // Konversi dari Map ke List
+                val disastersMap = response.recentDisasters
+                recentDisasters = disastersMap?.values?.toList() ?: emptyList()
+                
             } catch (e: Exception) {
                 errorMessage = "Gagal memuat dashboard: ${e.message}"
                 e.printStackTrace()
