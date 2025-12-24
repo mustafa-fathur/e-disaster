@@ -3,14 +3,18 @@ package com.example.e_disaster.di
 import android.content.Context
 import com.example.e_disaster.data.local.UserPreferences
 import com.example.e_disaster.data.remote.service.AuthApiService
+import com.example.e_disaster.data.remote.service.DisasterAidApiService
 import com.example.e_disaster.data.remote.service.DisasterApiService
 import com.example.e_disaster.data.remote.service.DisasterReportApiService
 import com.example.e_disaster.data.remote.service.DisasterVictimApiService
+import com.example.e_disaster.data.remote.service.NotificationApiService
 import com.example.e_disaster.data.remote.service.PictureApiService
 import com.example.e_disaster.data.repository.AuthRepository
+import com.example.e_disaster.data.repository.DisasterAidRepository
 import com.example.e_disaster.data.repository.DisasterReportRepository
 import com.example.e_disaster.data.repository.DisasterRepository
 import com.example.e_disaster.data.repository.DisasterVictimRepository
+import com.example.e_disaster.data.repository.NotificationRepository
 import dagger.hilt.InstallIn
 import dagger.Module
 import dagger.Provides
@@ -60,5 +64,23 @@ object AppModule {
     @Singleton
     fun provideVictimRepository(apiService: DisasterVictimApiService, pictureApiService: PictureApiService): DisasterVictimRepository {
         return DisasterVictimRepository(apiService, pictureApiService)
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideDisasterAidRepository(
+        apiService: DisasterAidApiService,
+        pictureApiService: PictureApiService
+    ): DisasterAidRepository {
+        return DisasterAidRepository(apiService, pictureApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationRepository(
+        apiService: NotificationApiService
+    ): NotificationRepository {
+        return NotificationRepository(apiService)
     }
 }

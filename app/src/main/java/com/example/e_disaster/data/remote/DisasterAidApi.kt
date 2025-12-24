@@ -11,7 +11,7 @@
 //    /**
 //     * Mendapatkan daftar bantuan untuk bencana tertentu
 //     */
-//    @GET("disasters/{disasterId}/aids")
+//    @GET("disasters/{id}/aids")
 //    suspend fun getDisasterAids(
 //        @Path("disasterId") disasterId: String,
 //        @Query("latitude") latitude: Double? = null,

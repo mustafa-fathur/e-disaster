@@ -28,7 +28,7 @@ import com.example.e_disaster.ui.features.disaster_victim.add.AddDisasterVictimS
 import com.example.e_disaster.ui.features.disaster_victim.detail.DisasterVictimDetailScreen
 import com.example.e_disaster.ui.features.disaster_victim.update.UpdateDisasterVictimScreen
 import com.example.e_disaster.ui.features.home.HomeScreen
-import com.example.e_disaster.ui.features.notification.NotificationScreen
+import com.example.e_disaster.ui.features.notification.NotificationListScreen
 import com.example.e_disaster.ui.features.splash.SplashScreen
 import java.util.ArrayList
 
@@ -79,7 +79,7 @@ fun NavGraph(
         }
 
         composable("notification") {
-            NotificationScreen(navController = navController)
+            NotificationListScreen(navController = navController)
         }
 
         composable(
@@ -186,19 +186,35 @@ fun NavGraph(
         }
 
         composable(
-            "disaster-aid-detail/{aidId}",
-            arguments = listOf(navArgument("aidId") { type = NavType.StringType })
+            "disaster-aid-detail/{disasterId}/{aidId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("aidId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val aidId = backStackEntry.arguments?.getString("aidId")
-            DisasterAidDetailScreen(navController = navController, aidId = aidId)
+            DisasterAidDetailScreen(
+                navController = navController,
+                disasterId = disasterId,
+                aidId = aidId
+            )
         }
 
         composable(
-            route = "update-disaster-aid/{aidId}",
-            arguments = listOf(navArgument("aidId") { type = NavType.StringType })
+            route = "update-disaster-aid/{disasterId}/{aidId}",
+            arguments = listOf(
+                navArgument("disasterId") { type = NavType.StringType },
+                navArgument("aidId") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val disasterId = backStackEntry.arguments?.getString("disasterId")
             val aidId = backStackEntry.arguments?.getString("aidId")
-            UpdateDisasterAidScreen(navController = navController, aidId = aidId)
+            UpdateDisasterAidScreen(
+                navController = navController,
+                disasterId = disasterId,
+                aidId = aidId
+            )
         }
 
         composable("camera") {
@@ -217,6 +233,15 @@ private fun handleNotificationIntent(intent: Intent, navController: NavHostContr
 
         if (disasterId != null && victimId != null) {
             val route = "disaster-victim-detail/$disasterId/$victimId"
+            navController.navigate(route)
+        }
+    }
+    if (notificationType == "new_disaster_aid_report") {
+        val disasterId = intent.getStringExtra("disaster_id")
+        val aidId = intent.getStringExtra("aid_id")
+
+        if (disasterId != null && aidId != null) {
+            val route = "disaster-aid-detail/$disasterId/$aidId"
             navController.navigate(route)
         }
     }
