@@ -267,27 +267,32 @@ fun AddDisasterScreen(
                         )
                     }
                 }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-                item {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = uiState.magnitude,
-                            onValueChange = { viewModel.updateMagnitude(it) },
-                            label = { Text("Magnitudo") },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = uiState.depth,
-                            onValueChange = { viewModel.updateDepth(it) },
-                            label = { Text("Kedalaman (km)") },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            singleLine = true
-                        )
+                
+                // Kondisi untuk menampilkan Magnitudo dan Kedalaman
+                if (uiState.selectedType == "earthquake") {
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                    item {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            OutlinedTextField(
+                                value = uiState.magnitude,
+                                onValueChange = { viewModel.updateMagnitude(it) },
+                                label = { Text("Magnitudo") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true
+                            )
+                            OutlinedTextField(
+                                value = uiState.depth,
+                                onValueChange = { viewModel.updateDepth(it) },
+                                label = { Text("Kedalaman (km)") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true
+                            )
+                        }
                     }
                 }
+                
                 item { Spacer(modifier = Modifier.height(16.dp)) }
                 item {
                     ImagePickerSection(

@@ -1,31 +1,38 @@
 package com.example.e_disaster.data.repository
 
 import com.example.e_disaster.data.model.Disaster
-import com.example.e_disaster.data.model.DisasterReport
+import com.example.e_disaster.data.model.DisasterPicture
 import com.example.e_disaster.data.remote.dto.dashboard.DashboardResponse
 import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterRequest
 import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterResponse
+import com.example.e_disaster.data.remote.dto.disaster.DisasterDetailResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterRequest
 import com.example.e_disaster.data.remote.dto.disaster.UpdateDisasterResponse
-import com.example.e_disaster.data.remote.dto.disaster_report.CreateDisasterReportRequest
-import com.example.e_disaster.data.remote.dto.disaster_report.DisasterReportDto
-import com.example.e_disaster.data.remote.dto.disaster_report.UpdateDisasterReportRequest
 import com.example.e_disaster.data.remote.service.DisasterApiService
+import com.example.e_disaster.data.remote.service.PictureApiService
+import okhttp3.MultipartBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DisasterRepository @Inject constructor(
-    private val apiService: DisasterApiService
+    private val apiService: DisasterApiService,
+    private val pictureApiService: PictureApiService
 ) {
 
     suspend fun getDashboard(): DashboardResponse {
         return apiService.getDashboard()
     }
 
-    suspend fun getDisasters(): List<Disaster> {
-        val response = apiService.getDisasters()
+    suspend fun getDisasters(
+        page: Int? = null,
+        perPage: Int? = null,
+        search: String? = null,
+        status: String? = null,
+        type: String? = null
+    ): List<Disaster> {
+        val response = apiService.getDisasters(page, perPage, search, status, type)
         return response.data.map { mapDisasterDtoToDisaster(it) }
     }
 
@@ -50,6 +57,13 @@ class DisasterRepository @Inject constructor(
     suspend fun isUserAssigned(disasterId: String): Boolean {
         val response = apiService.checkAssignment(disasterId)
         return response.assigned
+    }
+
+    suspend fun uploadDisasterImage(disasterId: String, image: MultipartBody.Part) {
+        val response = pictureApiService.uploadPicture("disaster", disasterId, image)
+        if (!response.isSuccessful) {
+            throw Exception("Gagal mengupload gambar: ${response.message()}")
+        }
     }
 
     private fun mapDisasterDtoToDisaster(dto: DisasterDto): Disaster {
@@ -83,4 +97,3 @@ class DisasterRepository @Inject constructor(
         )
     }
 }
-

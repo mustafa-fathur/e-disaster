@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.e_disaster.data.model.Disaster
 import com.example.e_disaster.data.repository.DisasterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,7 +18,6 @@ class DisasterListViewModel @Inject constructor(
     private val disasterRepository: DisasterRepository
 ) : ViewModel() {
 
-    // Renamed for clarity
     var disasters by mutableStateOf<List<Disaster>>(emptyList())
         private set
 
@@ -26,18 +27,55 @@ class DisasterListViewModel @Inject constructor(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    // Filter states
+    var searchQuery by mutableStateOf("")
+        private set
+
+    var selectedStatus by mutableStateOf<String?>(null)
+        private set
+
+    var selectedType by mutableStateOf<String?>(null)
+        private set
+
+    private var searchJob: Job? = null
+
     init {
         fetchDisasters()
     }
 
-    // Renamed for clarity
+    fun onSearchQueryChanged(query: String) {
+        searchQuery = query
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(500L) // Debounce search
+            fetchDisasters()
+        }
+    }
+
+    fun onStatusSelected(status: String?) {
+        selectedStatus = status
+        fetchDisasters()
+    }
+
+    fun onTypeSelected(type: String?) {
+        selectedType = type
+        fetchDisasters()
+    }
+
+    fun refresh() {
+        fetchDisasters()
+    }
+
     private fun fetchDisasters() {
         isLoading = true
         errorMessage = null
         viewModelScope.launch {
             try {
-                // The repository now returns a fully mapped List<Disaster>
-                disasters = disasterRepository.getDisasters()
+                disasters = disasterRepository.getDisasters(
+                    search = searchQuery.ifBlank { null },
+                    status = selectedStatus,
+                    type = selectedType
+                )
             } catch (e: Exception) {
                 errorMessage = "Gagal memuat data: ${e.message}"
                 e.printStackTrace()
