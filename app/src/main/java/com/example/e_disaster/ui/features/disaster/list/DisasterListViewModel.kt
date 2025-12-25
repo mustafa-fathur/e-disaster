@@ -27,7 +27,6 @@ class DisasterListViewModel @Inject constructor(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    // Filter states
     var searchQuery by mutableStateOf("")
         private set
 
@@ -47,7 +46,7 @@ class DisasterListViewModel @Inject constructor(
         searchQuery = query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(500L) // Debounce search
+            delay(500L)
             fetchDisasters()
         }
     }

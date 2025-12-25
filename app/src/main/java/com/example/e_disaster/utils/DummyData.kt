@@ -1,6 +1,5 @@
 package com.example.e_disaster.utils
 
-//import com.example.e_disaster.data.model.DisasterAid
 import com.example.e_disaster.data.model.History
 import com.example.e_disaster.data.model.Participant
 import com.example.e_disaster.data.model.Notification

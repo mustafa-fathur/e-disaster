@@ -67,14 +67,12 @@ fun UpdateDisasterScreen(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Load disaster data when screen opens
     LaunchedEffect(disasterId) {
         if (disasterId != null && uiState.disasterId != disasterId) {
             viewModel.loadDisaster(disasterId)
         }
     }
 
-    // Disaster types
     val disasterTypes = listOf(
         "earthquake" to "Gempa Bumi",
         "tsunami" to "Tsunami",
@@ -87,7 +85,6 @@ fun UpdateDisasterScreen(
         "social_disaster" to "Bencana Sosial"
     )
 
-    // Status options
     val statusOptions = listOf(
         "ongoing" to "Berlangsung",
         "completed" to "Selesai",
@@ -97,7 +94,6 @@ fun UpdateDisasterScreen(
     var typeExpanded by remember { mutableStateOf(false) }
     var statusExpanded by remember { mutableStateOf(false) }
 
-    // Handle events
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -320,8 +316,7 @@ fun UpdateDisasterScreen(
                             )
                         }
                     }
-                    
-                    // Kondisi untuk menampilkan Magnitudo dan Kedalaman
+
                     if (uiState.selectedType == "earthquake") {
                         item { Spacer(modifier = Modifier.height(16.dp)) }
                         item {

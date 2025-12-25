@@ -1,22 +1,13 @@
-// BadgeColors.kt - File baru khusus untuk badge colors
 package com.example.e_disaster.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * Badge color configuration untuk E-Disaster app
- * Setiap badge punya 3 komponen: background, text, border
- */
 data class BadgeColorSet(
     val background: Color,
     val text: Color,
     val border: Color
 )
 
-/**
- * Object singleton yang menyimpan semua badge colors
- * Organized by category untuk kemudahan maintenance
- */
 object BadgeColors {
 
     // ==================== USERS TYPE ====================

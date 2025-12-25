@@ -12,8 +12,8 @@ data class History(
     val disasterName: String,
     val location: String,
     val date: String,
-    val description: String, // Tambah deskripsi detail
+    val description: String,
     val imageUrl: String,
-    val status: String, // "completed"
-    val participants: List<Participant> = emptyList() // Tambah daftar peserta
+    val status: String,
+    val participants: List<Participant> = emptyList()
 )

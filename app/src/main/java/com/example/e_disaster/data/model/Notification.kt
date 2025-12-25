@@ -48,7 +48,6 @@ data class NotificationData(
     val victimName: String? = null
 )
 
-// Enum untuk tipe notifikasi
 enum class NotificationType(val value: String) {
     DISASTER("disaster"),
     AID("aid"),
@@ -56,7 +55,6 @@ enum class NotificationType(val value: String) {
     SYSTEM("system")
 }
 
-// Enum untuk prioritas notifikasi
 enum class NotificationPriority(val value: String) {
     LOW("low"),
     MEDIUM("medium"),

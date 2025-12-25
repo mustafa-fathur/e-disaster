@@ -15,13 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.e_disaster.ui.theme.EDisasterTheme
 
-/**
- * Komponen DatePickerDialog yang dapat digunakan kembali di seluruh aplikasi.
- *
- * @param datePickerState State yang mengontrol tanggal yang dipilih. Dibuat dengan rememberDatePickerState().
- * @param onDismiss Lambda yang dipanggil saat dialog ditutup (misalnya, menekan di luar atau tombol batal).
- * @param onConfirm Lambda yang dipanggil saat pengguna menekan tombol "OK".
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDatePickerDialog(

@@ -189,9 +189,8 @@ fun AddDisasterReportContent(
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp) // Reduced spacing
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Title
             OutlinedTextField(
                 value = formState.title,
                 onValueChange = onTitleChange,
@@ -202,7 +201,6 @@ fun AddDisasterReportContent(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Description
             OutlinedTextField(
                 value = formState.description,
                 onValueChange = onDescriptionChange,
@@ -213,7 +211,6 @@ fun AddDisasterReportContent(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Lat & Long
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = formState.lat,

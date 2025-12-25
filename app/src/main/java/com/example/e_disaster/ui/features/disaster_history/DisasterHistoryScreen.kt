@@ -63,19 +63,16 @@ fun HistoryScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     disasterListViewModel: DisasterListViewModel = hiltViewModel()
 ) {
-    // Use disasters from the same ViewModel as the list screen and filter completed ones
     val allDisasters = disasterListViewModel.disasters
     val isLoading = disasterListViewModel.isLoading
     val errorMessage = disasterListViewModel.errorMessage
 
-    // Map Disaster -> History for the UI and only include completed status (case-insensitive)
     val historyList = allDisasters
         .filter { it.status?.equals("completed", true) == true }
         .map { disaster ->
             History(
                 id = disaster.id ?: "",
                 disasterName = disaster.title ?: run {
-                    // fallback to mapped type or source
                     disaster.types?.let { it.replace('_', ' ').replaceFirstChar { c -> c.uppercase() } } ?: "Tanpa Judul"
                 },
                 location = disaster.location ?: "Lokasi tidak diketahui",
@@ -88,7 +85,6 @@ fun HistoryScreen(
         }
 
     val user = mainViewModel.user
-    // pick success color based on current theme
     val isDarkTheme = isSystemInDarkTheme()
     val successBorderColor = if (isDarkTheme) BadgeColors.DisasterStatus.Dark.completed.border else BadgeColors.DisasterStatus.Light.completed.border
     val successContentColor = if (isDarkTheme) BadgeColors.DisasterStatus.Dark.completed.text else BadgeColors.DisasterStatus.Light.completed.text
@@ -151,7 +147,6 @@ fun HistoryScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(historyList, key = { it.id }) { history ->
-                                // inline card directly instead of calling a separate HistoryCard composable
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -167,7 +162,6 @@ fun HistoryScreen(
                                             .height(IntrinsicSize.Min),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        // Left column: title, info rows and badges
                                         Column(
                                             modifier = Modifier
                                                 .weight(1f)
@@ -222,7 +216,6 @@ fun HistoryScreen(
                                             }
                                         }
 
-                                        // Right image panel (square)
                                         Box(
                                             modifier = Modifier
                                                 .width(100.dp)

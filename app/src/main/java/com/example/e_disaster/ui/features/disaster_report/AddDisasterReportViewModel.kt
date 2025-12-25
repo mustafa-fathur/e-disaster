@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
-// State for the form fields
 data class AddReportFormState(
     val title: String = "",
     val description: String = "",
@@ -28,7 +27,6 @@ data class AddReportFormState(
     val longError: String? = null
 )
 
-// State for the network request (loading, success, error)
 data class AddReportRequestState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
@@ -47,7 +45,6 @@ class AddDisasterReportViewModel @Inject constructor(
     var requestState by mutableStateOf(AddReportRequestState())
         private set
 
-    // --- State Update Functions ---
     fun onTitleChange(title: String) {
         formState = formState.copy(title = title, titleError = null)
     }
@@ -75,8 +72,6 @@ class AddDisasterReportViewModel @Inject constructor(
     fun removeImageUri(uri: Uri) {
         formState = formState.copy(imageUris = formState.imageUris - uri)
     }
-
-    // --- Business Logic ---
 
     val canSave: Boolean
         get() = !requestState.isLoading

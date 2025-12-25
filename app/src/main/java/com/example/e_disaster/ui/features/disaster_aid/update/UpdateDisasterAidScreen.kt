@@ -151,7 +151,6 @@ private fun UpdateAidForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Validation error
         formState.validationError?.let {
             Text(
                 text = it,
@@ -160,7 +159,6 @@ private fun UpdateAidForm(
             )
         }
 
-        // Title
         OutlinedTextField(
             value = formState.title,
             onValueChange = { onEvent(UpdateAidFormEvent.TitleChanged(it)) },
@@ -176,7 +174,6 @@ private fun UpdateAidForm(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
 
-        // Category Dropdown
         ExposedDropdownMenuBox(
             expanded = categoryExpanded,
             onExpandedChange = { categoryExpanded = !categoryExpanded }
@@ -216,7 +213,6 @@ private fun UpdateAidForm(
             }
         }
 
-        // Quantity
         OutlinedTextField(
             value = formState.quantity,
             onValueChange = { onEvent(UpdateAidFormEvent.QuantityChanged(it)) },
@@ -235,7 +231,6 @@ private fun UpdateAidForm(
             )
         )
 
-        // Unit
         OutlinedTextField(
             value = formState.unit,
             onValueChange = { onEvent(UpdateAidFormEvent.UnitChanged(it)) },
@@ -248,7 +243,6 @@ private fun UpdateAidForm(
             )
         )
 
-        // Description
         OutlinedTextField(
             value = formState.description,
             onValueChange = { onEvent(UpdateAidFormEvent.DescriptionChanged(it)) },
@@ -266,7 +260,6 @@ private fun UpdateAidForm(
             )
         )
 
-        // Donator
         OutlinedTextField(
             value = formState.donator,
             onValueChange = { onEvent(UpdateAidFormEvent.DonatorChanged(it)) },
@@ -282,7 +275,6 @@ private fun UpdateAidForm(
             )
         )
 
-        // Location
         OutlinedTextField(
             value = formState.location,
             onValueChange = { onEvent(UpdateAidFormEvent.LocationChanged(it)) },
@@ -298,7 +290,6 @@ private fun UpdateAidForm(
             )
         )
 
-        // Submit Button
         Button(
             onClick = onFormSubmit,
             modifier = Modifier.fillMaxWidth(),

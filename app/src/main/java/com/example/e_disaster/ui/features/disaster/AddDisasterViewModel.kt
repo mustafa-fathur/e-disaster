@@ -147,8 +147,7 @@ class AddDisasterViewModel @Inject constructor(
 
                 val response = disasterRepository.createDisaster(request)
                 val disasterId = response.data?.id ?: ""
-                
-                // Upload gambar jika ada
+
                 if (disasterId.isNotEmpty() && uiState.images.isNotEmpty()) {
                     try {
                         uiState.images.forEach { uri ->
@@ -159,8 +158,6 @@ class AddDisasterViewModel @Inject constructor(
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        // Kita tetap anggap sukses membuat bencana, tapi log error gambar
-                        // Bisa juga tambahkan info ke user
                     }
                 }
                 
@@ -185,8 +182,7 @@ class AddDisasterViewModel @Inject constructor(
             val contentResolver = context.contentResolver
             val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
             val inputStream = contentResolver.openInputStream(uri) ?: return null
-            
-            // Buat file temporary
+
             val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
             val outputStream = FileOutputStream(file)
             inputStream.copyTo(outputStream)
@@ -205,8 +201,7 @@ class AddDisasterViewModel @Inject constructor(
         if (errorBody.isNullOrEmpty()) return null
         return try {
             val jsonObject = JSONObject(errorBody)
-            
-            // Cek apakah ada field "errors" (format validasi Laravel biasanya)
+
             if (jsonObject.has("errors")) {
                 val errorsObject = jsonObject.getJSONObject("errors")
                 val sb = StringBuilder()
@@ -221,15 +216,13 @@ class AddDisasterViewModel @Inject constructor(
                 }
                 if (sb.isNotEmpty()) return sb.toString().trim()
             }
-            
-            // Fallback ke field "message"
+
             if (jsonObject.has("message")) {
                 return jsonObject.getString("message")
             }
             
             null
         } catch (e: Exception) {
-            // Jika gagal parsing JSON, return null agar fallback ke pesan default
             null
         }
     }

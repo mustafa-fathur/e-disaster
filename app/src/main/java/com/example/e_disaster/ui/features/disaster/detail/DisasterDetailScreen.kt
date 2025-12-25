@@ -74,14 +74,13 @@ fun DisasterDetailScreen(
 
     var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
-    // Listen for the result from AddDisasterReportScreen
     val reportAdded = navController.currentBackStackEntry
         ?.savedStateHandle?.getLiveData<Boolean>("report_added")?.observeAsState()
 
     LaunchedEffect(reportAdded?.value) {
         if (reportAdded?.value == true) {
             viewModel.getDisasterDetails(disasterId!!)
-            selectedTabIndex = 1 // Switch to the "Perkembangan" tab
+            selectedTabIndex = 1
             navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("report_added")
         }
     }

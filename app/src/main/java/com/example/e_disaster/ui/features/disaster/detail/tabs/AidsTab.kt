@@ -55,7 +55,6 @@ fun AidsTabContent(
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Semua") }
 
-    // Mapping kategori UI (Indonesia) ke API (English)
     val categoryMapping = mapOf(
         "Semua" to null,
         "Pangan" to "food",
@@ -63,7 +62,6 @@ fun AidsTabContent(
         "Papan" to "housing"
     )
 
-    // Load aids from API
     LaunchedEffect(disasterId, searchQuery, selectedFilter) {
         val category = categoryMapping[selectedFilter]
         
@@ -127,7 +125,6 @@ fun AidsTabContent(
                     }
                 } else {
                     items(aids, key = { it.id ?: "" }) { aidDto ->
-                        // Convert DTO to AidItem for UI
                         val aid = AidItem(
                             id = aidDto.id ?: "",
                             title = aidDto.title ?: "Tidak ada judul",

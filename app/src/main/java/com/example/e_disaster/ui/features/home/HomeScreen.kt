@@ -302,7 +302,7 @@ fun DisasterItem(disaster: DisasterDto) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp)
-                        .background(Color.Gray), // Fallback background
+                        .background(Color.Gray),
                     contentScale = ContentScale.Crop
                 )
                 Box(

@@ -87,7 +87,6 @@ fun SpeedDialFab(
             }
         }
 
-        // Main FAB
         FloatingActionButton(
             onClick = onFabClick,
             containerColor = MaterialTheme.colorScheme.primary,

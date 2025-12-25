@@ -85,13 +85,11 @@ fun NotificationScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                // Filter chips
                 NotificationFilterChips(
                     selectedFilter = selectedFilter,
                     onFilterChange = { selectedFilter = it }
                 )
 
-                // Notification list
                 if (notifications.isEmpty()) {
                     EmptyNotificationState()
                 } else {
@@ -215,7 +213,6 @@ private fun NotificationCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Notification icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -233,9 +230,7 @@ private fun NotificationCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Notification content
             Column(modifier = Modifier.weight(1f)) {
-                // Title and priority indicator
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -261,7 +256,6 @@ private fun NotificationCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Message
                 Text(
                     text = notification.message,
                     style = MaterialTheme.typography.bodyMedium,
@@ -272,7 +266,6 @@ private fun NotificationCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Time and type
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -285,7 +278,6 @@ private fun NotificationCard(
                     )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Priority indicator
                         val priorityColor = getPriorityColor(notification.priority)
                         Box(
                             modifier = Modifier
@@ -321,7 +313,7 @@ private fun getNotificationIcon(type: String) = when (type) {
 private fun getNotificationIconBackground(type: String) = when (type) {
     NotificationType.DISASTER.value -> Color.Red
     NotificationType.AID.value -> Color.Blue
-    NotificationType.VICTIM.value -> Color(0xFFFF9800) // Orange color
+    NotificationType.VICTIM.value -> Color(0xFFFF9800)
     else -> Color.Gray
 }
 
@@ -345,7 +337,6 @@ private fun getPriorityText(priority: String) = when (priority) {
 
 @Composable
 private fun formatNotificationTime(createdAt: String): String {
-    // Simple time formatting for demo
     return try {
         val date = createdAt.split("T")[0]
         val time = createdAt.split("T")[1].substring(0, 5)

@@ -32,7 +32,6 @@ class DisasterReportRepository @Inject constructor(
         val response = apiService.getDisasterReport(disasterId, reportId)
         val report = mapDisasterReportDtoToModel(response.data)
 
-        // Fetch pictures associated with this report using PictureApiService
         try {
             val picturesResponse = pictureApiService.getPictures("disaster_report", reportId)
             val pictures = picturesResponse.data.mapNotNull { dto ->
@@ -47,7 +46,6 @@ class DisasterReportRepository @Inject constructor(
             }
             return report.copy(pictures = pictures)
         } catch (e: Exception) {
-            // If picture fetch fails, return report without pictures but don't crash
             e.printStackTrace()
             return report
         }
@@ -62,7 +60,6 @@ class DisasterReportRepository @Inject constructor(
         lat: Double?,
         long: Double?
     ): DisasterReport {
-        // Step 1: Create the request body for creating the report (text data only)
         val createReportRequest = CreateDisasterReportRequest(
             title = title,
             description = description,
@@ -71,7 +68,6 @@ class DisasterReportRepository @Inject constructor(
             long = long
         )
 
-        // Step 2: Call the API to create the report.
         val reportResponse = apiService.createDisasterReport(
             disasterId = disasterId,
             request = createReportRequest
@@ -79,7 +75,6 @@ class DisasterReportRepository @Inject constructor(
 
         val createdReport = reportResponse.data
 
-        // Step 3: If report creation is successful and there are images, upload them.
         if (images.isNotEmpty()) {
             val newReportId = createdReport.id
             if (newReportId != null) {
@@ -94,7 +89,6 @@ class DisasterReportRepository @Inject constructor(
             }
         }
 
-        // Step 4: Return the mapped report object from the initial creation response.
         return mapDisasterReportDtoToModel(createdReport)
     }
 

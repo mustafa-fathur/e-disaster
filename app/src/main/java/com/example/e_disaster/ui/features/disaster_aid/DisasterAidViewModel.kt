@@ -35,9 +35,6 @@ class DisasterAidViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
-    /**
-     * Load disaster aids dengan parameter yang bisa di-filter
-     */
     fun loadDisasterAids(
         disasterId: String,
         page: Int? = null,
@@ -64,39 +61,25 @@ class DisasterAidViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Set halaman untuk pagination
-     */
+
     fun setPage(page: Int) {
         _currentPage.value = page
     }
 
-    /**
-     * Set search query
-     */
     fun setSearchQuery(query: String?) {
         _searchQuery.value = query
     }
 
-    /**
-     * Set category filter
-     */
     fun setCategoryFilter(category: String?) {
         _selectedCategory.value = category
     }
 
-    /**
-     * Reset semua filter
-     */
     fun resetFilters() {
         _currentPage.value = 1
         _searchQuery.value = null
         _selectedCategory.value = null
     }
 
-    /**
-     * Refresh data dengan parameter yang sama
-     */
     fun refresh(disasterId: String) {
         loadDisasterAids(disasterId)
     }

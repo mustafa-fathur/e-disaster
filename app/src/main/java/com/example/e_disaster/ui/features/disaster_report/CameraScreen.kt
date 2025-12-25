@@ -46,7 +46,6 @@ fun CameraScreen(navController: NavController) {
     var showPreviewDialog by remember { mutableStateOf<Uri?>(null) }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        // Camera Preview
         AndroidView(
             factory = {
                 PreviewView(it).apply {
@@ -56,8 +55,6 @@ fun CameraScreen(navController: NavController) {
             },
             modifier = Modifier.fillMaxSize()
         )
-
-        // Top bar with Back button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -70,14 +67,11 @@ fun CameraScreen(navController: NavController) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.White)
             }
         }
-
-        // Bottom Controls
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .background(Color.Black.copy(alpha = 0.5f))
         ) {
-            // Thumbnail gallery
             if (takenImageUris.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -96,11 +90,8 @@ fun CameraScreen(navController: NavController) {
                     }
                 }
             } else {
-                // Placeholder to keep the height consistent
                 Spacer(modifier = Modifier.height(88.dp))
             }
-
-            // Action buttons Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,10 +99,8 @@ fun CameraScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Left Spacer for balancing
                 Spacer(modifier = Modifier.size(64.dp))
 
-                // Take Picture Button
                 IconButton(
                     onClick = {
                         takePicture(context, cameraController) { uri ->
@@ -122,7 +111,6 @@ fun CameraScreen(navController: NavController) {
                         .size(72.dp)
                         .border(4.dp, Color.White, CircleShape)
                 ) {
-                    // This creates the inner circle of the shutter button
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -131,7 +119,6 @@ fun CameraScreen(navController: NavController) {
                     )
                 }
 
-                // Done Button
                 if (takenImageUris.isNotEmpty()) {
                     Card(
                         modifier = Modifier.size(56.dp),
@@ -149,14 +136,12 @@ fun CameraScreen(navController: NavController) {
                         }
                     }
                 } else {
-                    // Placeholder to keep the take picture button centered
                     Spacer(modifier = Modifier.size(64.dp))
                 }
             }
         }
     }
 
-    // Fullscreen Preview Dialog
     if (showPreviewDialog != null) {
         Dialog(
             onDismissRequest = { showPreviewDialog = null },

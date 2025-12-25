@@ -14,15 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/**
- * Komponen yang menampilkan sekelompok FilterChip yang dapat digunakan kembali.
- * Dibuat horizontal scrollable menggunakan LazyRow untuk menangani banyak opsi filter.
- *
- * @param filterOptions Daftar String yang akan ditampilkan sebagai opsi filter.
- * @param selectedFilter Opsi filter yang sedang dipilih.
- * @param onFilterSelected Lambda yang dipanggil ketika sebuah chip dipilih.
- * @param modifier Modifier untuk kustomisasi layout.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterChipGroup(

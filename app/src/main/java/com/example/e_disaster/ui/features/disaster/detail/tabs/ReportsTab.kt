@@ -48,14 +48,12 @@ fun ReportsTabContent(navController: NavController, reports: List<DisasterReport
 @Composable
 private fun ReportCardContent(report: DisasterReport) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // Baris atas: Judul Laporan
         Text(
             text = report.title,
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Default),
             fontWeight = FontWeight.Bold
         )
 
-        // Baris tengah: Deskripsi Laporan (gunakan data dari API)
         Text(
             text = report.description.ifBlank { "Tidak ada deskripsi." },
             style = MaterialTheme.typography.bodyMedium,
@@ -66,13 +64,11 @@ private fun ReportCardContent(report: DisasterReport) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Baris bawah: Pelapor, Waktu, dan Badge Status
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Informasi pelapor dan waktu
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
@@ -88,7 +84,6 @@ private fun ReportCardContent(report: DisasterReport) {
                 )
             }
 
-            // Badge Status (Final atau Dalam Proses)
             Box {
                 DisasterReportStatusBadge(isCompleted = report.isFinalStage)
             }
