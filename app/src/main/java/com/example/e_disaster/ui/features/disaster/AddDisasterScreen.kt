@@ -67,7 +67,6 @@ fun AddDisasterScreen(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Disaster types
     val disasterTypes = listOf(
         "earthquake" to "Gempa Bumi",
         "tsunami" to "Tsunami",
@@ -80,8 +79,7 @@ fun AddDisasterScreen(
         "social_disaster" to "Bencana Sosial"
     )
     var typeExpanded by remember { mutableStateOf(false) }
-
-    // Handle events
+    
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -267,8 +265,7 @@ fun AddDisasterScreen(
                         )
                     }
                 }
-                
-                // Kondisi untuk menampilkan Magnitudo dan Kedalaman
+
                 if (uiState.selectedType == "earthquake") {
                     item { Spacer(modifier = Modifier.height(16.dp)) }
                     item {
@@ -329,7 +326,6 @@ fun AddDisasterScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Loading overlay handled by button state
                 }
             }
         }

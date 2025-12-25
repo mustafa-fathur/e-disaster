@@ -87,7 +87,6 @@ fun AddDisasterAidScreen(
         }
     }
 
-    // Map Indonesian category to English enum
     val categoryMap = mapOf(
         "Makanan" to "food",
         "Pakaian" to "clothing",
@@ -122,7 +121,6 @@ fun AddDisasterAidScreen(
                 buttonText = "Simpan",
                 isLoading = uiState is AddAidUiState.Loading,
                 onFormSubmit = { title, description, category, quantity, unit, donator, location, _, _ ->
-                    // Update ViewModel with form data before submit
                     val apiCategory = categoryMap[category] ?: "food"
                     
                     viewModel.onEvent(AddAidFormEvent.TitleChanged(title))
@@ -132,8 +130,6 @@ fun AddDisasterAidScreen(
                     viewModel.onEvent(AddAidFormEvent.DescriptionChanged(description))
                     viewModel.onEvent(AddAidFormEvent.DonatorChanged(donator))
                     viewModel.onEvent(AddAidFormEvent.LocationChanged(location))
-                    
-                    // Submit form
                     viewModel.submitForm(disasterId, context)
                 }
             )
@@ -152,7 +148,6 @@ fun AidForm(
         donator: String, location: String, date: String, imageUri: Uri?
     ) -> Unit
 ) {
-    // States for form fields
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
@@ -163,15 +158,12 @@ fun AidForm(
     var distributionDate by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Dropdown options
     val categoryOptions = listOf("Makanan", "Pakaian", "Fasilitas", "Obat-obatan")
     val unitOptions = listOf("Paket", "Set", "Kg", "Liter", "Box")
 
-    // Date picker states
     val datePickerState = rememberDatePickerState()
     var showDatePicker by remember { mutableStateOf(false) }
 
-    // Image picker launcher
     val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         imageUri = uri
     }
@@ -200,7 +192,6 @@ fun AidForm(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // --- FORM FIELDS ---
 
         OutlinedTextField(
             value = title,

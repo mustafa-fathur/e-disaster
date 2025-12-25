@@ -13,7 +13,7 @@ data class RegisterRequest(
     val address: String,
     val gender: Int,
     @SerializedName("date_of_birth")
-    val dateOfBirth: String, // format "yyyy-MM-dd"
+    val dateOfBirth: String,
     @SerializedName("reason_to_join")
     val reasonToJoin: String
 )

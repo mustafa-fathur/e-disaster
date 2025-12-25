@@ -7,15 +7,10 @@ import com.google.gson.annotations.SerializedName
 data class DashboardResponse(
     @SerializedName("user") val user: DashboardUserDto?,
     @SerializedName("stats") val stats: DashboardStatsDto?,
-    
-    // recent_disasters adalah Map<String, DisasterDto> berdasarkan JSON respons
     @SerializedName("recent_disasters") val recentDisasters: Map<String, DisasterDto>?,
-    
-    // recent_reports, victims, aids langsung array []
     @SerializedName("recent_reports") val recentReports: List<DashboardReportDto>?,
     @SerializedName("recent_victims") val recentVictims: List<DashboardVictimDto>?,
     @SerializedName("recent_aids") val recentAids: List<AidDto>?,
-    
     @SerializedName("unread_notifications") val unreadNotifications: Int?
 )
 

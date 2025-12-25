@@ -124,7 +124,6 @@ fun DisasterAidDetailScreen(
                     ) {
                         AidInfoCard(aid = state.aid)
                         
-                        // Use ImagePickerSection component with camera + gallery support
                         ImagePickerSection(
                             uris = state.aid.pictures?.map { "$BASE_URL${it.url}".toUri() } ?: emptyList(),
                             onImagesAdded = { uris ->
@@ -181,7 +180,6 @@ private fun AidInfoCard(aid: DisasterAid) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header: Title and Icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,14 +201,12 @@ private fun AidInfoCard(aid: DisasterAid) {
                 )
             }
 
-            // Description
             Text(
                 text = aid.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Details Grid
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     DetailItem(label = "Jumlah", value = "${aid.quantity} ${aid.unit}")
@@ -220,7 +216,6 @@ private fun AidInfoCard(aid: DisasterAid) {
                 }
             }
 
-            // Detail List
             DetailItemWithIcon(
                 icon = Icons.Default.CalendarMonth, 
                 label = "Tanggal", 

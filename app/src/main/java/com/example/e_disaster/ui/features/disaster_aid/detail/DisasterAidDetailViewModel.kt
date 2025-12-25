@@ -54,7 +54,6 @@ class DisasterAidDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.addAidPicture(aidId, imageUri, context)
-                // Reload aid detail to show new picture
                 loadAidDetail(disasterId, aidId)
             } catch (e: Exception) {
                 _uiState.update { 
@@ -69,7 +68,6 @@ class DisasterAidDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.deleteAidPicture(aidId, pictureId)
-                // Reload aid detail after deleting picture
                 loadAidDetail(disasterId, aidId)
             } catch (e: Exception) {
                 _uiState.update { 

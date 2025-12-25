@@ -17,8 +17,6 @@ fun NotificationPermissionHandler() {
             permission = Manifest.permission.POST_NOTIFICATIONS
         )
 
-        // Request permission when the composable is first launched
-        // if the permission has not been granted yet.
         if (!notificationPermissionState.status.isGranted) {
             LaunchedEffect(Unit) {
                 notificationPermissionState.launchPermissionRequest()

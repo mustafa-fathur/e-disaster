@@ -75,13 +75,6 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            Text(
-//                text = viewModel.healthCheckMessage,
-//                color = if (viewModel.healthCheckMessage.contains("API Error")) Color.Red else Color.Gray,
-//                style = MaterialTheme.typography.bodySmall,
-//                textAlign = TextAlign.Center,
-//                fontWeight = FontWeight.Bold
-//            )
             Spacer(modifier = Modifier.height(8.dp))
             Image(
                 painter = painterResource(

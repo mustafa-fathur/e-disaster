@@ -20,7 +20,6 @@ import com.example.e_disaster.ui.theme.EDisasterTheme
 fun ListItemCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    // The entire content is now a flexible slot that provides a ColumnScope
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -31,14 +30,12 @@ fun ListItemCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline)
     ) {
-        // Pass the content lambda to a Column
         Column(modifier = Modifier.padding(16.dp)) {
             content()
         }
     }
 }
 
-// Updated preview for clarity
 @Preview(showBackground = true, name = "List Item Card")
 @Composable
 fun ListItemCardPreview() {
@@ -46,7 +43,6 @@ fun ListItemCardPreview() {
         ListItemCard(
             onClick = {}
         ) {
-            // Example of custom content for the body
             Text(
                 text = "Card Title",
                 style = MaterialTheme.typography.titleMedium

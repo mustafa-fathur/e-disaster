@@ -4,7 +4,6 @@ import com.example.e_disaster.data.remote.dto.dashboard.DashboardResponse
 import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterRequest
 import com.example.e_disaster.data.remote.dto.disaster.CreateDisasterResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterDetailResponse
-import com.example.e_disaster.data.remote.dto.disaster.DisasterDto
 import com.example.e_disaster.data.remote.dto.disaster.DisasterListResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterVolunteerCheckResponse
 import com.example.e_disaster.data.remote.dto.disaster.DisasterVolunteerListResponse

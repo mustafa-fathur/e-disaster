@@ -227,6 +227,23 @@ private fun handleNotificationIntent(intent: Intent, navController: NavHostContr
     if (intent.extras == null) return
 
     val notificationType = intent.getStringExtra("type")
+    if (notificationType == "new_disaster") {
+        val disasterId = intent.getStringExtra("disaster_id")
+
+        if (disasterId != null) {
+            val route = "disaster-detail/$disasterId"
+            navController.navigate(route)
+        }
+    }
+    if (notificationType == "new_disaster_report") {
+        val disasterId = intent.getStringExtra("disaster_id")
+        val reportId = intent.getStringExtra("report_id")
+
+        if (disasterId != null && reportId != null) {
+            val route = "disaster-report-detail/$disasterId/$reportId"
+            navController.navigate(route)
+        }
+    }
     if (notificationType == "new_disaster_victim_report") {
         val disasterId = intent.getStringExtra("disaster_id")
         val victimId = intent.getStringExtra("victim_id")

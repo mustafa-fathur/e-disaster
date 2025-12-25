@@ -11,8 +11,7 @@ data class DisasterDto(
 
     @SerializedName("source")
     val source: String?,
-    
-    // PERBAIKAN: Mengubah "types" menjadi "type" sesuai respons API
+
     @SerializedName("type")
     val types: String?,
 

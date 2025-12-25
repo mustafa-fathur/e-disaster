@@ -43,12 +43,6 @@ class UserPreferences @Inject constructor(@ApplicationContext private val contex
         }
     }
 
-    suspend fun clearAuthToken() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(authTokenKey)
-        }
-    }
-
     suspend fun clearAll() {
         context.dataStore.edit { preferences ->
             preferences.clear()

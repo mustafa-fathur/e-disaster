@@ -40,8 +40,7 @@ class HomeViewModel @Inject constructor(
             try {
                 val response = disasterRepository.getDashboard()
                 stats = response.stats
-                
-                // Konversi dari Map ke List
+
                 val disastersMap = response.recentDisasters
                 recentDisasters = disastersMap?.values?.toList() ?: emptyList()
                 

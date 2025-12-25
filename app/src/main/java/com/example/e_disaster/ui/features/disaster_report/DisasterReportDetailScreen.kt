@@ -113,7 +113,6 @@ private fun ReportInfoCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header: Title and Icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -133,7 +132,6 @@ private fun ReportInfoCard(
                 )
             }
 
-            // Description
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
@@ -142,7 +140,6 @@ private fun ReportInfoCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Detail List
             DetailItemWithIcon(icon = Icons.Default.Person, label = "Pelapor", value = reporter)
             DetailItemWithIcon(icon = Icons.Default.CalendarMonth, label = "Waktu Laporan", value = time)
             DetailItemWithIcon(icon = Icons.Default.LocationOn, label = "Lokasi/Keterangan Bencana", value = location)

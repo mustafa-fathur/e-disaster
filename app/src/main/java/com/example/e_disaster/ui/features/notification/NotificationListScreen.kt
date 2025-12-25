@@ -95,7 +95,6 @@ fun NotificationListScreen(
                 canNavigateBack = false,
                 onProfileClick = { navController.navigate("profile") },
                 actions = {
-                    // Mark all as read button
                     if ((stats?.unread ?: 0) > 0) {
                         TextButton(onClick = { viewModel.markAllAsRead() }) {
                             Icon(
@@ -120,20 +119,17 @@ fun NotificationListScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            // Stats header
             NotificationStatsHeader(
                 stats = stats,
                 onDeleteAllRead = { showDeleteAllDialog = true }
             )
 
-            // Category filter chips
             CategoryFilterChips(
                 selectedCategory = selectedCategory,
                 onCategorySelected = { viewModel.setCategory(it) },
                 stats = stats
             )
 
-            // Search bar
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 AppSearchBar(
                     query = searchQuery,
@@ -145,7 +141,6 @@ fun NotificationListScreen(
                 )
             }
 
-            // Notification list
             when {
                 uiState.isLoading -> {
                     Box(
@@ -200,11 +195,9 @@ fun NotificationListScreen(
                             NotificationItem(
                                 notification = notification,
                                 onClick = {
-                                    // Mark as read
                                     if (notification.isRead == false) {
                                         notification.id?.let { viewModel.markAsRead(it) }
                                     }
-                                    // Navigate to related screen
                                     navigateFromNotification(navController, notification)
                                 },
                                 onDelete = { notificationToDelete = notification }
@@ -215,7 +208,6 @@ fun NotificationListScreen(
             }
         }
 
-        // Delete confirmation dialog
         if (notificationToDelete != null) {
             AlertDialog(
                 onDismissRequest = { notificationToDelete = null },
@@ -239,7 +231,6 @@ fun NotificationListScreen(
             )
         }
 
-        // Delete all read dialog
         if (showDeleteAllDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteAllDialog = false },
@@ -415,7 +406,6 @@ fun NotificationItem(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Category icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -433,12 +423,10 @@ fun NotificationItem(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Content
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Unread indicator + Title
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -461,7 +449,6 @@ fun NotificationItem(
                     )
                 }
 
-                // Message
                 Text(
                     text = notification.message ?: "",
                     style = MaterialTheme.typography.bodyMedium,
@@ -470,7 +457,6 @@ fun NotificationItem(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Category badge + time
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -495,7 +481,6 @@ fun NotificationItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Delete button
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier.size(40.dp)
@@ -510,34 +495,31 @@ fun NotificationItem(
     }
 }
 
-// Get icon based on category
 fun getCategoryIcon(category: String?): ImageVector {
     return when (category) {
         "new_disaster" -> Icons.Default.Warning
         "new_disaster_report" -> Icons.Default.Description
         "new_disaster_victim_report" -> Icons.Default.LocalHospital
-        "new_disaster_aid_report" -> Icons.Default.Campaign  // Package/box icon
+        "new_disaster_aid_report" -> Icons.Default.Campaign
         "disaster_status_changed" -> Icons.Default.CheckCircle
         "volunteer_verification" -> Icons.Default.PersonAdd
         else -> Icons.Default.Notifications
     }
 }
 
-// Get color based on category
 @Composable
 fun getCategoryColor(category: String?): Color {
     return when (category) {
         "new_disaster" -> MaterialTheme.colorScheme.error
         "new_disaster_report" -> MaterialTheme.colorScheme.primary
-        "new_disaster_victim_report" -> Color(0xFFE91E63)  // Pink for victims
-        "new_disaster_aid_report" -> Color(0xFF4CAF50)     // Green for aids
+        "new_disaster_victim_report" -> Color(0xFFE91E63)
+        "new_disaster_aid_report" -> Color(0xFF4CAF50)
         "disaster_status_changed" -> MaterialTheme.colorScheme.tertiary
-        "volunteer_verification" -> Color(0xFF9C27B0)       // Purple for verification
+        "volunteer_verification" -> Color(0xFF9C27B0)
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 }
 
-// Get label in Indonesian
 fun getCategoryLabel(category: String?): String {
     return when (category) {
         "new_disaster" -> "Bencana Baru"
@@ -550,7 +532,6 @@ fun getCategoryLabel(category: String?): String {
     }
 }
 
-// Format time ago
 fun formatTimeAgo(dateString: String?): String {
     if (dateString == null) return ""
     
@@ -570,7 +551,6 @@ fun formatTimeAgo(dateString: String?): String {
     }
 }
 
-// Navigate based on notification category
 fun navigateFromNotification(navController: NavController, notification: NotificationDto) {
     val data = notification.data
     
@@ -602,7 +582,6 @@ fun navigateFromNotification(navController: NavController, notification: Notific
             }
         }
         else -> {
-            // Default: just mark as read, no navigation
         }
     }
 }

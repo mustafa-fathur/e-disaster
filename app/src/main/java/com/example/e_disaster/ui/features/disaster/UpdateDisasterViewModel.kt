@@ -193,8 +193,7 @@ class UpdateDisasterViewModel @Inject constructor(
                 )
 
                 val response = disasterRepository.updateDisaster(uiState.disasterId, request)
-                
-                // Upload gambar baru jika ada
+
                 if (uiState.images.isNotEmpty()) {
                     try {
                         uiState.images.forEach { uri ->
@@ -224,8 +223,7 @@ class UpdateDisasterViewModel @Inject constructor(
             val contentResolver = context.contentResolver
             val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
             val inputStream = contentResolver.openInputStream(uri) ?: return null
-            
-            // Buat file temporary
+
             val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
             val outputStream = FileOutputStream(file)
             inputStream.copyTo(outputStream)

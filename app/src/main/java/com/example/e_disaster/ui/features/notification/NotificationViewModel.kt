@@ -115,7 +115,6 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.markNotificationAsRead(notificationId)
-                // Refresh list and stats
                 loadNotifications()
                 loadStats()
             } catch (e: Exception) {
